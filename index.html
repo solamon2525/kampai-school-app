@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>แอปเก็บขยะโรงเรียน</title>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:Sarabun,sans-serif;background:#f0fdf4;min-height:100vh}
+  .header{background:linear-gradient(135deg,#16a34a,#15803d);color:#fff;padding:14px 20px}
+  .header-inner{max-width:640px;margin:0 auto;display:flex;justify-content:space-between;align-items:center}
+  .tabs{background:#fff;border-bottom:2px solid #e5e7eb}
+  .tabs-inner{max-width:640px;margin:0 auto;display:flex;align-items:center}
+  .tab-btn{flex:1;padding:12px 8px;border:none;background:none;cursor:pointer;font-weight:600;font-size:14px;color:#6b7280;border-bottom:3px solid transparent;font-family:inherit}
+  .tab-btn.active{color:#16a34a;border-bottom:3px solid #16a34a}
+  .refresh-btn{margin:0 8px;background:#16a34a;border:none;border-radius:8px;padding:7px 13px;color:#fff;font-weight:700;cursor:pointer;font-size:18px}
+  .content{max-width:640px;margin:0 auto;padding:16px}
+  .card{background:#fff;border-radius:12px;padding:16px;box-shadow:0 1px 4px rgba(0,0,0,.08);margin-bottom:12px}
+  label{display:block;font-weight:600;margin-bottom:6px;color:#374151;font-size:14px}
+  input[type=text],input[type=number],input[type=datetime-local]{width:100%;padding:10px 12px;border:1.5px solid #d1d5db;border-radius:8px;font-size:15px;font-family:inherit}
+  .btn{padding:10px 16px;border:none;border-radius:8px;font-weight:600;cursor:pointer;font-size:14px;font-family:inherit}
+  .btn-green{background:#16a34a;color:#fff}
+  .btn-blue{background:#3b82f6;color:#fff}
+  .btn-gray{background:#e5e7eb;color:#374151}
+  .btn-red{background:#fee2e2;color:#ef4444}
+  .btn-yellow{background:#fef3c7;color:#92400e}
+  .btn-full{width:100%;padding:14px;font-size:16px;border-radius:10px}
+  .avatar{border-radius:50%;object-fit:cover;border:2px solid #d1fae5;flex-shrink:0}
+  .avatar-placeholder{border-radius:50%;background:linear-gradient(135deg,#16a34a,#15803d);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;flex-shrink:0;border:2px solid #d1fae5}
+  .member-row{display:flex;align-items:center;gap:10px;padding:8px 12px;border:1.5px solid #e5e7eb;border-radius:8px;margin-bottom:6px;cursor:pointer;background:#fff}
+  .member-row.selected{border-color:#16a34a;background:#f0fdf4}
+  .tag{border-radius:20px;padding:2px 10px;font-size:12px;font-weight:600}
+  .waste-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+  .waste-box{background:#f9fafb;border-radius:8px;padding:12px;border:1.5px solid #e5e7eb}
+  .waste-box input{text-align:center;font-size:16px}
+  .toast{position:fixed;top:16px;left:50%;transform:translateX(-50%);color:#fff;padding:10px 20px;border-radius:8px;z-index:9999;font-weight:600;box-shadow:0 4px 12px rgba(0,0,0,.2);font-size:14px;white-space:nowrap;font-family:inherit}
+  .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;display:flex;align-items:flex-end;justify-content:center}
+  .modal{background:#fff;width:100%;max-width:640px;border-radius:16px 16px 0 0;max-height:90vh;overflow-y:auto;padding:20px}
+  .rank-row{display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid #f3f4f6}
+  .section-label{font-size:12px;color:#9ca3af;font-weight:700;text-transform:uppercase;margin:8px 0 4px}
+  .record-card{display:flex;gap:12px;background:#fff;border-radius:12px;padding:14px;box-shadow:0 1px 3px rgba(0,0,0,.07);margin-bottom:10px}
+  .hidden{display:none}
+  .stat-card{background:#fff;border-radius:12px;padding:14px;box-shadow:0 1px 4px rgba(0,0,0,.08);text-align:center}
+  .stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+  .bar-wrap{margin-bottom:8px}
+  .bar-label{font-size:12px;color:#374151;margin-bottom:3px;display:flex;justify-content:space-between}
+  .bar-bg{background:#e5e7eb;border-radius:99px;height:10px}
+  .bar-fill{height:10px;border-radius:99px;transition:width .3s}
+  .type-btns{display:flex;gap:8px;margin-bottom:12px}
+  .type-btn{flex:1;padding:8px;border:none;border-radius:8px;font-weight:600;cursor:pointer;font-size:14px;font-family:inherit;background:#e5e7eb;color:#374151}
+  .type-btn.active{background:#16a34a;color:#fff}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-inner">
+    <div>
+      <h1 style="font-size:20px;font-weight:700">♻️ แอปเก็บขยะโรงเรียน</h1>
+      <p id="last-update" style="font-size:11px;opacity:.85">กำลังเชื่อมต่อ Firebase...</p>
+    </div>
+    <button class="btn" style="background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.5);color:#fff" onclick="openMembersModal()">👥 จัดการรายชื่อ</button>
+  </div>
+</div>
+
+<!-- Tabs -->
+<div class="tabs">
+  <div class="tabs-inner">
+    <button class="tab-btn active" id="tab-log" onclick="switchTab('log')">📝 บันทึก</button>
+    <button class="tab-btn" id="tab-history" onclick="switchTab('history')">📋 ประวัติ</button>
+    <button class="tab-btn" id="tab-stats" onclick="switchTab('stats')">📊 สถิติ</button>
+    <button class="refresh-btn" onclick="loadAll()">🔄</button>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="toast hidden"></div>
+
+<!-- Content -->
+<div class="content">
+
+  <!-- LOG TAB -->
+  <div id="page-log">
+    <div class="card">
+      <h2 style="margin:0 0 14px;color:#15803d;font-size:17px">📝 บันทึกข้อมูล</h2>
+      <label>ผู้บันทึก (ห้องเรียน / นักเรียน)</label>
+      <div id="member-selector" style="margin-bottom:14px"></div>
+      <label>วันที่และเวลา</label>
+      <input type="datetime-local" id="form-date" style="margin-bottom:14px" />
+      <label>จำนวนขยะ (ชิ้น)</label>
+      <div class="waste-grid">
+        <div class="waste-box"><div style="font-size:13px;font-weight:600;color:#374151;margin-bottom:6px">🍶 ขวดพลาสติก</div><input type="number" id="w-plastic" min="0" placeholder="0"/></div>
+        <div class="waste-box"><div style="font-size:13px;font-weight:600;color:#374151;margin-bottom:6px">🥫 กระป๋อง</div><input type="number" id="w-can" min="0" placeholder="0"/></div>
+        <div class="waste-box"><div style="font-size:13px;font-weight:600;color:#374151;margin-bottom:6px">📄 กระดาษ</div><input type="number" id="w-paper" min="0" placeholder="0"/></div>
+        <div class="waste-box"><div style="font-size:13px;font-weight:600;color:#374151;margin-bottom:6px">🗑️ อื่นๆ</div><input type="number" id="w-other" min="0" placeholder="0"/></div>
+      </div>
+      <label>หมายเหตุ (ไม่บังคับ)</label>
+      <input type="text" id="form-note" placeholder="เช่น บริเวณสนาม..." style="margin-bottom:18px"/>
+      <button class="btn btn-green btn-full" onclick="saveRecord()">✅ บันทึกข้อมูล</button>
+    </div>
+    <h3 style="color:#374151;font-size:15px;margin:4px 0 10px">🕐 บันทึกล่าสุด</h3>
+    <div id="recent-list"></div>
+  </div>
+
+  <!-- HISTORY TAB -->
+  <div id="page-history" class="hidden">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <h2 style="color:#15803d;font-size:17px" id="history-title">📋 ประวัติทั้งหมด</h2>
+    </div>
+    <div id="history-list"></div>
+  </div>
+
+  <!-- STATS TAB -->
+  <div id="page-stats" class="hidden">
+    <h2 style="margin:0 0 14px;color:#15803d;font-size:17px">📊 สรุปสถิติ</h2>
+    <div class="card" style="text-align:center;background:linear-gradient(135deg,#f0fdf4,#dcfce7);margin-bottom:12px">
+      <div style="font-size:13px;color:#6b7280">ขยะรวมทั้งหมด</div>
+      <div id="grand-total" style="font-size:40px;font-weight:800;color:#16a34a">0</div>
+      <div id="grand-sub" style="font-size:13px;color:#6b7280">ชิ้น</div>
+    </div>
+    <div class="stat-grid" id="type-stats"></div>
+    <div class="card" style="margin-bottom:12px">
+      <h3 style="margin:0 0 12px;color:#374151;font-size:15px">📅 7 วันย้อนหลัง</h3>
+      <div id="bar-chart"></div>
+    </div>
+    <div class="card" id="rank-card" style="display:none">
+      <h3 style="margin:0 0 12px;color:#374151;font-size:15px">🏆 อันดับการเก็บขยะ</h3>
+      <div id="rank-list"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Members Modal -->
+<div id="modal-bg" class="modal-bg hidden" onclick="if(event.target===this)closeMembersModal()">
+  <div class="modal">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <h2 style="font-size:18px;color:#15803d">👥 จัดการรายชื่อ</h2>
+      <button class="btn btn-gray" onclick="closeMembersModal()">✕</button>
+    </div>
+    <div style="background:#f0fdf4;border-radius:10px;padding:16px;margin-bottom:16px;border:1.5px solid #bbf7d0">
+      <h3 id="member-form-title" style="margin:0 0 12px;font-size:15px;color:#15803d">➕ เพิ่มรายชื่อใหม่</h3>
+      <div class="type-btns">
+        <button class="type-btn active" id="type-student" onclick="setMemberType('student')">👤 นักเรียน</button>
+        <button class="type-btn" id="type-class" onclick="setMemberType('class')">🏫 ห้องเรียน</button>
+      </div>
+      <input type="text" id="member-name" placeholder="ชื่อนักเรียน" style="margin-bottom:12px"/>
+      <input type="file" id="member-img-file" accept="image/*" style="display:none" onchange="handleMemberImg(event)"/>
+      <div style="display:flex;gap:10px;align-items:center;margin-bottom:12px">
+        <div id="member-avatar-preview" style="width:50px;height:50px"></div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <button class="btn btn-blue" style="font-size:13px;padding:6px 14px" onclick="document.getElementById('member-img-file').click()">📷 เลือกรูปภาพ</button>
+          <button class="btn btn-gray" id="remove-img-btn" style="font-size:13px;padding:6px 14px;display:none" onclick="removeMemberImg()">ลบรูป</button>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-green" style="flex:1" onclick="saveMember()" id="save-member-btn">➕ เพิ่ม</button>
+        <button class="btn btn-gray" id="cancel-edit-btn" style="display:none" onclick="cancelEditMember()">ยกเลิก</button>
+      </div>
+    </div>
+    <div id="members-list"></div>
+  </div>
+</div>
+
+<script>
+// ── Firebase init ──
+const firebaseConfig = {
+  apiKey: "AIzaSyDML31kfyPiZtWz6s9ebf7T02W7r2Y5CvA",
+  authDomain: "school-waste-tracker.firebaseapp.com",
+  databaseURL: "https://school-waste-tracker-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "school-waste-tracker",
+  storageBucket: "school-waste-tracker.firebasestorage.app",
+  messagingSenderId: "158534396656",
+  appId: "1:158534396656:web:0bea4a9fe7bff32494b035"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+// ── State ──
+let records = [], members = [], selectedMemberId = "", editMemberId = null, memberImgB64 = "", memberType = "student";
+
+const WASTE = [
+  { key:"plastic", label:"🍶 ขวดพลาสติก", color:"#3b82f6" },
+  { key:"can",     label:"🥫 กระป๋อง",    color:"#f59e0b" },
+  { key:"paper",   label:"📄 กระดาษ",      color:"#10b981" },
+  { key:"other",   label:"🗑️ อื่นๆ",       color:"#8b5cf6" },
+];
+
+// ── Init datetime ──
+const pad = n => String(n).padStart(2,'0');
+const now = new Date();
+document.getElementById('form-date').value = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
+
+// ── Realtime listeners ──
+db.ref('records').on('value', snap => {
+  const val = snap.val();
+  records = val ? Object.entries(val).map(([k,v])=>({...v,fbKey:k})).sort((a,b)=>new Date(b.date)-new Date(a.date)) : [];
+  renderAll();
+  document.getElementById('last-update').textContent = '🔥 Firebase เรียลไทม์ • อัปเดต ' + new Date().toLocaleTimeString('th-TH');
+});
+db.ref('members').on('value', snap => {
+  const val = snap.val();
+  members = val ? Object.entries(val).map(([k,v])=>({...v,fbKey:k})) : [];
+  renderAll();
+});
+
+function loadAll() {
+  // realtime listeners handle it, just flash UI
+  showToast('รีเฟรชแล้ว ✅');
+}
+
+// ── Render ──
+function renderAll() { renderMemberSelector(); renderRecent(); renderHistory(); renderStats(); renderMembersList(); }
+
+function avatarHTML(img, name, size) {
+  if (img) return `<img src="${img}" class="avatar" style="width:${size}px;height:${size}px"/>`;
+  const c = name ? name[0] : '?';
+  return `<div class="avatar-placeholder" style="width:${size}px;height:${size}px;font-size:${size*.38}px">${c}</div>`;
+}
+
+function renderMemberSelector() {
+  const el = document.getElementById('member-selector');
+  if (!members.length) { el.innerHTML = '<div style="padding:10px 12px;background:#fef3c7;border-radius:8px;font-size:13px;color:#92400e">⚠️ ยังไม่มีรายชื่อ กด "จัดการรายชื่อ" เพื่อเพิ่ม</div>'; return; }
+  const classes = members.filter(m=>m.type==='class'), studs = members.filter(m=>m.type==='student');
+  let h = `<div class="member-row ${selectedMemberId===''?'selected':''}" onclick="selectMember('')">
+    <div style="width:36px;height:36px;border-radius:50%;background:#e5e7eb;display:flex;align-items:center;justify-content:center;font-size:18px">❓</div>
+    <span style="font-size:14px;color:#374151">ไม่ระบุ</span>
+    ${selectedMemberId===''?'<span style="margin-left:auto;color:#16a34a">✓</span>':''}
+  </div>`;
+  if (classes.length) { h += `<div class="section-label">ห้องเรียน</div>`; classes.forEach(m => { h += memberRowHTML(m); }); }
+  if (studs.length) { h += `<div class="section-label">นักเรียน</div><div style="max-height:200px;overflow-y:auto">`; studs.forEach(m => { h += memberRowHTML(m); }); h += `</div>`; }
+  el.innerHTML = h;
+}
+function memberRowHTML(m) {
+  const sel = selectedMemberId === m.fbKey;
+  return `<div class="member-row ${sel?'selected':''}" onclick="selectMember('${m.fbKey}')">
+    ${avatarHTML(m.img, m.name, 36)}
+    <span style="font-size:14px;font-weight:600;color:#374151">${m.name}</span>
+    ${sel?'<span style="margin-left:auto;color:#16a34a">✓</span>':''}
+  </div>`;
+}
+function selectMember(id) { selectedMemberId = id; renderMemberSelector(); }
+
+function renderRecent() {
+  const el = document.getElementById('recent-list');
+  if (!records.length) { el.innerHTML = ''; return; }
+  el.innerHTML = records.slice(0,3).map(r => `
+    <div class="card" style="display:flex;gap:12px;align-items:center">
+      ${avatarHTML(r.member_img, r.member_name||'?', 42)}
+      <div style="flex:1">
+        <div style="font-weight:700;font-size:14px">${r.member_name||'ไม่ระบุ'}</div>
+        <div style="font-size:12px;color:#6b7280">${fmtDT(r.date)}</div>
+        <div style="font-size:12px;color:#6b7280;margin-top:2px">${WASTE.filter(t=>r[t.key]>0).map(t=>`${t.label.split(' ')[1]} ${r[t.key]}`).join(' · ')}</div>
+      </div>
+      <div style="text-align:right"><div style="font-weight:800;color:#16a34a;font-size:22px">${r.total}</div><div style="font-size:11px;color:#9ca3af">ชิ้น</div></div>
+    </div>`).join('');
+}
+
+function renderHistory() {
+  const el = document.getElementById('history-list');
+  document.getElementById('history-title').textContent = `📋 ประวัติทั้งหมด (${records.length} รายการ)`;
+  if (!records.length) { el.innerHTML = '<p style="text-align:center;color:#9ca3af;padding:40px">ยังไม่มีข้อมูล</p>'; return; }
+  el.innerHTML = records.map(r => `
+    <div class="record-card">
+      ${avatarHTML(r.member_img, r.member_name||'?', 46)}
+      <div style="flex:1">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div>
+            <div style="font-weight:700;color:#111827;font-size:15px">${r.member_name||'ไม่ระบุ'}</div>
+            ${r.member_type?`<span style="font-size:11px;background:${r.member_type==='class'?'#dbeafe':'#fce7f3'};color:${r.member_type==='class'?'#1d4ed8':'#be185d'};border-radius:10px;padding:1px 8px;font-weight:600">${r.member_type==='class'?'ห้องเรียน':'นักเรียน'}</span>`:''}
+            <div style="font-size:12px;color:#6b7280;margin-top:4px">${fmtDT(r.date)}</div>
+          </div>
+          <div style="text-align:right"><div style="font-weight:800;color:#16a34a;font-size:22px">${r.total}</div><div style="font-size:11px;color:#9ca3af">ชิ้น</div></div>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px">
+          ${WASTE.filter(t=>r[t.key]>0).map(t=>`<span class="tag" style="background:#f0fdf4;border:1.5px solid ${t.color};color:${t.color}">${t.label} ${r[t.key]}</span>`).join('')}
+        </div>
+        ${r.note?`<div style="font-size:12px;color:#6b7280;margin-top:6px">📌 ${r.note}</div>`:''}
+        <button class="btn btn-red" style="margin-top:8px;font-size:12px;padding:4px 12px" onclick="deleteRecord('${r.fbKey}')">🗑️ ลบ</button>
+      </div>
+    </div>`).join('');
+}
+
+function renderStats() {
+  const grand = records.reduce((s,r)=>s+r.total,0);
+  document.getElementById('grand-total').textContent = grand.toLocaleString();
+  document.getElementById('grand-sub').textContent = `ชิ้น จาก ${records.length} ครั้งที่บันทึก`;
+
+  const typeStats = document.getElementById('type-stats');
+  typeStats.innerHTML = WASTE.map(t => {
+    const tot = records.reduce((s,r)=>s+(r[t.key]||0),0);
+    return `<div class="stat-card"><div style="font-size:22px">${t.label.split(' ')[0]}</div><div style="font-size:24px;font-weight:700;color:${t.color}">${tot.toLocaleString()}</div><div style="font-size:12px;color:#9ca3af">${t.label.split(' ')[1]}</div></div>`;
+  }).join('');
+
+  // 7-day bar chart
+  const days = {};
+  for (let i=6;i>=0;i--) { const d=new Date(); d.setDate(d.getDate()-i); const k=d.toISOString().slice(0,10); days[k]={label:fmtD(k),total:0,...Object.fromEntries(WASTE.map(t=>[t.key,0]))}; }
+  records.forEach(r=>{ const k=r.date?.slice(0,10); if(k&&days[k]) WASTE.forEach(t=>{days[k][t.key]+=(r[t.key]||0); days[k].total+=(r[t.key]||0);}); });
+  const maxVal = Math.max(1, ...Object.values(days).map(d=>d.total));
+  document.getElementById('bar-chart').innerHTML = Object.values(days).map(d=>`
+    <div class="bar-wrap">
+      <div class="bar-label"><span>${d.label}</span><span style="font-weight:700">${d.total}</span></div>
+      <div class="bar-bg"><div class="bar-fill" style="width:${(d.total/maxVal*100).toFixed(1)}%;background:#16a34a"></div></div>
+    </div>`).join('');
+
+  // Rankings
+  const ranked = members.map(m=>({...m, total:records.filter(r=>r.member_id===m.fbKey).reduce((s,r)=>s+r.total,0), count:records.filter(r=>r.member_id===m.fbKey).length})).filter(m=>m.total>0).sort((a,b)=>b.total-a.total);
+  const rankCard = document.getElementById('rank-card');
+  if (ranked.length) {
+    rankCard.style.display='block';
+    document.getElementById('rank-list').innerHTML = ranked.slice(0,10).map((m,i)=>`
+      <div class="rank-row">
+        <div style="width:28px;font-weight:800;font-size:16px;color:${i===0?'#f59e0b':i===1?'#9ca3af':i===2?'#b45309':'#374151'};text-align:center">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</div>
+        ${avatarHTML(m.img, m.name, 38)}
+        <div style="flex:1"><div style="font-weight:600;font-size:14px">${m.name}</div><div style="font-size:12px;color:#9ca3af">${m.count} ครั้ง</div></div>
+        <div style="font-weight:700;color:#16a34a;font-size:18px">${m.total.toLocaleString()} <span style="font-size:11px;color:#9ca3af;font-weight:400">ชิ้น</span></div>
+      </div>`).join('');
+  } else rankCard.style.display='none';
+}
+
+// ── Record CRUD ──
+async function saveRecord() {
+  const vals = WASTE.map(t=>parseInt(document.getElementById('w-'+t.key).value)||0);
+  if (!vals.some(v=>v>0)) { showToast('กรุณากรอกจำนวนขยะอย่างน้อย 1 ประเภท','error'); return; }
+  const member = members.find(m=>m.fbKey===selectedMemberId)||null;
+  const rec = {
+    date: document.getElementById('form-date').value,
+    note: document.getElementById('form-note').value,
+    member_id: selectedMemberId, member_name: member?.name||'', member_img: member?.img||'', member_type: member?.type||'',
+    ...Object.fromEntries(WASTE.map((t,i)=>[t.key, vals[i]])),
+    total: vals.reduce((s,v)=>s+v,0)
+  };
+  await db.ref('records').push(rec);
+  WASTE.forEach(t=>{ document.getElementById('w-'+t.key).value=''; });
+  document.getElementById('form-note').value='';
+  showToast('บันทึกข้อมูลสำเร็จ ✅');
+}
+
+async function deleteRecord(fbKey) {
+  await db.ref(`records/${fbKey}`).remove();
+  showToast('ลบแล้ว');
+}
+
+// ── Member CRUD ──
+function setMemberType(t) {
+  memberType = t;
+  document.getElementById('type-student').className = 'type-btn'+(t==='student'?' active':'');
+  document.getElementById('type-class').className = 'type-btn'+(t==='class'?' active':'');
+  document.getElementById('member-name').placeholder = t==='class'?'ชื่อห้องเรียน เช่น ป.4/1':'ชื่อนักเรียน';
+}
+
+function handleMemberImg(e) {
+  const f = e.target.files[0]; if(!f) return;
+  const reader = new FileReader();
+  reader.onload = ev => { memberImgB64 = ev.target.result; renderMemberAvatarPreview(); };
+  reader.readAsDataURL(f);
+}
+function removeMemberImg() { memberImgB64=''; renderMemberAvatarPreview(); }
+function renderMemberAvatarPreview() {
+  const name = document.getElementById('member-name').value;
+  document.getElementById('member-avatar-preview').innerHTML = avatarHTML(memberImgB64, name||'?', 50);
+  document.getElementById('remove-img-btn').style.display = memberImgB64?'':'none';
+}
+
+async function saveMember() {
+  const name = document.getElementById('member-name').value.trim();
+  if (!name) { showToast('กรุณากรอกชื่อ','error'); return; }
+  const data = { type: memberType, name, img: memberImgB64||'' };
+  if (editMemberId) {
+    await db.ref(`members/${editMemberId}`).set(data);
+    showToast('แก้ไขสำเร็จ ✅');
+    cancelEditMember();
+  } else {
+    await db.ref('members').push(data);
+    showToast('เพิ่มสำเร็จ ✅');
+  }
+  document.getElementById('member-name').value='';
+  memberImgB64='';
+  renderMemberAvatarPreview();
+}
+
+function editMember(fbKey) {
+  const m = members.find(x=>x.fbKey===fbKey); if(!m) return;
+  editMemberId = fbKey;
+  memberType = m.type;
+  memberImgB64 = m.img||'';
+  document.getElementById('member-name').value = m.name;
+  document.getElementById('member-form-title').textContent = '✏️ แก้ไขรายชื่อ';
+  document.getElementById('save-member-btn').textContent = '💾 บันทึกการแก้ไข';
+  document.getElementById('cancel-edit-btn').style.display='';
+  setMemberType(m.type);
+  renderMemberAvatarPreview();
+}
+function cancelEditMember() {
+  editMemberId=null; memberImgB64='';
+  document.getElementById('member-name').value='';
+  document.getElementById('member-form-title').textContent='➕ เพิ่มรายชื่อใหม่';
+  document.getElementById('save-member-btn').textContent='➕ เพิ่ม';
+  document.getElementById('cancel-edit-btn').style.display='none';
+  setMemberType('student');
+  renderMemberAvatarPreview();
+}
+async function deleteMember(fbKey) {
+  await db.ref(`members/${fbKey}`).remove();
+  showToast('ลบแล้ว');
+}
+
+function renderMembersList() {
+  const el = document.getElementById('members-list');
+  if (!members.length) { el.innerHTML='<p style="text-align:center;color:#9ca3af;padding:20px">ยังไม่มีรายชื่อ</p>'; return; }
+  let h='';
+  ['class','student'].forEach(tp=>{
+    const list=members.filter(m=>m.type===tp); if(!list.length) return;
+    h+=`<div class="section-label">${tp==='class'?'ห้องเรียน':'นักเรียน'}</div>`;
+    list.forEach(m=>{ h+=`<div style="display:flex;align-items:center;gap:12px;padding:10px 12px;background:#fff;border-radius:10px;margin-bottom:8px;border:1.5px solid #e5e7eb">
+      ${avatarHTML(m.img, m.name, 42)}
+      <div style="flex:1;font-weight:600;font-size:15px">${m.name}</div>
+      <button class="btn btn-yellow" style="font-size:13px;padding:6px 10px" onclick="editMember('${m.fbKey}')">✏️</button>
+      <button class="btn btn-red" style="font-size:13px;padding:6px 10px" onclick="deleteMember('${m.fbKey}')">🗑️</button>
+    </div>`; });
+  });
+  el.innerHTML=h;
+}
+
+// ── UI helpers ──
+function switchTab(t) {
+  ['log','history','stats'].forEach(k=>{
+    document.getElementById(`page-${k}`).className=k===t?'':'hidden';
+    document.getElementById(`tab-${k}`).className='tab-btn'+(k===t?' active':'');
+  });
+}
+function openMembersModal() { document.getElementById('modal-bg').classList.remove('hidden'); }
+function closeMembersModal() { document.getElementById('modal-bg').classList.add('hidden'); cancelEditMember(); }
+
+let toastTimer;
+function showToast(msg, type='success') {
+  const el=document.getElementById('toast');
+  el.textContent=msg; el.style.background=type==='error'?'#ef4444':'#16a34a'; el.classList.remove('hidden');
+  clearTimeout(toastTimer); toastTimer=setTimeout(()=>el.classList.add('hidden'),3000);
+}
+
+const fmtDT = d => new Date(d).toLocaleString('th-TH',{dateStyle:'short',timeStyle:'short'});
+const fmtD  = d => new Date(d).toLocaleDateString('th-TH',{weekday:'short',day:'numeric',month:'short'});
+</script>
+</body>
+</html>
