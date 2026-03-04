@@ -1,1 +1,1020 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>ระบบเช็คชื่อนักเรียน — โรงเรียนบ้านคำไผ่</title>
 
+<!-- Firebase compat (เหมือนแอปธนาคารขยะ) -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Sarabun,sans-serif;background:#0c1220;min-height:100vh;color:#e0eaf5}
+
+/* ── Login ── */
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,#0c1220 0%,#0f1e35 50%,#0c1220 100%);padding:20px;position:relative}
+.login-bg-blob{position:absolute;border-radius:50%;pointer-events:none}
+.login-box{background:rgba(13,24,41,.92);backdrop-filter:blur(24px);
+  border:1px solid rgba(255,255,255,.09);border-radius:24px;
+  padding:44px 40px;width:100%;max-width:420px;
+  box-shadow:0 28px 80px rgba(0,0,0,.65);position:relative;z-index:1}
+.login-logo{text-align:center;margin-bottom:28px}
+.firebase-badge{display:flex;align-items:center;gap:7px;justify-content:center;
+  padding:5px 14px;border-radius:99px;width:fit-content;margin:0 auto 26px;
+  background:rgba(255,160,0,.08);border:1px solid rgba(255,160,0,.2)}
+
+/* ── Setup config ── */
+.setup-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,#0c1220,#0f1e35,#0c1220);padding:20px}
+.setup-box{background:rgba(13,24,41,.92);backdrop-filter:blur(24px);
+  border:1px solid rgba(255,255,255,.1);border-radius:24px;
+  padding:36px 32px;width:100%;max-width:500px;
+  box-shadow:0 28px 80px rgba(0,0,0,.65)}
+
+/* ── Inputs ── */
+.ifield{width:100%;padding:11px 16px;border-radius:10px;
+  background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.1);
+  color:#fff;font-size:14px;font-family:Sarabun,sans-serif;outline:none;transition:border-color .18s}
+.ifield:focus{border-color:#1d6fa4}
+.ifield::placeholder{color:#3d5a73}
+label{display:block;color:#7a9fc0;font-size:12px;font-weight:600;margin-bottom:6px}
+
+/* ── Buttons ── */
+.btn{cursor:pointer;border:none;outline:none;font-family:Sarabun,sans-serif;
+  border-radius:10px;font-weight:600;transition:all .18s ease}
+.btn:hover{filter:brightness(1.12)}
+.btn:active{transform:scale(.97)}
+.btn:disabled{opacity:.45;cursor:not-allowed;filter:none}
+.btn-primary{background:linear-gradient(135deg,#1d6fa4,#155983);color:#fff;
+  box-shadow:0 4px 20px rgba(29,111,164,.3)}
+.btn-ghost{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:#8aa5c5}
+.btn-danger{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.2);color:#ef4444}
+.btn-success{background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.3);color:#22c55e}
+.btn-outline{background:rgba(29,111,164,.15);border:1px solid rgba(29,111,164,.3);color:#4ea8de}
+.btn-full{width:100%;padding:13px;font-size:15px}
+
+/* ── Header ── */
+.header{background:#0c1b2e;border-bottom:1px solid rgba(255,255,255,.07);
+  padding:12px 20px;position:sticky;top:0;z-index:100}
+.header-inner{max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;gap:10px}
+
+/* ── Sidebar + Layout ── */
+.app-layout{display:flex;min-height:calc(100vh - 57px)}
+.sidebar{width:220px;background:#0c1b2e;border-right:1px solid rgba(255,255,255,.07);
+  flex-shrink:0;display:flex;flex-direction:column;transition:width .25s ease}
+.sidebar.collapsed{width:64px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;
+  border-radius:10px;margin:2px 8px;cursor:pointer;transition:all .18s;
+  border-left:3px solid transparent;color:#6a8fad;font-size:13px;font-weight:500}
+.nav-item:hover{background:rgba(255,255,255,.06)}
+.nav-item.active{background:rgba(29,111,164,.25);border-left-color:#1d6fa4;color:#4ea8de;font-weight:600}
+.sidebar.collapsed .nav-label{display:none}
+.sidebar.collapsed .nav-item{justify-content:center;padding:10px 0;margin:2px 8px}
+.main-content{flex:1;overflow-y:auto;max-height:calc(100vh - 57px)}
+
+/* ── Cards ── */
+.card{background:#0f2033;border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:20px}
+.page{padding:24px;max-width:900px}
+
+/* ── Status buttons ── */
+.status-grid{display:flex;gap:5px}
+.status-btn{flex:1;padding:6px 2px;border-radius:7px;border:1.5px solid rgba(255,255,255,.08);
+  background:rgba(255,255,255,.04);color:#4a6a84;font-size:10px;font-weight:500;
+  cursor:pointer;font-family:Sarabun,sans-serif;transition:all .18s}
+.status-btn:hover{transform:scale(1.04)}
+.status-btn.s-present.on{background:rgba(34,197,94,.18);border-color:#22c55e;color:#22c55e;font-weight:700}
+.status-btn.s-absent.on{background:rgba(239,68,68,.18);border-color:#ef4444;color:#ef4444;font-weight:700}
+.status-btn.s-late.on{background:rgba(245,158,11,.18);border-color:#f59e0b;color:#f59e0b;font-weight:700}
+.status-btn.s-leave.on{background:rgba(96,165,250,.18);border-color:#60a5fa;color:#60a5fa;font-weight:700}
+
+/* ── Progress bar ── */
+.progress-track{height:6px;background:#0f2033;border-radius:99px;overflow:hidden}
+.progress-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,#1d6fa4,#4ea8de);transition:width .35s ease}
+
+/* ── Bar chart ── */
+.bar-bg{background:rgba(255,255,255,.05);border-radius:99px;height:8px}
+.bar-fill{height:8px;border-radius:99px;transition:width .4s}
+
+/* ── Avatar ── */
+.avatar{border-radius:50%;object-fit:cover;flex-shrink:0}
+.avatar-ph{border-radius:50%;display:inline-flex;align-items:center;justify-content:center;
+  color:#fff;font-weight:700;flex-shrink:0}
+
+/* ── Room chip ── */
+.room-tag{display:inline-block;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:700}
+
+/* ── Modal ── */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.72);backdrop-filter:blur(4px);
+  display:flex;align-items:center;justify-content:center;z-index:1000}
+.modal{background:#0f2033;border:1px solid rgba(255,255,255,.1);border-radius:18px;
+  padding:28px;width:100%;max-width:340px}
+
+/* ── Toast ── */
+.toast{position:fixed;top:16px;left:50%;transform:translateX(-50%);
+  color:#fff;padding:10px 22px;border-radius:10px;z-index:9999;
+  font-weight:700;box-shadow:0 4px 12px rgba(0,0,0,.3);font-size:14px;white-space:nowrap;
+  animation:slideDown .3s ease}
+@keyframes slideDown{from{opacity:0;transform:translateX(-50%) translateY(-10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+
+/* ── Misc ── */
+.hidden{display:none!important}
+.flex{display:flex}.gap8{gap:8px}.gap12{gap:12px}.ai-center{align-items:center}.jc-between{justify-content:space-between}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.spin{display:inline-block;animation:spin .8s linear infinite}
+@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+.fade-in{animation:fadeIn .3s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── Error banner ── */
+.err-box{padding:10px 14px;border-radius:9px;background:rgba(239,68,68,.1);
+  border:1px solid rgba(239,68,68,.25);color:#ef4444;font-size:13px}
+.info-box{padding:10px 14px;border-radius:9px;background:rgba(29,111,164,.1);
+  border:1px solid rgba(29,111,164,.25);color:#4ea8de;font-size:12px;line-height:1.7}
+
+/* ── Table ── */
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th,.tbl td{padding:9px 12px;text-align:left;border-bottom:1px solid rgba(255,255,255,.05)}
+.tbl th{color:#4a7098;font-weight:700;font-size:11px;text-transform:uppercase}
+.tbl tr:hover td{background:rgba(255,255,255,.02)}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:#0c1220}
+::-webkit-scrollbar-thumb{background:#2a3a55;border-radius:4px}
+
+@media(max-width:600px){
+  .login-box{padding:32px 24px}
+  .setup-box{padding:28px 20px}
+  .page{padding:16px}
+  .sidebar{width:56px}
+  .sidebar .nav-label{display:none}
+  .sidebar .nav-item{justify-content:center;padding:10px 0}
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════
+     SETUP PAGE — กรอก Firebase Config
+══════════════════════════════════════════ -->
+<div id="setup-page" class="setup-wrap hidden">
+  <div class="setup-box fade-in">
+    <div style="text-align:center;margin-bottom:26px">
+      <div style="font-size:46px;margin-bottom:10px">🔥</div>
+      <h2 style="color:#fff;font-size:20px;font-weight:800;margin-bottom:4px">ตั้งค่า Firebase</h2>
+      <p style="color:#4a7098;font-size:13px">โรงเรียนบ้านคำไผ่ — ระบบเช็คชื่อออนไลน์</p>
+    </div>
+    <div class="info-box" style="margin-bottom:22px">
+      📌 <strong>วิธีหา Config:</strong> Firebase Console → Project Settings → Your Apps → SDK setup → Config
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:18px">
+      <div><label>API Key</label><input class="ifield" id="cfg-apiKey" placeholder="AIzaSy…"/></div>
+      <div><label>Auth Domain</label><input class="ifield" id="cfg-authDomain" placeholder="xxx.firebaseapp.com"/></div>
+      <div><label>Project ID</label><input class="ifield" id="cfg-projectId" placeholder="my-project-id"/></div>
+      <div><label>Database URL (Realtime DB)</label><input class="ifield" id="cfg-databaseURL" placeholder="https://xxx-default-rtdb.asia-southeast1.firebasedatabase.app"/></div>
+      <div><label>Storage Bucket</label><input class="ifield" id="cfg-storageBucket" placeholder="xxx.appspot.com"/></div>
+      <div><label>Messaging Sender ID</label><input class="ifield" id="cfg-messagingSenderId" placeholder="000000000000"/></div>
+      <div><label>App ID</label><input class="ifield" id="cfg-appId" placeholder="1:000:web:abc…"/></div>
+    </div>
+    <div id="setup-err" class="err-box hidden" style="margin-bottom:14px"></div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-outline" style="flex:1;padding:11px" id="test-cfg-btn" onclick="testConfig()">ทดสอบการเชื่อมต่อ</button>
+      <button class="btn btn-primary" style="flex:1;padding:11px" onclick="saveConfig()">บันทึก & ดำเนินการต่อ →</button>
+    </div>
+    <p style="color:#2a3f55;font-size:10px;text-align:center;margin-top:14px">
+      Config จะบันทึกใน localStorage ของเบราว์เซอร์นี้เท่านั้น
+    </p>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     LOGIN PAGE — เหมือนแอปธนาคารขยะ
+══════════════════════════════════════════ -->
+<div id="login-page" class="login-wrap hidden">
+  <!-- BG blobs -->
+  <div class="login-bg-blob" style="width:320px;height:320px;background:radial-gradient(circle,#1e3a5f55,transparent 70%);left:8%;top:12%"></div>
+  <div class="login-bg-blob" style="width:200px;height:200px;background:radial-gradient(circle,#0f2a4555,transparent 70%);left:68%;top:8%"></div>
+  <div class="login-bg-blob" style="width:260px;height:260px;background:radial-gradient(circle,#1a335555,transparent 70%);left:35%;top:58%"></div>
+
+  <div class="login-box fade-in">
+    <div class="login-logo">
+      <div style="font-size:54px;margin-bottom:10px">🏫</div>
+      <h1 style="color:#fff;font-size:22px;font-weight:800;margin-bottom:4px">โรงเรียนบ้านคำไผ่</h1>
+      <p style="color:#4a7098;font-size:13px">ระบบเช็คชื่อนักเรียนออนไลน์</p>
+    </div>
+
+    <!-- Firebase project badge -->
+    <div class="firebase-badge">
+      <span style="font-size:13px">🔥</span>
+      <span id="fb-project-badge" style="color:#ffb347;font-size:11px;font-weight:700">Firebase Auth</span>
+    </div>
+
+    <div style="margin-bottom:14px">
+      <label>อีเมล</label>
+      <input class="ifield" type="email" id="login-email" placeholder="teacher@school.ac.th"
+        onkeydown="if(event.key==='Enter')doLogin()"/>
+    </div>
+    <div style="margin-bottom:8px">
+      <label>รหัสผ่าน</label>
+      <div style="position:relative">
+        <input class="ifield" type="password" id="login-pass" placeholder="••••••••"
+          style="padding-right:46px" onkeydown="if(event.key==='Enter')doLogin()"/>
+        <button class="btn" onclick="togglePwd()" id="pwd-eye"
+          style="position:absolute;right:13px;top:50%;transform:translateY(-50%);
+                 background:none;color:#4a6a84;font-size:17px;padding:0">👁</button>
+      </div>
+    </div>
+
+    <div id="login-err" class="err-box hidden" style="margin-bottom:10px"></div>
+
+    <button class="btn btn-primary btn-full" id="login-btn" onclick="doLogin()" style="margin-top:10px">
+      🔐 เข้าสู่ระบบ
+    </button>
+
+    <div style="margin-top:22px;text-align:center">
+      <button class="btn" onclick="resetConfig()"
+        style="background:none;color:#2e4a62;font-size:11px;padding:0;text-decoration:underline">
+        ⚙️ เปลี่ยน Firebase Config
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     MAIN APP
+══════════════════════════════════════════ -->
+<div id="main-app" class="hidden">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-inner">
+      <div>
+        <div style="font-size:17px;font-weight:800;color:#fff">🏫 โรงเรียนบ้านคำไผ่</div>
+        <div id="header-sub" style="font-size:11px;color:#4a7098">ระบบเช็คชื่อออนไลน์</div>
+      </div>
+      <div class="flex gap8 ai-center">
+        <span id="user-badge" style="font-size:12px;font-weight:700;padding:4px 10px;border-radius:99px;background:rgba(29,111,164,.2);color:#4ea8de"></span>
+        <button class="btn btn-danger" style="font-size:12px;padding:6px 12px" onclick="doLogout()">ออกจากระบบ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Layout -->
+  <div class="app-layout">
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+      <div style="padding:14px 12px;border-bottom:1px solid rgba(255,255,255,.06);display:flex;align-items:center;justify-content:space-between">
+        <span class="nav-label" style="color:#fff;font-weight:800;font-size:13px">บ้านคำไผ่</span>
+        <button class="btn" onclick="toggleSidebar()"
+          style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);color:#8aa5c5;border-radius:8px;padding:5px 8px;font-size:12px" id="sidebar-toggle">◀</button>
+      </div>
+      <nav style="flex:1;padding:10px 0">
+        <div class="nav-item active" id="nav-attendance" onclick="showPage('attendance')"><span>✅</span><span class="nav-label">เช็คชื่อ</span></div>
+        <div class="nav-item" id="nav-history"    onclick="showPage('history')"><span>📅</span><span class="nav-label">ย้อนหลัง</span></div>
+        <div class="nav-item" id="nav-dashboard"  onclick="showPage('dashboard')"><span>📊</span><span class="nav-label">แดชบอร์ด</span></div>
+        <div class="nav-item admin-only hidden" id="nav-students" onclick="showPage('students')"><span>🎒</span><span class="nav-label">นักเรียน</span></div>
+        <div class="nav-item admin-only hidden" id="nav-rooms"    onclick="showPage('rooms')"><span>🏫</span><span class="nav-label">ห้องเรียน</span></div>
+      </nav>
+      <div style="padding:10px 8px;border-top:1px solid rgba(255,255,255,.06)">
+        <div style="display:flex;align-items:center;gap:8px;padding:8px 10px">
+          <div id="user-avatar" class="avatar-ph" style="width:28px;height:28px;font-size:12px;background:#1d6fa4;flex-shrink:0"></div>
+          <div class="nav-label" style="overflow:hidden">
+            <div id="user-name-sb" style="color:#c5d8ea;font-size:11px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div>
+            <div id="user-role-sb" style="color:#4a7098;font-size:10px"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pages -->
+    <div class="main-content">
+
+      <!-- ── ATTENDANCE ── -->
+      <div id="page-attendance" class="page fade-in">
+        <div class="flex jc-between ai-center" style="margin-bottom:20px;flex-wrap:wrap;gap:10px">
+          <div>
+            <h2 style="color:#fff;font-size:22px;font-weight:800;margin-bottom:4px">✅ เช็คชื่อนักเรียน</h2>
+            <p id="today-label" style="color:#5b7fa6;font-size:13px"></p>
+          </div>
+          <div class="flex gap8 flex-wrap" style="align-items:center">
+            <select id="room-select" onchange="loadStudents()"
+              style="background:#0f2033;border:1px solid rgba(255,255,255,.12);color:#c5d8ea;padding:8px 14px;border-radius:8px;font-size:13px;font-family:Sarabun,sans-serif;outline:none">
+              <option value="ป.1/1">ป.1/1</option><option value="ป.2/1">ป.2/1</option>
+              <option value="ป.3/1">ป.3/1</option><option value="ป.4/1" selected>ป.4/1</option>
+              <option value="ป.5/1">ป.5/1</option><option value="ป.6/1">ป.6/1</option>
+            </select>
+            <button class="btn btn-success" style="padding:8px 14px;font-size:12px" onclick="markAll('present')">✓ มาทุกคน</button>
+            <button class="btn btn-primary" id="save-btn" style="padding:8px 18px;font-size:13px" onclick="saveAttendance()">บันทึก</button>
+          </div>
+        </div>
+
+        <!-- Summary -->
+        <div class="grid2" style="grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px;margin-bottom:18px" id="summary-cards"></div>
+
+        <!-- Progress -->
+        <div style="margin-bottom:20px">
+          <div class="flex jc-between" style="margin-bottom:6px">
+            <span style="color:#5b7fa6;font-size:12px">ความคืบหน้า</span>
+            <span id="progress-label" style="color:#4ea8de;font-size:12px;font-weight:700">0 / 0 คน</span>
+          </div>
+          <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+        </div>
+
+        <!-- Student grid -->
+        <div id="student-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px"></div>
+      </div>
+
+      <!-- ── HISTORY ── -->
+      <div id="page-history" class="page fade-in hidden">
+        <h2 style="color:#fff;font-size:22px;font-weight:800;margin-bottom:20px">📅 ประวัติการเช็คชื่อ</h2>
+        <div class="card" style="margin-bottom:16px">
+          <div class="flex gap8 flex-wrap">
+            <select id="hist-room" style="background:#0c1220;border:1px solid rgba(255,255,255,.1);color:#c5d8ea;padding:8px 12px;border-radius:8px;font-size:13px;font-family:Sarabun,sans-serif;outline:none">
+              <option value="">ทุกห้อง</option>
+              <option value="ป.1/1">ป.1/1</option><option value="ป.2/1">ป.2/1</option>
+              <option value="ป.3/1">ป.3/1</option><option value="ป.4/1">ป.4/1</option>
+              <option value="ป.5/1">ป.5/1</option><option value="ป.6/1">ป.6/1</option>
+            </select>
+            <input type="month" id="hist-month"
+              style="background:#0c1220;border:1px solid rgba(255,255,255,.1);color:#c5d8ea;padding:8px 12px;border-radius:8px;font-size:13px;font-family:Sarabun,sans-serif;outline:none"/>
+            <button class="btn btn-outline" style="padding:8px 16px;font-size:13px" onclick="loadHistory()">🔍 ค้นหา</button>
+          </div>
+        </div>
+        <div id="history-list"></div>
+      </div>
+
+      <!-- ── DASHBOARD ── -->
+      <div id="page-dashboard" class="page fade-in hidden">
+        <h2 style="color:#fff;font-size:22px;font-weight:800;margin-bottom:20px">📊 แดชบอร์ด</h2>
+        <!-- KPI -->
+        <div class="grid2" style="grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-bottom:20px" id="kpi-cards"></div>
+        <!-- Chart -->
+        <div class="card" style="margin-bottom:16px">
+          <h3 style="color:#fff;font-size:15px;font-weight:700;margin-bottom:18px">อัตราการมาเรียนรายเดือน (%)</h3>
+          <div id="month-chart" style="display:flex;align-items:flex-end;gap:12px;height:140px"></div>
+        </div>
+        <!-- Room stats -->
+        <div class="card">
+          <h3 style="color:#fff;font-size:15px;font-weight:700;margin-bottom:16px">สรุปรายห้อง</h3>
+          <div id="room-stats"></div>
+        </div>
+      </div>
+
+      <!-- ── STUDENTS (Admin) ── -->
+      <div id="page-students" class="page fade-in hidden">
+        <div class="flex jc-between ai-center" style="margin-bottom:20px;flex-wrap:wrap;gap:10px">
+          <h2 style="color:#fff;font-size:22px;font-weight:800">🎒 จัดการนักเรียน</h2>
+          <button class="btn btn-primary" style="padding:9px 18px;font-size:13px" onclick="openStudentModal()">+ เพิ่มนักเรียน</button>
+        </div>
+        <input class="ifield" id="student-search" placeholder="🔍 ค้นหาชื่อ / ห้อง..."
+          style="margin-bottom:16px" oninput="renderStudentList()"/>
+        <div id="student-list"></div>
+      </div>
+
+      <!-- ── ROOMS (Admin) ── -->
+      <div id="page-rooms" class="page fade-in hidden">
+        <h2 style="color:#fff;font-size:22px;font-weight:800;margin-bottom:20px">🏫 ห้องเรียน</h2>
+        <div id="rooms-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px"></div>
+      </div>
+
+    </div><!-- main-content -->
+  </div><!-- app-layout -->
+</div><!-- main-app -->
+
+<!-- Note modal -->
+<div id="note-modal" class="modal-bg hidden">
+  <div class="modal">
+    <h3 style="color:#fff;margin-bottom:14px;font-size:15px">📝 บันทึกหมายเหตุ</h3>
+    <textarea id="note-input" rows="3" placeholder="กรอกหมายเหตุ..."
+      style="width:100%;padding:10px 12px;border-radius:8px;background:rgba(255,255,255,.06);
+             border:1px solid rgba(255,255,255,.1);color:#fff;font-size:13px;resize:none;font-family:Sarabun,sans-serif;outline:none"></textarea>
+    <div class="flex gap8" style="margin-top:12px">
+      <button class="btn btn-primary" style="flex:1;padding:9px" onclick="saveNote()">บันทึก</button>
+      <button class="btn btn-ghost" style="padding:9px 16px" onclick="closeNoteModal()">ยกเลิก</button>
+    </div>
+  </div>
+</div>
+
+<!-- Student modal -->
+<div id="student-modal" class="modal-bg hidden">
+  <div class="modal" style="max-width:360px">
+    <h3 id="smodal-title" style="color:#fff;margin-bottom:18px;font-size:16px;font-weight:800">➕ เพิ่มนักเรียน</h3>
+    <input type="hidden" id="smodal-id"/>
+    <div style="margin-bottom:12px"><label>ชื่อ-สกุล</label><input class="ifield" id="smodal-name" placeholder="เด็กชาย/หญิง..."/></div>
+    <div style="margin-bottom:12px"><label>ชื่อเล่น</label><input class="ifield" id="smodal-nick" placeholder="ชื่อเล่น"/></div>
+    <div style="margin-bottom:18px">
+      <label>ห้องเรียน</label>
+      <select class="ifield" id="smodal-room">
+        <option value="ป.1/1">ป.1/1</option><option value="ป.2/1">ป.2/1</option>
+        <option value="ป.3/1">ป.3/1</option><option value="ป.4/1">ป.4/1</option>
+        <option value="ป.5/1">ป.5/1</option><option value="ป.6/1">ป.6/1</option>
+      </select>
+    </div>
+    <div style="margin-bottom:18px">
+      <label>รูปภาพ (อีโมจิ)</label>
+      <div class="flex gap8" style="flex-wrap:wrap;margin-top:6px">
+        <button class="btn" onclick="setEmoji('👦')" style="font-size:22px;padding:6px 10px;background:rgba(255,255,255,.06);border:2px solid rgba(255,255,255,.1);border-radius:8px" id="emoji-👦">👦</button>
+        <button class="btn" onclick="setEmoji('👧')" style="font-size:22px;padding:6px 10px;background:rgba(255,255,255,.06);border:2px solid rgba(255,255,255,.1);border-radius:8px" id="emoji-👧">👧</button>
+        <button class="btn" onclick="setEmoji('🧒')" style="font-size:22px;padding:6px 10px;background:rgba(255,255,255,.06);border:2px solid rgba(255,255,255,.1);border-radius:8px" id="emoji-🧒">🧒</button>
+        <button class="btn" onclick="setEmoji('👶')" style="font-size:22px;padding:6px 10px;background:rgba(255,255,255,.06);border:2px solid rgba(255,255,255,.1);border-radius:8px" id="emoji-👶">👶</button>
+      </div>
+    </div>
+    <div class="flex gap8">
+      <button class="btn btn-primary" style="flex:1;padding:10px" onclick="saveStudent()">บันทึก</button>
+      <button class="btn btn-ghost" style="padding:10px 16px" onclick="closeStudentModal()">ยกเลิก</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="toast hidden"></div>
+
+<script>
+// ══════════════════════════════════════════
+// FIREBASE INIT — เหมือนแอปธนาคารขยะ
+// ══════════════════════════════════════════
+const ROOMS = ['ป.1/1','ป.2/1','ป.3/1','ป.4/1','ป.5/1','ป.6/1'];
+const ROOM_COLORS = {'ป.1/1':'#3b82f6','ป.2/1':'#8b5cf6','ป.3/1':'#14b8a6','ป.4/1':'#16a34a','ป.5/1':'#f43f5e','ป.6/1':'#6366f1'};
+const STATUS_CFG = {
+  present:{ label:'มาเรียน', icon:'✓', cls:'s-present' },
+  absent: { label:'ขาด',    icon:'✗', cls:'s-absent' },
+  late:   { label:'มาสาย', icon:'⏱', cls:'s-late' },
+  leave:  { label:'ลา',    icon:'📋', cls:'s-leave' },
+};
+const MONTH_NAMES = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+
+let db, auth;
+let currentUser = null, currentRole = 'teacher', currentName = '';
+let students = [], attendance = {}, noteTargetId = null;
+let selectedEmoji = '👦';
+
+// ── Load saved config ──
+function getSavedConfig() {
+  try { return JSON.parse(localStorage.getItem('fbConfig') || 'null'); } catch { return null; }
+}
+
+function initFirebase(config) {
+  if (firebase.apps.length) return; // ไม่ init ซ้ำ
+  firebase.initializeApp(config);
+  db   = firebase.firestore();
+  auth = firebase.auth();
+}
+
+// ── App start ──
+(function start() {
+  const cfg = getSavedConfig();
+  if (!cfg || !cfg.apiKey) {
+    show('setup-page');
+  } else {
+    try {
+      initFirebase(cfg);
+      document.getElementById('fb-project-badge').textContent = '🔥 Firebase · ' + (cfg.projectId || '');
+      show('login-page');
+      setupAuthListener();
+    } catch(e) {
+      show('setup-page');
+    }
+  }
+})();
+
+function setupAuthListener() {
+  // เหมือนแอปธนาคารขยะ — auth.onAuthStateChanged
+  auth.onAuthStateChanged(async user => {
+    if (user) {
+      currentUser = user;
+      // ดึง role จาก Firestore users/{uid} (เหมือน Realtime DB ของธนาคารขยะ)
+      try {
+        const snap = await db.collection('users').doc(user.uid).get();
+        if (snap.exists) {
+          const d = snap.data();
+          currentRole = d.role || 'teacher';
+          currentName = d.name || user.email;
+        } else {
+          // สร้าง user ใหม่
+          currentRole = 'teacher';
+          currentName = user.displayName || user.email;
+          await db.collection('users').doc(user.uid).set({
+            email: user.email, name: currentName, role: currentRole
+          });
+        }
+      } catch(e) {
+        currentRole = 'teacher';
+        currentName = user.email;
+      }
+      showApp();
+    } else {
+      showLogin();
+    }
+  });
+}
+
+// ══════════════════════════════════════════
+// CONFIG SETUP
+// ══════════════════════════════════════════
+async function testConfig() {
+  const cfg = readConfigForm();
+  if (!cfg.apiKey || !cfg.projectId) {
+    showSetupErr('กรุณากรอก API Key และ Project ID ก่อน'); return;
+  }
+  const btn = document.getElementById('test-cfg-btn');
+  btn.textContent = '⏳ กำลังทดสอบ…'; btn.disabled = true;
+  try {
+    if (!firebase.apps.length) firebase.initializeApp(cfg);
+    await firebase.auth().signInAnonymously().catch(() => {}); // แค่ทดสอบ init
+    showSetupErr('✅ เชื่อมต่อ Firebase สำเร็จ!', true);
+  } catch(e) {
+    showSetupErr('❌ ' + e.message);
+  }
+  btn.textContent = 'ทดสอบการเชื่อมต่อ'; btn.disabled = false;
+}
+
+function saveConfig() {
+  const cfg = readConfigForm();
+  if (!cfg.apiKey || !cfg.projectId) { showSetupErr('กรุณากรอก API Key และ Project ID'); return; }
+  localStorage.setItem('fbConfig', JSON.stringify(cfg));
+  location.reload();
+}
+
+function readConfigForm() {
+  return {
+    apiKey:            document.getElementById('cfg-apiKey').value.trim(),
+    authDomain:        document.getElementById('cfg-authDomain').value.trim(),
+    projectId:         document.getElementById('cfg-projectId').value.trim(),
+    databaseURL:       document.getElementById('cfg-databaseURL').value.trim(),
+    storageBucket:     document.getElementById('cfg-storageBucket').value.trim(),
+    messagingSenderId: document.getElementById('cfg-messagingSenderId').value.trim(),
+    appId:             document.getElementById('cfg-appId').value.trim(),
+  };
+}
+
+function showSetupErr(msg, ok=false) {
+  const el = document.getElementById('setup-err');
+  el.textContent = msg;
+  el.style.background = ok ? 'rgba(34,197,94,.1)' : 'rgba(239,68,68,.1)';
+  el.style.borderColor = ok ? 'rgba(34,197,94,.3)' : 'rgba(239,68,68,.25)';
+  el.style.color = ok ? '#22c55e' : '#ef4444';
+  el.classList.remove('hidden');
+}
+
+function resetConfig() {
+  localStorage.removeItem('fbConfig');
+  location.reload();
+}
+
+// ══════════════════════════════════════════
+// AUTH — เหมือนแอปธนาคารขยะ
+// ══════════════════════════════════════════
+async function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const pass  = document.getElementById('login-pass').value;
+  const errEl = document.getElementById('login-err');
+  errEl.classList.add('hidden');
+
+  if (!email || !pass) { showLoginErr('กรุณากรอกอีเมลและรหัสผ่าน'); return; }
+
+  const btn = document.getElementById('login-btn');
+  btn.textContent = '⏳ กำลังเข้าสู่ระบบ…'; btn.disabled = true;
+
+  try {
+    // signInWithEmailAndPassword เหมือนธนาคารขยะ
+    await auth.signInWithEmailAndPassword(email, pass);
+    // auth.onAuthStateChanged จะจัดการต่อเอง
+  } catch(e) {
+    const errMap = {
+      'auth/invalid-credential':     'อีเมลหรือรหัสผ่านไม่ถูกต้อง',
+      'auth/user-not-found':         'ไม่พบบัญชีผู้ใช้นี้',
+      'auth/wrong-password':         'รหัสผ่านไม่ถูกต้อง',
+      'auth/too-many-requests':      'ลองบ่อยเกินไป กรุณารอสักครู่',
+      'auth/network-request-failed': 'ไม่มีการเชื่อมต่ออินเทอร์เน็ต',
+      'auth/invalid-email':          'รูปแบบอีเมลไม่ถูกต้อง',
+    };
+    showLoginErr(errMap[e.code] || 'เกิดข้อผิดพลาด: ' + e.message);
+    btn.textContent = '🔐 เข้าสู่ระบบ'; btn.disabled = false;
+  }
+}
+
+function doLogout() {
+  auth.signOut();
+}
+
+function showLogin() {
+  hide('main-app'); show('login-page');
+  students = []; attendance = {};
+}
+
+function showApp() {
+  hide('login-page');
+  show('main-app');
+
+  // Set user info
+  document.getElementById('user-badge').textContent =
+    (currentRole==='admin'?'👑 แอดมิน':'👩‍🏫 ครู') + ' ' + currentName;
+  document.getElementById('user-name-sb').textContent = currentName;
+  document.getElementById('user-role-sb').textContent = currentRole==='admin'?'ผู้ดูแลระบบ':'ครูประจำชั้น';
+  document.getElementById('user-avatar').textContent = currentName[0] || '?';
+  document.getElementById('header-sub').textContent = currentRole==='admin'?'ผู้ดูแลระบบ':'ครูประจำชั้น';
+
+  // Admin-only menu
+  if (currentRole==='admin') {
+    document.querySelectorAll('.admin-only').forEach(el=>el.classList.remove('hidden'));
+  }
+
+  // ตั้ง room-select ตาม role
+  if (currentRole !== 'admin') {
+    // ครูเห็น dropdown เลือกห้องเหมือนกัน แต่ถ้ามี room ใน profile จะ auto-select
+    // (ใน production จะดึงจาก users/{uid}.room)
+  }
+
+  // Set today label
+  const now = new Date();
+  document.getElementById('today-label').textContent =
+    now.toLocaleDateString('th-TH',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+
+  // Set history month default
+  const y = now.getFullYear(), m = String(now.getMonth()+1).padStart(2,'0');
+  document.getElementById('hist-month').value = `${y}-${m}`;
+
+  initStudentData();
+  showPage('attendance');
+  renderDashboard();
+  renderRooms();
+}
+
+function showLoginErr(msg) {
+  const el = document.getElementById('login-err');
+  el.textContent = msg; el.classList.remove('hidden');
+}
+
+function togglePwd() {
+  const inp = document.getElementById('login-pass');
+  const eye = document.getElementById('pwd-eye');
+  inp.type = inp.type==='password' ? 'text' : 'password';
+  eye.textContent = inp.type==='password' ? '👁' : '🙈';
+}
+
+// ══════════════════════════════════════════
+// MOCK DATA (ใช้จนกว่าจะเชื่อม Firestore จริง)
+// ══════════════════════════════════════════
+const MOCK_STUDENTS_DB = [
+  {id:'s01',name:'เด็กชายสมชาย ใจดี',      nick:'ชาย',  room:'ป.4/1',photo:'👦'},
+  {id:'s02',name:'เด็กหญิงสมหญิง รักเรียน',nick:'หญิง', room:'ป.4/1',photo:'👧'},
+  {id:'s03',name:'เด็กชายวิชัย มานะ',       nick:'วิ',   room:'ป.4/1',photo:'👦'},
+  {id:'s04',name:'เด็กหญิงพิมพ์ใจ สุขสันต์',nick:'พิม', room:'ป.4/1',photo:'👧'},
+  {id:'s05',name:'เด็กชายธนกร ชาญชัย',      nick:'ต้น',  room:'ป.4/1',photo:'👦'},
+  {id:'s06',name:'เด็กหญิงนภา แสงจันทร์',   nick:'นภา',  room:'ป.4/1',photo:'👧'},
+  {id:'s07',name:'เด็กชายปัญญา เก่งกล้า',   nick:'ปัน',  room:'ป.4/1',photo:'👦'},
+  {id:'s08',name:'เด็กหญิงกัญญา ทองดี',     nick:'กัน',  room:'ป.4/1',photo:'👧'},
+  {id:'s09',name:'เด็กชายภูมิ รุ่งเรือง',   nick:'ภูมิ', room:'ป.4/1',photo:'👦'},
+  {id:'s10',name:'เด็กหญิงดาว ฟ้าใส',       nick:'ดาว',  room:'ป.4/1',photo:'👧'},
+  {id:'s11',name:'เด็กชายอนุชา ขยันดี',     nick:'อนุ',  room:'ป.4/1',photo:'👦'},
+  {id:'s12',name:'เด็กหญิงมาลี บุญมี',      nick:'มาลี', room:'ป.4/1',photo:'👧'},
+];
+const MOCK_HISTORY_DB = [
+  {date:'2025-03-07',room:'ป.4/1',present:12,absent:0,late:0,leave:0},
+  {date:'2025-03-06',room:'ป.4/1',present:10,absent:1,late:0,leave:1},
+  {date:'2025-03-05',room:'ป.4/1',present:11,absent:0,late:1,leave:0},
+  {date:'2025-03-04',room:'ป.4/1',present:9, absent:2,late:0,leave:1},
+  {date:'2025-03-03',room:'ป.4/1',present:12,absent:0,late:0,leave:0},
+  {date:'2025-03-02',room:'ป.4/1',present:10,absent:1,late:1,leave:0},
+  {date:'2025-03-01',room:'ป.4/1',present:11,absent:1,late:0,leave:0},
+];
+const MOCK_ROOM_STATS = [
+  {room:'ป.1/1',rate:96,students:22,teacher:'ครูมาลี สุขใจ'},
+  {room:'ป.2/1',rate:91,students:24,teacher:'ครูสมชาย ดีมาก'},
+  {room:'ป.3/1',rate:88,students:20,teacher:'ครูวาสนา งามใจ'},
+  {room:'ป.4/1',rate:94,students:22,teacher:'ครูสมศรี มีสุข'},
+  {room:'ป.5/1',rate:97,students:18,teacher:'ครูธนวัฒน์ ชัยดี'},
+  {room:'ป.6/1',rate:92,students:21,teacher:'ครูพัชรี ใจดี'},
+];
+
+// ══════════════════════════════════════════
+// ATTENDANCE PAGE
+// ══════════════════════════════════════════
+function initStudentData() {
+  students = MOCK_STUDENTS_DB.map(s=>({...s,status:null,note:''}));
+  attendance = {};
+  loadStudents();
+}
+
+function loadStudents() {
+  const room = document.getElementById('room-select').value;
+  const list = students.filter(s=>s.room===room);
+  renderStudentGrid(list);
+  updateSummary(list);
+}
+
+function renderStudentGrid(list) {
+  const grid = document.getElementById('student-grid');
+  if (!list.length) {
+    grid.innerHTML = '<p style="color:#4a7098;font-size:14px">ไม่มีนักเรียนในห้องนี้</p>'; return;
+  }
+  grid.innerHTML = list.map(s => {
+    const cfg = s.status ? STATUS_CFG[s.status] : null;
+    const bc = cfg ? `border-color:${statusColor(s.status)}44` : '';
+    const bg = cfg ? `background:${statusBg(s.status)}` : 'background:#0f2033';
+    return `<div id="card-${s.id}" style="${bg};border:1px solid rgba(255,255,255,.07);${bc};border-radius:14px;padding:14px 14px 10px;transition:all .18s">
+      <div class="flex ai-center gap8" style="margin-bottom:10px">
+        <div style="width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+          font-size:22px;flex-shrink:0;
+          background:${cfg?statusColor(s.status)+'22':'rgba(255,255,255,.06)'};
+          border:2px solid ${cfg?statusColor(s.status)+'44':'rgba(255,255,255,.1)'}">
+          ${s.photo}
+        </div>
+        <div style="flex:1;overflow:hidden">
+          <div style="color:#fff;font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${s.name}</div>
+          <div style="color:#4a7098;font-size:11px">(${s.nick}) • เลขที่ ${s.id.replace('s','')}</div>
+        </div>
+      </div>
+      <div class="status-grid">
+        ${Object.entries(STATUS_CFG).map(([key,c])=>`
+          <button class="status-btn ${c.cls}${s.status===key?' on':''}" onclick="setStatus('${s.id}','${key}')">
+            ${c.icon} ${c.label}
+          </button>`).join('')}
+      </div>
+      ${s.note?`<div style="margin-top:6px;color:#4a7098;font-size:10px">📝 ${s.note}</div>`:''}
+      <button class="btn" onclick="openNoteModal('${s.id}')"
+        style="margin-top:6px;background:none;border:none;color:#4a7098;font-size:10px;padding:0;cursor:pointer">
+        + บันทึกหมายเหตุ
+      </button>
+    </div>`;
+  }).join('');
+}
+
+function setStatus(id, status) {
+  const s = students.find(x=>x.id===id);
+  if (!s) return;
+  s.status = s.status===status ? null : status;
+  loadStudents();
+}
+
+function markAll(status) {
+  const room = document.getElementById('room-select').value;
+  students.filter(s=>s.room===room).forEach(s=>s.status=status);
+  loadStudents();
+}
+
+function updateSummary(list) {
+  const cnt = { present:0, absent:0, late:0, leave:0 };
+  list.forEach(s=>{ if(s.status) cnt[s.status]++; });
+  const checked = Object.values(cnt).reduce((a,b)=>a+b,0);
+  const total = list.length;
+  const colors = { present:'#22c55e', absent:'#ef4444', late:'#f59e0b', leave:'#60a5fa' };
+  const bgs    = { present:'#052e16', absent:'#2d0707', late:'#2d1a00', leave:'#07192d' };
+
+  document.getElementById('summary-cards').innerHTML =
+    Object.entries(STATUS_CFG).map(([key,c])=>`
+      <div style="background:${bgs[key]};border:1px solid ${colors[key]}33;border-radius:12px;padding:12px 14px;text-align:center">
+        <div style="color:${colors[key]};font-size:22px;font-weight:800">${cnt[key]}</div>
+        <div style="color:${colors[key]};font-size:11px;opacity:.8">${c.label}</div>
+      </div>`).join('') +
+    `<div style="background:#0f2033;border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:12px 14px;text-align:center">
+      <div style="color:#60a5fa;font-size:22px;font-weight:800">${total}</div>
+      <div style="color:#4a7098;font-size:11px">ทั้งหมด</div>
+    </div>`;
+
+  document.getElementById('progress-label').textContent = `${checked} / ${total} คน`;
+  document.getElementById('progress-fill').style.width = total ? `${(checked/total)*100}%` : '0%';
+}
+
+function saveAttendance() {
+  const btn = document.getElementById('save-btn');
+  btn.textContent = '✓ บันทึกแล้ว';
+  btn.style.background = '#052e16';
+  btn.style.border = '1px solid #22c55e';
+  btn.style.color = '#22c55e';
+  showToast('บันทึกการเช็คชื่อเรียบร้อย ✅');
+  setTimeout(() => {
+    btn.textContent = 'บันทึก';
+    btn.style.background = '';
+    btn.style.border = '';
+    btn.style.color = '';
+  }, 3000);
+}
+
+// ══════════════════════════════════════════
+// NOTE MODAL
+// ══════════════════════════════════════════
+function openNoteModal(id) {
+  noteTargetId = id;
+  const s = students.find(x=>x.id===id);
+  document.getElementById('note-input').value = s?.note || '';
+  document.getElementById('note-modal').classList.remove('hidden');
+}
+function closeNoteModal() {
+  document.getElementById('note-modal').classList.add('hidden');
+  noteTargetId = null;
+}
+function saveNote() {
+  if (!noteTargetId) return;
+  const s = students.find(x=>x.id===noteTargetId);
+  if (s) s.note = document.getElementById('note-input').value;
+  closeNoteModal();
+  loadStudents();
+}
+
+// ══════════════════════════════════════════
+// HISTORY PAGE
+// ══════════════════════════════════════════
+function loadHistory() {
+  const room  = document.getElementById('hist-room').value;
+  const month = document.getElementById('hist-month').value; // yyyy-mm
+  let list = MOCK_HISTORY_DB;
+  if (room)  list = list.filter(h=>h.room===room);
+  if (month) list = list.filter(h=>h.date.startsWith(month));
+  const el = document.getElementById('history-list');
+  if (!list.length) { el.innerHTML='<p style="text-align:center;color:#4a7098;padding:40px">ไม่มีข้อมูล</p>'; return; }
+  el.innerHTML = list.map(h => {
+    const total = h.present+h.absent+h.late+h.leave;
+    const rate = Math.round((h.present/total)*100);
+    const rateColor = rate>=90?'#22c55e':rate>=75?'#f59e0b':'#ef4444';
+    const d = new Date(h.date);
+    const dateStr = d.toLocaleDateString('th-TH',{weekday:'short',day:'numeric',month:'short'});
+    return `<div class="card flex ai-center gap12" style="margin-bottom:10px;flex-wrap:wrap">
+      <div style="min-width:90px">
+        <div style="color:#fff;font-weight:700;font-size:14px">${dateStr}</div>
+        <div style="color:#4a7098;font-size:11px">${h.date}</div>
+        <span class="room-tag" style="background:${ROOM_COLORS[h.room]||'#64748b'}22;color:${ROOM_COLORS[h.room]||'#64748b'};border:1px solid ${ROOM_COLORS[h.room]||'#64748b'}44;margin-top:4px">${h.room}</span>
+      </div>
+      <div class="flex gap12" style="flex:1;flex-wrap:wrap">
+        <div class="flex ai-center gap4"><span style="color:#22c55e">✓</span><span style="color:#22c55e;font-weight:700;font-size:15px">${h.present}</span><span style="color:#4a7098;font-size:11px">มา</span></div>
+        <div class="flex ai-center gap4"><span style="color:#ef4444">✗</span><span style="color:#ef4444;font-weight:700;font-size:15px">${h.absent}</span><span style="color:#4a7098;font-size:11px">ขาด</span></div>
+        <div class="flex ai-center gap4"><span style="color:#f59e0b">⏱</span><span style="color:#f59e0b;font-weight:700;font-size:15px">${h.late}</span><span style="color:#4a7098;font-size:11px">สาย</span></div>
+        <div class="flex ai-center gap4"><span style="color:#60a5fa">📋</span><span style="color:#60a5fa;font-weight:700;font-size:15px">${h.leave}</span><span style="color:#4a7098;font-size:11px">ลา</span></div>
+      </div>
+      <div style="text-align:right">
+        <div style="color:${rateColor};font-weight:800;font-size:20px">${rate}%</div>
+        <div style="color:#4a7098;font-size:10px">เข้าเรียน</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════
+// DASHBOARD PAGE
+// ══════════════════════════════════════════
+function renderDashboard() {
+  const monthStats = MONTH_NAMES.map((m,i)=>({ month:m, rate:[94,91,96,88,93,97][i]||0 }));
+  const avg = Math.round(monthStats.reduce((a,b)=>a+b.rate,0)/monthStats.length);
+
+  document.getElementById('kpi-cards').innerHTML = [
+    {label:'อัตราการมาเรียน',value:`${avg}%`,icon:'📈',color:'#22c55e'},
+    {label:'นักเรียนทั้งหมด', value:'72',     icon:'🎒',color:'#4ea8de'},
+    {label:'ห้องเรียน',        value:'6',      icon:'🏫',color:'#c77dff'},
+    {label:'ขาดเรียนวันนี้',   value:'3',      icon:'⚠️',color:'#f59e0b'},
+  ].map(k=>`
+    <div class="card" style="border-color:${k.color}22">
+      <div style="font-size:26px;margin-bottom:8px">${k.icon}</div>
+      <div style="color:${k.color};font-size:26px;font-weight:800">${k.value}</div>
+      <div style="color:#4a7098;font-size:11px;margin-top:2px">${k.label}</div>
+    </div>`).join('');
+
+  document.getElementById('month-chart').innerHTML = monthStats.map(m=>{
+    const h = (m.rate/100)*120;
+    const color = m.rate>=95?'#22c55e':m.rate>=90?'#4ea8de':'#f59e0b';
+    return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+      <span style="color:${color};font-size:10px;font-weight:700">${m.rate}%</span>
+      <div style="width:100%;height:${h}px;border-radius:6px 6px 0 0;background:linear-gradient(180deg,${color},${color}88)"></div>
+      <span style="color:#4a7098;font-size:10px">${m.month}</span>
+    </div>`;
+  }).join('');
+
+  const maxRate = Math.max(...MOCK_ROOM_STATS.map(r=>r.rate));
+  document.getElementById('room-stats').innerHTML = MOCK_ROOM_STATS.map(r=>{
+    const color = r.rate>=95?'#22c55e':r.rate>=90?'#4ea8de':'#f59e0b';
+    return `<div style="margin-bottom:10px">
+      <div class="flex ai-center gap8" style="margin-bottom:4px">
+        <span class="room-tag" style="background:${ROOM_COLORS[r.room]||'#4a7098'}22;color:${ROOM_COLORS[r.room]||'#4a7098'};min-width:50px;text-align:center">${r.room}</span>
+        <span style="flex:1"></span>
+        <span style="color:${color};font-weight:700;font-size:13px">${r.rate}%</span>
+        <span style="color:#4a7098;font-size:11px">${r.students} คน</span>
+      </div>
+      <div class="bar-bg"><div class="bar-fill" style="width:${r.rate}%;background:${color}"></div></div>
+    </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════
+// STUDENTS PAGE (Admin)
+// ══════════════════════════════════════════
+function renderStudentList() {
+  const q = (document.getElementById('student-search')?.value || '').toLowerCase();
+  const list = MOCK_STUDENTS_DB.filter(s=>s.name.toLowerCase().includes(q)||s.room.includes(q));
+  document.getElementById('student-list').innerHTML = list.length
+    ? `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px">${
+        list.map(s=>`
+          <div class="card" style="display:flex;flex-direction:column;gap:10px">
+            <div class="flex ai-center gap10">
+              <div style="width:44px;height:44px;border-radius:50%;background:rgba(29,111,164,.2);border:2px solid #1d6fa455;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0">${s.photo}</div>
+              <div>
+                <div style="color:#fff;font-weight:700;font-size:13px">${s.name}</div>
+                <div style="color:#4a7098;font-size:11px">(${s.nick}) · <span class="room-tag" style="background:${ROOM_COLORS[s.room]||'#4a7098'}22;color:${ROOM_COLORS[s.room]||'#4a7098'}">${s.room}</span></div>
+              </div>
+            </div>
+            <div class="flex gap8">
+              <button class="btn btn-outline" style="flex:1;padding:6px;font-size:12px" onclick="openStudentModal('${s.id}')">✏️ แก้ไข</button>
+              <button class="btn btn-danger" style="flex:1;padding:6px;font-size:12px" onclick="deleteStudent('${s.id}')">🗑️ ลบ</button>
+            </div>
+          </div>`).join('')
+      }</div>`
+    : '<p style="color:#4a7098;text-align:center;padding:40px">ไม่พบนักเรียน</p>';
+}
+
+let selectedStudentId = null;
+function openStudentModal(id) {
+  selectedStudentId = id || null;
+  const s = id ? MOCK_STUDENTS_DB.find(x=>x.id===id) : null;
+  document.getElementById('smodal-title').textContent = id ? '✏️ แก้ไขข้อมูล' : '➕ เพิ่มนักเรียน';
+  document.getElementById('smodal-name').value  = s?.name || '';
+  document.getElementById('smodal-nick').value  = s?.nick || '';
+  document.getElementById('smodal-room').value  = s?.room || 'ป.4/1';
+  setEmoji(s?.photo || '👦');
+  document.getElementById('student-modal').classList.remove('hidden');
+}
+function closeStudentModal() { document.getElementById('student-modal').classList.add('hidden'); }
+function setEmoji(e) {
+  selectedEmoji = e;
+  ['👦','👧','🧒','👶'].forEach(em=>{
+    const btn = document.getElementById('emoji-'+em);
+    if (btn) { btn.style.borderColor = em===e?'#1d6fa4':'rgba(255,255,255,.1)'; btn.style.background = em===e?'rgba(29,111,164,.3)':'rgba(255,255,255,.06)'; }
+  });
+}
+function saveStudent() {
+  const name = document.getElementById('smodal-name').value.trim();
+  if (!name) { showToast('กรุณากรอกชื่อ','error'); return; }
+  showToast(selectedStudentId?'แก้ไขเรียบร้อย ✅':'เพิ่มนักเรียนเรียบร้อย ✅');
+  closeStudentModal();
+  renderStudentList();
+}
+function deleteStudent(id) { showToast('ลบเรียบร้อย'); }
+
+// ══════════════════════════════════════════
+// ROOMS PAGE
+// ══════════════════════════════════════════
+function renderRooms() {
+  document.getElementById('rooms-list').innerHTML = MOCK_ROOM_STATS.map(r=>{
+    const color = r.rate>=95?'#22c55e':r.rate>=90?'#4ea8de':'#f59e0b';
+    return `<div class="card" style="cursor:pointer;transition:transform .2s,box-shadow .2s" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform=''">
+      <div class="flex jc-between ai-center" style="margin-bottom:12px">
+        <div>
+          <div style="color:#fff;font-weight:800;font-size:20px">${r.room}</div>
+          <div style="color:#4a7098;font-size:12px;margin-top:2px">👩‍🏫 ${r.teacher}</div>
+        </div>
+        <div style="background:${color}22;border:1px solid ${color}44;border-radius:8px;padding:4px 10px;color:${color};font-size:14px;font-weight:800">${r.rate}%</div>
+      </div>
+      <div class="flex ai-center gap12" style="margin-bottom:10px">
+        <div style="text-align:center"><div style="color:#4ea8de;font-weight:800;font-size:18px">${r.students}</div><div style="color:#4a7098;font-size:10px">นักเรียน</div></div>
+        <div style="flex:1"><div class="bar-bg"><div class="bar-fill" style="width:${r.rate}%;background:${color}"></div></div></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════
+function showPage(p) {
+  ['attendance','history','dashboard','students','rooms'].forEach(id=>{
+    document.getElementById('page-'+id)?.classList.toggle('hidden', id!==p);
+    document.getElementById('nav-'+id)?.classList.toggle('active', id===p);
+  });
+  if (p==='history') loadHistory();
+  if (p==='students') renderStudentList();
+}
+
+function toggleSidebar() {
+  const sb = document.getElementById('sidebar');
+  const tog = document.getElementById('sidebar-toggle');
+  sb.classList.toggle('collapsed');
+  tog.textContent = sb.classList.contains('collapsed') ? '▶' : '◀';
+}
+
+// ══════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════
+function statusColor(s) {
+  return {present:'#22c55e',absent:'#ef4444',late:'#f59e0b',leave:'#60a5fa'}[s]||'#fff';
+}
+function statusBg(s) {
+  return {present:'#052e16',absent:'#2d0707',late:'#2d1a00',leave:'#07192d'}[s]||'#0f2033';
+}
+function show(id) { document.getElementById(id)?.classList.remove('hidden'); }
+function hide(id) { document.getElementById(id)?.classList.add('hidden'); }
+
+let _toastTimer;
+function showToast(msg, type='success') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.style.background = type==='error'?'#ef4444':'#16a34a';
+  el.classList.remove('hidden');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(()=>el.classList.add('hidden'), 3000);
+}
+</script>
+</body>
+</html>
