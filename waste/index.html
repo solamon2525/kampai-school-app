@@ -267,6 +267,14 @@ th{background:#f9fafb;font-weight:700;color:#374151}
     <button class="btn btn-blue" style="margin-left:8px" onclick="testLine()">🧪 ทดสอบ</button>
   </div>
 
+  <!-- ซ่อมข้อมูล -->
+  <div class="card">
+    <h3 style="font-size:15px;font-weight:700;margin-bottom:6px">🔧 ซ่อมข้อมูลบันทึก</h3>
+    <p style="font-size:13px;color:#6b7280;margin-bottom:12px">ตรวจหารายการบันทึกที่ผูกกับนักเรียนที่ถูกลบออกจากระบบแล้ว</p>
+    <button class="btn btn-blue" onclick="scanOrphanRecords()">🔍 ตรวจสอบข้อมูล</button>
+    <div id="orphan-result" style="margin-top:12px"></div>
+  </div>
+
   <!-- Audit -->
   <div class="card">
     <h3 style="font-size:15px;font-weight:700;margin-bottom:10px">📜 ประวัติการแก้ไข</h3>
@@ -592,7 +600,98 @@ async function sendLine(msg){if(!lineConfig.n8nUrl||!lineConfig.token)return;try
 async function writeAudit(action,detail){await db.ref('audit').push({action,detail,by:currentName,ts:Date.now(),date:new Date().toISOString()});}
 function renderAudit(){const el=document.getElementById('audit-log');if(!el)return;if(!auditLogs.length){el.innerHTML='<p style="color:#9ca3af;font-size:13px">ยังไม่มีประวัติ</p>';return;}el.innerHTML=`<div class="tbl-wrap"><table><thead><tr><th>วันที่</th><th>การกระทำ</th><th>รายละเอียด</th><th>โดย</th></tr></thead><tbody>`+auditLogs.slice(0,50).map(l=>`<tr><td style="white-space:nowrap">${fmtDT(l.date)}</td><td>${l.action}</td><td>${l.detail}</td><td>${l.by}</td></tr>`).join('')+`</tbody></table></div>`;}
 
-// ── Export CSV ──
+// ── Orphan Records ──
+function scanOrphanRecords(){
+  const memberIds=new Set(members.map(m=>m.fbKey));
+  // records ที่มี member_id แต่ไม่มีใน members แล้ว
+  const orphans=records.filter(r=>r.member_id && !memberIds.has(r.member_id));
+  const el=document.getElementById('orphan-result');
+  if(!orphans.length){
+    el.innerHTML='<div style="background:#f0fdf4;border-radius:8px;padding:12px;color:#16a34a;font-size:14px;font-weight:600">✅ ไม่พบข้อมูลที่มีปัญหา ทุกอย่างปกติ</div>';
+    return;
+  }
+  // จัดกลุ่มตาม member_id เพื่อนับจำนวน
+  const grouped={};
+  orphans.forEach(r=>{
+    if(!grouped[r.member_id]) grouped[r.member_id]={name:r.member_name||'ไม่ระบุ',room:r.member_room||'-',records:[],totalPts:0};
+    grouped[r.member_id].records.push(r);
+    grouped[r.member_id].totalPts+=r.total||0;
+  });
+  let h=`<div style="background:#fef3c7;border-radius:8px;padding:10px 12px;font-size:13px;color:#92400e;margin-bottom:12px">
+    ⚠️ พบ <b>${orphans.length} รายการ</b> ที่ผูกกับนักเรียน <b>${Object.keys(grouped).length} คน</b> ที่ไม่มีในระบบแล้ว
+  </div>`;
+  Object.entries(grouped).forEach(([mid,g])=>{
+    h+=`<div style="border:1.5px solid #fca5a5;border-radius:10px;padding:12px;margin-bottom:10px;background:#fff7f7">
+      <div class="flex gap8 ai-center" style="margin-bottom:8px">
+        <div class="avatar-ph" style="width:36px;height:36px;font-size:14px;background:#ef4444">${g.name[0]}</div>
+        <div style="flex:1">
+          <div style="font-weight:700;font-size:14px;color:#991b1b">${g.name}</div>
+          <div style="font-size:12px;color:#9ca3af">ห้อง: ${g.room} • ${g.records.length} บันทึก • รวม ${g.totalPts} ชิ้น</div>
+        </div>
+      </div>
+      <div style="font-size:12px;color:#6b7280;margin-bottom:10px">ผูกกับ member_id: <code style="background:#f3f4f6;padding:1px 6px;border-radius:4px;font-size:11px">${mid}</code> ซึ่งถูกลบออกจากระบบแล้ว</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <select id="remap-${mid}" style="flex:1;padding:7px 10px;border:1.5px solid #d1d5db;border-radius:8px;font-size:13px;font-family:inherit">
+          <option value="">-- ผูกกับนักเรียนคนใหม่ --</option>
+          ${members.filter(m=>m.type==='student').map(m=>`<option value="${m.fbKey}">${m.name} (${m.room||'-'})</option>`).join('')}
+        </select>
+        <button class="btn btn-blue" style="font-size:13px;padding:7px 12px" onclick="remapOrphan('${mid}')">🔗 ผูกใหม่</button>
+        <button class="btn btn-red" style="font-size:13px;padding:7px 12px" onclick="deleteOrphan('${mid}',${g.records.length})">🗑️ ลบทั้งหมด (${g.records.length})</button>
+      </div>
+    </div>`;
+  });
+  h+=`<button class="btn btn-red btn-full" style="margin-top:4px" onclick="deleteAllOrphans()">🗑️ ลบทั้งหมดที่มีปัญหาเลย (${orphans.length} รายการ)</button>`;
+  el.innerHTML=h;
+}
+
+async function remapOrphan(oldMid){
+  const sel=document.getElementById(`remap-${oldMid}`);
+  const newMid=sel?.value;
+  if(!newMid){showToast('กรุณาเลือกนักเรียนก่อน','error');return;}
+  const newMember=members.find(m=>m.fbKey===newMid);
+  const toRemap=records.filter(r=>r.member_id===oldMid);
+  if(!toRemap.length){showToast('ไม่พบรายการ','error');return;}
+  let totalPts=0;
+  const updates={};
+  toRemap.forEach(r=>{
+    updates[`records/${r.fbKey}/member_id`]=newMid;
+    updates[`records/${r.fbKey}/member_name`]=newMember.name;
+    updates[`records/${r.fbKey}/member_img`]=newMember.img||'';
+    updates[`records/${r.fbKey}/member_room`]=newMember.room||'';
+    updates[`records/${r.fbKey}/member_type`]='student';
+    totalPts+=r.total||0;
+  });
+  await db.ref().update(updates);
+  // อัปเดตแต้ม
+  await db.ref(`members/${newMid}/points`).transaction(p=>(p||0)+totalPts);
+  await writeAudit('remap_records',`ผูก ${toRemap.length} บันทึกของ "${toRemap[0].member_name}" → "${newMember.name}" (${newMember.room})`);
+  showToast(`ผูกข้อมูล ${toRemap.length} รายการ → ${newMember.name} แล้ว ✅`);
+  scanOrphanRecords();
+}
+
+async function deleteOrphan(mid, count){
+  if(!confirm(`ยืนยันลบ ${count} บันทึกของ "${records.find(r=>r.member_id===mid)?.member_name||'?'}" ?\n\nข้อมูลจะหายถาวร`)) return;
+  const toDelete=records.filter(r=>r.member_id===mid);
+  const updates={};
+  toDelete.forEach(r=>{ updates[`records/${r.fbKey}`]=null; });
+  await db.ref().update(updates);
+  await writeAudit('delete_orphan',`ลบ ${toDelete.length} บันทึกของ "${toDelete[0]?.member_name||'?'}" (ไม่มีในระบบ)`);
+  showToast(`ลบ ${toDelete.length} รายการแล้ว`);
+  scanOrphanRecords();
+}
+
+async function deleteAllOrphans(){
+  const memberIds=new Set(members.map(m=>m.fbKey));
+  const orphans=records.filter(r=>r.member_id && !memberIds.has(r.member_id));
+  if(!orphans.length){showToast('ไม่มีข้อมูลให้ลบ');return;}
+  if(!confirm(`ยืนยันลบทั้งหมด ${orphans.length} รายการ ?\n\nข้อมูลจะหายถาวร`)) return;
+  const updates={};
+  orphans.forEach(r=>{ updates[`records/${r.fbKey}`]=null; });
+  await db.ref().update(updates);
+  await writeAudit('delete_all_orphans',`ลบ ${orphans.length} บันทึกที่ไม่มีนักเรียนในระบบ`);
+  showToast(`ลบ ${orphans.length} รายการแล้ว ✅`);
+  document.getElementById('orphan-result').innerHTML='<div style="background:#f0fdf4;border-radius:8px;padding:12px;color:#16a34a;font-size:14px;font-weight:600">✅ ล้างข้อมูลเรียบร้อยแล้ว</div>';
+}
 function downloadCSV(fn,rows){const BOM='\uFEFF',csv=BOM+rows.map(r=>r.map(c=>`"${String(c??'').replace(/"/g,'""')}"`).join(',')).join('\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download=fn;a.click();}
 function exportCSV(){if(!records.length){showToast('ยังไม่มีข้อมูล','error');return;}const h=['วันที่','เวลา','ชื่อ','ห้อง','ขวดพลาสติก','กระป๋อง','กระดาษ','อื่นๆ','รวม','แต้ม','หมายเหตุ','บันทึกโดย'];const rows=records.map(r=>{const d=new Date(r.date);return[d.toLocaleDateString('th-TH'),d.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'}),r.member_name||'ไม่ระบุ',r.member_room||'-',r.plastic||0,r.can||0,r.paper||0,r.other||0,r.total||0,r.pts||0,r.note||'',r.created_name||''];});downloadCSV(`waste_${new Date().toISOString().slice(0,10)}.csv`,[h,...rows]);showToast('Export สำเร็จ ✅');}
 function exportSummaryCSV(){if(!records.length){showToast('ยังไม่มีข้อมูล','error');return;}const h=['ชื่อ','ห้อง','ครั้ง','ขวด','กระป๋อง','กระดาษ','อื่นๆ','รวม','แต้ม'];const rows=members.map(m=>{const recs=records.filter(r=>r.member_id===m.fbKey);return[m.name,m.room||'-',recs.length,recs.reduce((s,r)=>s+(r.plastic||0),0),recs.reduce((s,r)=>s+(r.can||0),0),recs.reduce((s,r)=>s+(r.paper||0),0),recs.reduce((s,r)=>s+(r.other||0),0),recs.reduce((s,r)=>s+(r.total||0),0),m.points||0];}).sort((a,b)=>b[7]-a[7]);downloadCSV(`summary_${new Date().toISOString().slice(0,10)}.csv`,[h,...rows]);showToast('Export สรุปสำเร็จ ✅');}
