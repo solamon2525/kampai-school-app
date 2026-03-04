@@ -148,9 +148,10 @@ body{font-family:Sarabun,sans-serif;min-height:100vh;overflow-x:hidden;backgroun
 .drag-item.drag-over{border-color:#4ade80;background:rgba(74,222,128,.08)}
 .drag-handle{color:#374151;font-size:18px;flex-shrink:0;cursor:grab}
 .drag-icon{font-size:26px;flex-shrink:0}
-.drag-info{flex:1}
+.drag-info{flex:1;min-width:0}
 .drag-title{font-size:14px;font-weight:700;color:var(--text)}
-.drag-sub{font-size:11px;color:var(--muted)}
+.drag-sub{font-size:11px;color:var(--muted);margin-top:2px}
+.drag-sub-url{font-size:10px;color:#475569;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px}
 .drag-toggle{flex-shrink:0}
 .toggle{position:relative;width:42px;height:24px}
 .toggle input{opacity:0;width:0;height:0;position:absolute}
@@ -169,6 +170,19 @@ body{font-family:Sarabun,sans-serif;min-height:100vh;overflow-x:hidden;backgroun
 .drag-edit-btn{flex-shrink:0;background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.2);color:#4ade80;border-radius:8px;padding:5px 10px;font-size:12px;font-weight:700;cursor:pointer;font-family:Sarabun,sans-serif;transition:all .2s}
 .drag-edit-btn:hover{background:rgba(74,222,128,.22)}
 
+/* ─── LIVE TOGGLE SECTION in edit modal ─── */
+.live-toggle-row{display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:14px 16px;margin-bottom:14px}
+.live-toggle-label{display:flex;flex-direction:column;gap:3px}
+.live-toggle-title{font-size:14px;font-weight:700;color:var(--text)}
+.live-toggle-desc{font-size:11px;color:var(--muted)}
+.live-status-badge{display:inline-block;padding:3px 10px;border-radius:8px;font-size:11px;font-weight:700;margin-top:4px;transition:all .3s}
+.live-status-badge.is-live{background:rgba(22,163,74,.2);color:#4ade80;border:1px solid rgba(74,222,128,.3)}
+.live-status-badge.is-soon{background:rgba(255,255,255,.07);color:#64748b;border:1px solid rgba(255,255,255,.1)}
+
+/* url field hint */
+.url-hint{font-size:11px;color:#475569;margin-top:5px;line-height:1.5}
+.url-hint code{background:rgba(255,255,255,.07);padding:1px 6px;border-radius:4px;font-size:11px;color:#94a3b8}
+
 /* emoji picker */
 .emoji-picker-wrap{margin-top:10px}
 .emoji-picker-wrap label{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:8px}
@@ -185,6 +199,10 @@ body{font-family:Sarabun,sans-serif;min-height:100vh;overflow-x:hidden;backgroun
 .emoji-cats{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
 .emoji-cat{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:4px 10px;font-size:12px;color:var(--muted);cursor:pointer;transition:all .2s;font-family:Sarabun,sans-serif}
 .emoji-cat.active{background:rgba(74,222,128,.15);color:#4ade80;border-color:rgba(74,222,128,.3)}
+
+/* section divider in edit modal */
+.edit-section-title{font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:1px;margin:18px 0 10px;display:flex;align-items:center;gap:8px}
+.edit-section-title::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.06)}
 
 /* toast */
 .toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(60px);background:rgba(22,163,74,.92);color:#fff;padding:10px 22px;border-radius:20px;font-size:13px;font-weight:700;z-index:999;transition:transform .3s;backdrop-filter:blur(10px);white-space:nowrap}
@@ -301,7 +319,7 @@ body{font-family:Sarabun,sans-serif;min-height:100vh;overflow-x:hidden;backgroun
 
     <!-- TAB: APPS (drag & drop) -->
     <div class="admin-sec" id="tab-apps">
-      <p style="font-size:12px;color:var(--muted);margin-bottom:12px">⠿ ลากเรียงลำดับ &nbsp;|&nbsp; ✏️ แก้ชื่อ/ไอคอน &nbsp;|&nbsp; toggle ซ่อน/แสดง</p>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:12px">⠿ ลากเรียงลำดับ &nbsp;|&nbsp; ✏️ แก้ไขชื่อ/ไอคอน/URL/สถานะ &nbsp;|&nbsp; toggle ซ่อน/แสดง</p>
       <div class="drag-list" id="drag-list"></div>
       <div class="save-row">
         <button class="btn btn-green" onclick="saveApps()" style="flex:1">💾 บันทึกลำดับแอป</button>
@@ -313,13 +331,13 @@ body{font-family:Sarabun,sans-serif;min-height:100vh;overflow-x:hidden;backgroun
 
 <!-- ════════════════ EDIT APP MODAL ════════════════ -->
 <div class="modal-bg" id="edit-app-modal">
-  <div class="modal" style="max-width:420px">
+  <div class="modal" style="max-width:440px">
     <button class="modal-close" onclick="closeModal('edit-app-modal')">✕</button>
     <h2>✏️ แก้ไขแอป</h2>
 
-    <!-- ไอคอน -->
+    <!-- ── ส่วนที่ 1: ไอคอน ── -->
+    <div class="edit-section-title">🎨 ไอคอน</div>
     <div class="emoji-picker-wrap">
-      <label>ไอคอน Emoji</label>
       <div class="emoji-current">
         <div class="emoji-current-icon" id="edit-icon-preview">❓</div>
         <div class="emoji-current-hint">พิมพ์ emoji ในช่องด้านล่าง<br>หรือเลือกจากรายการ</div>
@@ -332,15 +350,41 @@ body{font-family:Sarabun,sans-serif;min-height:100vh;overflow-x:hidden;backgroun
       <div class="emoji-grid" id="emoji-grid"></div>
     </div>
 
-    <!-- ชื่อ -->
-    <div class="field-row" style="margin-top:16px">
+    <!-- ── ส่วนที่ 2: ข้อมูลแอป ── -->
+    <div class="edit-section-title" style="margin-top:20px">📝 ข้อมูลแอป</div>
+    <div class="field-row">
       <label>ชื่อแอป</label>
       <input id="edit-app-name" placeholder="ชื่อแอป..."/>
     </div>
-    <!-- คำอธิบาย -->
     <div class="field-row">
       <label>คำอธิบาย</label>
       <input id="edit-app-desc" placeholder="คำอธิบายสั้นๆ..."/>
+    </div>
+
+    <!-- ── ส่วนที่ 3: URL ── -->
+    <div class="edit-section-title">🔗 ลิงก์ URL</div>
+    <div class="field-row">
+      <label>URL ของแอป</label>
+      <input id="edit-app-url" placeholder="https://... หรือ path/to/page.html"/>
+      <div class="url-hint">
+        ใส่ URL เต็ม เช่น <code>https://example.com</code><br>
+        หรือ path สัมพัทธ์ เช่น <code>waste/index.html</code><br>
+        ใส่ <code>#</code> หากยังไม่มีหน้า
+      </div>
+    </div>
+
+    <!-- ── ส่วนที่ 4: สถานะการใช้งาน ── -->
+    <div class="edit-section-title">⚡ สถานะการใช้งาน</div>
+    <div class="live-toggle-row">
+      <div class="live-toggle-label">
+        <div class="live-toggle-title">เปิดการใช้งาน (Live)</div>
+        <div class="live-toggle-desc">เปิด = แสดงในส่วน "พร้อมใช้งาน" และกดเข้าได้<br>ปิด = แสดงในส่วน "เร็วๆ นี้" และยังกดไม่ได้</div>
+        <span class="live-status-badge is-soon" id="live-status-badge">🔜 เร็วๆ นี้</span>
+      </div>
+      <label class="toggle" style="width:52px;height:28px">
+        <input type="checkbox" id="edit-app-live" onchange="onLiveToggle(this.checked)"/>
+        <span class="toggle-slider"></span>
+      </label>
     </div>
 
     <div class="save-row">
@@ -398,7 +442,7 @@ let cfg = {
   logoData:   null,
   apps:       JSON.parse(JSON.stringify(DEFAULT_APPS))
 };
-let pendingLogoData = null; // base64 รอบันทึก
+let pendingLogoData = null;
 
 // ═══════════════════════════════════════
 //  LOAD CONFIG FROM FIREBASE
@@ -429,7 +473,6 @@ function applyConfig(){
   document.getElementById('main-notice-txt').innerHTML    = cfg.noticeTxt;
   document.getElementById('main-footer').textContent      = cfg.footer;
 
-  // logo
   const logoBox = document.getElementById('main-logo');
   if(cfg.logoData){
     logoBox.innerHTML = `<img src="${cfg.logoData}" alt="logo"/>`;
@@ -437,16 +480,12 @@ function applyConfig(){
     logoBox.innerHTML = `<span id="main-logo-emoji">🏫</span>`;
   }
 
-  // apps
   renderApps(cfg.apps);
 
-  // fill admin text fields if open
   document.getElementById('txt-name').value    = cfg.schoolName;
   document.getElementById('txt-sub').value     = cfg.schoolSub;
   document.getElementById('txt-notice').value  = cfg.noticeTxt.replace(/<[^>]+>/g,'');
   document.getElementById('txt-footer').value  = cfg.footer;
-
-  // update logo preview in admin
   updateAdminLogoPreview(cfg.logoData);
 }
 
@@ -591,7 +630,6 @@ function doLogout(){
 //  ADMIN PANEL OPEN
 // ═══════════════════════════════════════
 function openAdminPanel(){
-  // fill fields
   document.getElementById('txt-name').value    = cfg.schoolName;
   document.getElementById('txt-sub').value     = cfg.schoolSub;
   document.getElementById('txt-notice').value  = cfg.noticeTxt.replace(/<b>/g,'').replace(/<\/b>/g,'');
@@ -670,23 +708,29 @@ let dragSrc=null;
 function buildDragList(apps){
   const list=document.getElementById('drag-list');
   list.innerHTML='';
-  apps.forEach((a,i)=>{
+  apps.forEach(a=>{
     const item=document.createElement('div');
     item.className='drag-item';
     item.draggable=true;
     item.dataset.id=a.id;
+
+    // URL short display
+    const urlShort = a.url && a.url !== '#' ? a.url.replace(/^https?:\/\//,'').substring(0,30)+(a.url.length>30?'…':'') : '—';
+
     item.innerHTML=`
       <span class="drag-handle">⠿</span>
       <span class="drag-icon" id="dicon-${a.id}">${a.icon}</span>
       <div class="drag-info">
         <div class="drag-title" id="dtitle-${a.id}">${a.name}</div>
-        <div class="drag-sub">${a.live?'🟢 พร้อมใช้งาน':'🔜 เร็วๆ นี้'}</div>
+        <div class="drag-sub" id="dsub-${a.id}">${a.live?'🟢 พร้อมใช้งาน':'🔜 เร็วๆ นี้'}</div>
+        <div class="drag-sub-url" id="durl-${a.id}" title="${a.url||'#'}">🔗 ${urlShort}</div>
       </div>
       <button class="drag-edit-btn" onclick="openEditApp('${a.id}')">✏️ แก้ไข</button>
       <label class="toggle drag-toggle">
         <input type="checkbox" ${a.visible?'checked':''} onchange="toggleApp('${a.id}',this.checked)"/>
         <span class="toggle-slider"></span>
       </label>`;
+
     item.addEventListener('dragstart', e=>{ dragSrc=item; item.classList.add('dragging'); e.dataTransfer.effectAllowed='move'; });
     item.addEventListener('dragend',   ()=>{ item.classList.remove('dragging'); document.querySelectorAll('.drag-item').forEach(x=>x.classList.remove('drag-over')); });
     item.addEventListener('dragover',  e=>{ e.preventDefault(); e.dataTransfer.dropEffect='move'; item.classList.add('drag-over'); });
@@ -703,7 +747,6 @@ function toggleApp(id, checked){
 }
 
 async function saveApps(){
-  // read order from DOM
   const items=[...document.getElementById('drag-list').children];
   const newApps=items.map(el=>{
     const id=el.dataset.id;
@@ -750,7 +793,6 @@ function addTouchDrag(item, list){
   });
 }
 
-// close modal on bg click
 document.querySelectorAll('.modal-bg').forEach(bg=>{
   bg.addEventListener('click', e=>{ if(e.target===bg) bg.classList.remove('open'); });
 });
@@ -771,7 +813,6 @@ let currentEmojiCat = Object.keys(EMOJI_CATS)[0];
 let selectedEmoji = '';
 
 function initEmojiPicker(){
-  // categories
   const catWrap = document.getElementById('emoji-cats');
   catWrap.innerHTML='';
   Object.keys(EMOJI_CATS).forEach(cat=>{
@@ -781,7 +822,6 @@ function initEmojiPicker(){
     btn.onclick=()=>{ currentEmojiCat=cat; initEmojiPicker(); };
     catWrap.appendChild(btn);
   });
-  // grid
   const grid=document.getElementById('emoji-grid');
   grid.innerHTML='';
   EMOJI_CATS[currentEmojiCat].forEach(em=>{
@@ -795,22 +835,48 @@ function initEmojiPicker(){
 }
 
 function onEmojiInput(val){
-  // take first emoji-like char
   const em = [...val][0]||'';
   selectedEmoji=em;
   document.getElementById('edit-icon-preview').textContent=em||'❓';
   initEmojiPicker();
 }
 
+// ═══════════════════════════════════════
+//  LIVE TOGGLE in edit modal
+// ═══════════════════════════════════════
+function onLiveToggle(checked){
+  const badge = document.getElementById('live-status-badge');
+  if(checked){
+    badge.textContent = '🟢 พร้อมใช้งาน';
+    badge.className = 'live-status-badge is-live';
+  } else {
+    badge.textContent = '🔜 เร็วๆ นี้';
+    badge.className = 'live-status-badge is-soon';
+  }
+}
+
+// ═══════════════════════════════════════
+//  OPEN / SAVE EDIT APP
+// ═══════════════════════════════════════
 function openEditApp(id){
   currentEditId=id;
   const a=cfg.apps.find(x=>x.id===id);
   if(!a) return;
+
   selectedEmoji=a.icon;
   document.getElementById('edit-icon-preview').textContent=a.icon;
   document.getElementById('edit-icon-input').value=a.icon;
   document.getElementById('edit-app-name').value=a.name;
   document.getElementById('edit-app-desc').value=a.desc;
+
+  // URL
+  document.getElementById('edit-app-url').value = a.url || '#';
+
+  // Live toggle
+  const liveChk = document.getElementById('edit-app-live');
+  liveChk.checked = !!a.live;
+  onLiveToggle(!!a.live);
+
   initEmojiPicker();
   openModal('edit-app-modal');
 }
@@ -818,15 +884,38 @@ function openEditApp(id){
 async function saveEditApp(){
   const a=cfg.apps.find(x=>x.id===currentEditId);
   if(!a) return;
+
   const newIcon = selectedEmoji || a.icon;
   const newName = document.getElementById('edit-app-name').value.trim() || a.name;
   const newDesc = document.getElementById('edit-app-desc').value.trim() || a.desc;
-  a.icon=newIcon; a.name=newName; a.desc=newDesc;
-  // update drag list labels in real-time
-  const di=document.getElementById('dicon-'+currentEditId);
-  const dt=document.getElementById('dtitle-'+currentEditId);
-  if(di) di.textContent=newIcon;
-  if(dt) dt.textContent=newName;
+  const newUrl  = document.getElementById('edit-app-url').value.trim()  || '#';
+  const newLive = document.getElementById('edit-app-live').checked;
+
+  // Update color based on live status (keep original if live, set cc if not)
+  // Keep the original color scheme if it exists and is not 'cc'
+  const newColor = newLive ? (a.color === 'cc' ? 'cg' : a.color) : 'cc';
+
+  a.icon  = newIcon;
+  a.name  = newName;
+  a.desc  = newDesc;
+  a.url   = newUrl;
+  a.live  = newLive;
+  a.color = newColor;
+
+  // Update drag list in real-time
+  const di = document.getElementById('dicon-'+currentEditId);
+  const dt = document.getElementById('dtitle-'+currentEditId);
+  const ds = document.getElementById('dsub-'+currentEditId);
+  const du = document.getElementById('durl-'+currentEditId);
+  if(di) di.textContent = newIcon;
+  if(dt) dt.textContent = newName;
+  if(ds) ds.textContent = newLive ? '🟢 พร้อมใช้งาน' : '🔜 เร็วๆ นี้';
+  if(du){
+    const urlShort = newUrl && newUrl !== '#' ? newUrl.replace(/^https?:\/\//,'').substring(0,30)+(newUrl.length>30?'…':'') : '—';
+    du.textContent = '🔗 '+urlShort;
+    du.title = newUrl;
+  }
+
   try{
     await db.ref('superapp_config/apps').set(cfg.apps);
     renderApps(cfg.apps);
