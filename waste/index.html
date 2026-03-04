@@ -1,1 +1,828 @@
 
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>แอปเก็บขยะโรงเรียน</title>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Sarabun,sans-serif;background:#f0fdf4;min-height:100vh;font-size:15px}
+/* Layout */
+.header{background:linear-gradient(135deg,#16a34a,#15803d);color:#fff;padding:12px 16px;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.2)}
+.header-inner{max-width:700px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.tabs{background:#fff;border-bottom:2px solid #e5e7eb;position:sticky;top:57px;z-index:99}
+.tabs-inner{max-width:700px;margin:0 auto;display:flex;align-items:center;overflow-x:auto}
+.tab-btn{flex:1;min-width:70px;padding:11px 6px;border:none;background:none;cursor:pointer;font-weight:600;font-size:13px;color:#6b7280;border-bottom:3px solid transparent;white-space:nowrap;font-family:inherit}
+.tab-btn.active{color:#16a34a;border-bottom:3px solid #16a34a}
+.content{max-width:700px;margin:0 auto;padding:14px}
+/* Cards */
+.card{background:#fff;border-radius:12px;padding:16px;box-shadow:0 1px 4px rgba(0,0,0,.08);margin-bottom:12px}
+/* Forms */
+label{display:block;font-weight:600;margin-bottom:5px;color:#374151;font-size:13px}
+input[type=text],input[type=number],input[type=datetime-local],input[type=email],input[type=password],select,textarea{width:100%;padding:9px 12px;border:1.5px solid #d1d5db;border-radius:8px;font-size:14px;font-family:inherit;outline:none}
+input:focus,select:focus,textarea:focus{border-color:#16a34a}
+.form-row{margin-bottom:12px}
+/* Buttons */
+.btn{padding:9px 16px;border:none;border-radius:8px;font-weight:600;cursor:pointer;font-size:14px;font-family:inherit;transition:opacity .15s}
+.btn:hover{opacity:.88}
+.btn-green{background:#16a34a;color:#fff}
+.btn-red{background:#fee2e2;color:#ef4444}
+.btn-blue{background:#3b82f6;color:#fff}
+.btn-gray{background:#e5e7eb;color:#374151}
+.btn-yellow{background:#fef3c7;color:#92400e}
+.btn-purple{background:#ede9fe;color:#7c3aed}
+.btn-full{width:100%;padding:13px;font-size:15px;border-radius:10px}
+/* Avatar */
+.avatar{border-radius:50%;object-fit:cover;border:2px solid #d1fae5;flex-shrink:0;display:inline-block}
+.avatar-ph{border-radius:50%;background:linear-gradient(135deg,#16a34a,#15803d);display:inline-flex;align-items:center;justify-content:center;color:#fff;font-weight:700;flex-shrink:0;border:2px solid #d1fae5}
+/* Tags */
+.tag{border-radius:20px;padding:2px 10px;font-size:12px;font-weight:600;display:inline-block}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700}
+/* Toast */
+.toast{position:fixed;top:16px;left:50%;transform:translateX(-50%);color:#fff;padding:10px 22px;border-radius:8px;z-index:9999;font-weight:600;box-shadow:0 4px 12px rgba(0,0,0,.2);font-size:14px;white-space:nowrap;transition:opacity .3s}
+/* Modal */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;display:flex;align-items:flex-end;justify-content:center}
+.modal{background:#fff;width:100%;max-width:700px;border-radius:16px 16px 0 0;max-height:92vh;overflow-y:auto;padding:20px}
+/* Login */
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.login-box{background:#fff;border-radius:16px;padding:32px;width:100%;max-width:400px;box-shadow:0 4px 24px rgba(0,0,0,.12)}
+/* Role badge */
+.role-admin{background:#fef3c7;color:#92400e}
+.role-teacher{background:#dbeafe;color:#1d4ed8}
+/* Misc */
+.section-label{font-size:12px;color:#9ca3af;font-weight:700;text-transform:uppercase;margin:10px 0 5px}
+.divider{border:none;border-top:1px solid #f3f4f6;margin:10px 0}
+.hidden{display:none!important}
+.flex{display:flex}.gap8{gap:8px}.gap12{gap:12px}.ai-center{align-items:center}.jc-between{justify-content:space-between}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+/* Progress bar */
+.bar-bg{background:#e5e7eb;border-radius:99px;height:8px}
+.bar-fill{height:8px;border-radius:99px;transition:width .4s}
+/* Points */
+.points-big{font-size:36px;font-weight:800;color:#f59e0b}
+/* QR */
+#qr-output canvas,#qr-output img{border-radius:8px}
+/* Stars */
+.star{color:#f59e0b;font-size:18px}
+/* Scroll table */
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:8px 10px;text-align:left;border-bottom:1px solid #f3f4f6}
+th{background:#f9fafb;font-weight:700;color:#374151}
+/* type toggle */
+.type-toggle{display:flex;gap:6px;margin-bottom:12px}
+.type-toggle button{flex:1;padding:8px;border:none;border-radius:8px;font-weight:600;cursor:pointer;font-family:inherit;font-size:13px;background:#e5e7eb;color:#374151}
+.type-toggle button.active{background:#16a34a;color:#fff}
+</style>
+</head>
+<body>
+
+<!-- ══════════════ LOGIN PAGE ══════════════ -->
+<div id="login-page" class="login-wrap">
+  <div class="login-box">
+    <div style="text-align:center;margin-bottom:24px">
+      <div style="font-size:48px">♻️</div>
+      <h1 style="font-size:22px;font-weight:800;color:#15803d;margin-top:8px">แอปเก็บขยะโรงเรียน</h1>
+      <p style="color:#6b7280;font-size:13px;margin-top:4px">กรุณาเข้าสู่ระบบ</p>
+    </div>
+    <div class="form-row"><label>อีเมล</label><input type="email" id="login-email" placeholder="teacher@school.com"/></div>
+    <div class="form-row"><label>รหัสผ่าน</label><input type="password" id="login-pass" placeholder="••••••••"/></div>
+    <div id="login-err" style="color:#ef4444;font-size:13px;margin-bottom:10px;display:none"></div>
+    <button class="btn btn-green btn-full" onclick="doLogin()">🔑 เข้าสู่ระบบ</button>
+    <p style="text-align:center;font-size:12px;color:#9ca3af;margin-top:16px">ติดต่อแอดมินเพื่อขอรหัสผ่าน</p>
+  </div>
+</div>
+
+<!-- ══════════════ MAIN APP ══════════════ -->
+<div id="main-app" class="hidden">
+
+<!-- Header -->
+<div class="header">
+  <div class="header-inner">
+    <div>
+      <div style="font-size:18px;font-weight:800">♻️ เก็บขยะโรงเรียน</div>
+      <div id="header-sub" style="font-size:11px;opacity:.8">กำลังเชื่อมต่อ...</div>
+    </div>
+    <div class="flex gap8 ai-center">
+      <span id="user-badge" class="badge role-teacher"></span>
+      <button class="btn btn-gray" style="font-size:12px;padding:6px 10px" onclick="doLogout()">ออก</button>
+    </div>
+  </div>
+</div>
+
+<!-- Tabs -->
+<div class="tabs">
+  <div class="tabs-inner">
+    <button class="tab-btn active" id="tab-log"       onclick="switchTab('log')">📝 บันทึก</button>
+    <button class="tab-btn"        id="tab-history"   onclick="switchTab('history')">📋 ประวัติ</button>
+    <button class="tab-btn"        id="tab-dashboard" onclick="switchTab('dashboard')">📊 แดชบอร์ด</button>
+    <button class="tab-btn"        id="tab-points"    onclick="switchTab('points')">🏆 คะแนน</button>
+    <button class="tab-btn"        id="tab-qr"        onclick="switchTab('qr')">📱 QR Code</button>
+    <button class="tab-btn admin-only hidden" id="tab-admin" onclick="switchTab('admin')">⚙️ แอดมิน</button>
+    <button class="btn btn-green" style="margin:4px 8px;padding:6px 10px;font-size:18px;border-radius:8px" onclick="loadAll()" title="รีเฟรช">🔄</button>
+  </div>
+</div>
+
+<div class="content">
+
+<!-- ═══ LOG TAB ═══ -->
+<div id="page-log">
+  <div class="card">
+    <h2 style="font-size:17px;color:#15803d;margin-bottom:14px">📝 บันทึกข้อมูล</h2>
+    <div class="form-row"><label>ผู้บันทึก (นักเรียน / ห้องเรียน)</label><div id="member-selector"></div></div>
+    <div class="form-row"><label>วันที่และเวลา</label><input type="datetime-local" id="form-date"/></div>
+    <label>จำนวนขยะ (ชิ้น)</label>
+    <div class="grid2" style="margin:8px 0 12px">
+      <div class="card" style="padding:10px"><div style="font-size:13px;font-weight:600;margin-bottom:6px;color:#374151">🍶 ขวดพลาสติก</div><input type="number" id="w-plastic" min="0" placeholder="0" style="text-align:center"/></div>
+      <div class="card" style="padding:10px"><div style="font-size:13px;font-weight:600;margin-bottom:6px;color:#374151">🥫 กระป๋อง</div><input type="number" id="w-can" min="0" placeholder="0" style="text-align:center"/></div>
+      <div class="card" style="padding:10px"><div style="font-size:13px;font-weight:600;margin-bottom:6px;color:#374151">📄 กระดาษ</div><input type="number" id="w-paper" min="0" placeholder="0" style="text-align:center"/></div>
+      <div class="card" style="padding:10px"><div style="font-size:13px;font-weight:600;margin-bottom:6px;color:#374151">🗑️ อื่นๆ</div><input type="number" id="w-other" min="0" placeholder="0" style="text-align:center"/></div>
+    </div>
+    <div class="form-row"><label>หมายเหตุ (ไม่บังคับ)</label><input type="text" id="form-note" placeholder="เช่น บริเวณสนาม..."/></div>
+    <button class="btn btn-green btn-full" onclick="saveRecord()">✅ บันทึกข้อมูล</button>
+  </div>
+  <h3 style="font-size:14px;color:#374151;margin:4px 0 10px">🕐 บันทึกล่าสุด</h3>
+  <div id="recent-list"></div>
+</div>
+
+<!-- ═══ HISTORY TAB ═══ -->
+<div id="page-history" class="hidden">
+  <div class="flex jc-between ai-center" style="margin-bottom:12px">
+    <h2 style="font-size:17px;color:#15803d" id="history-title">📋 ประวัติ</h2>
+    <button class="btn btn-green" style="font-size:13px;padding:7px 12px" onclick="exportCSV()">⬇️ Export CSV</button>
+  </div>
+  <div id="history-list"></div>
+</div>
+
+<!-- ═══ DASHBOARD TAB ═══ -->
+<div id="page-dashboard" class="hidden">
+  <div class="flex jc-between ai-center" style="margin-bottom:14px">
+    <h2 style="font-size:17px;color:#15803d">📊 แดชบอร์ด</h2>
+    <div class="flex gap8">
+      <button class="btn btn-green" style="font-size:13px;padding:7px 12px" onclick="exportCSV()">⬇️ CSV</button>
+      <button class="btn btn-blue" style="font-size:13px;padding:7px 12px" onclick="exportSummaryCSV()">📊 สรุป CSV</button>
+    </div>
+  </div>
+  <!-- Overall -->
+  <div class="card" style="text-align:center;background:linear-gradient(135deg,#f0fdf4,#dcfce7)">
+    <div style="font-size:13px;color:#6b7280">ขยะรวมทั้งหมด</div>
+    <div id="grand-total" style="font-size:42px;font-weight:800;color:#16a34a">0</div>
+    <div id="grand-sub" style="font-size:13px;color:#6b7280">ชิ้น</div>
+  </div>
+  <div class="grid2" id="type-stats" style="margin-bottom:12px"></div>
+  <!-- 7-day chart -->
+  <div class="card" style="margin-bottom:12px">
+    <h3 style="font-size:14px;color:#374151;margin-bottom:10px">📅 7 วันย้อนหลัง</h3>
+    <div id="bar-chart"></div>
+  </div>
+  <!-- Class breakdown -->
+  <div class="card">
+    <h3 style="font-size:14px;color:#374151;margin-bottom:10px">🏫 สถิติแยกห้องเรียน</h3>
+    <div id="class-stats"></div>
+  </div>
+</div>
+
+<!-- ═══ POINTS TAB ═══ -->
+<div id="page-points" class="hidden">
+  <h2 style="font-size:17px;color:#15803d;margin-bottom:14px">🏆 คะแนนและรางวัล</h2>
+  <div id="points-list"></div>
+</div>
+
+<!-- ═══ QR TAB ═══ -->
+<div id="page-qr" class="hidden">
+  <h2 style="font-size:17px;color:#15803d;margin-bottom:14px">📱 QR Code นักเรียน</h2>
+  <div class="card">
+    <div class="form-row"><label>เลือกนักเรียน / ห้องเรียน</label>
+      <select id="qr-member-select" onchange="generateQR()"><option value="">-- เลือก --</option></select>
+    </div>
+    <div id="qr-output" style="display:flex;flex-direction:column;align-items:center;gap:12px;padding:10px 0"></div>
+    <button class="btn btn-blue btn-full" id="qr-print-btn" style="display:none;margin-top:8px" onclick="printQR()">🖨️ พิมพ์ QR Code</button>
+  </div>
+  <div class="card">
+    <h3 style="font-size:14px;color:#374151;margin-bottom:10px">📋 QR Code ทั้งหมด</h3>
+    <div id="all-qr-list"></div>
+  </div>
+</div>
+
+<!-- ═══ ADMIN TAB ═══ -->
+<div id="page-admin" class="hidden">
+  <h2 style="font-size:17px;color:#15803d;margin-bottom:14px">⚙️ จัดการระบบ (แอดมิน)</h2>
+
+  <!-- Manage Teachers -->
+  <div class="card">
+    <h3 style="font-size:15px;font-weight:700;color:#374151;margin-bottom:12px">👩‍🏫 จัดการบัญชีครู</h3>
+    <div style="background:#fef3c7;border-radius:8px;padding:10px;font-size:13px;color:#92400e;margin-bottom:12px">
+      ⚠️ การสร้างบัญชีครูต้องทำผ่าน <b>Firebase Console → Authentication → Add user</b> แล้วระบุ role ด้านล่างนี้
+    </div>
+    <div class="form-row"><label>Email ครู</label><input type="email" id="teacher-email" placeholder="teacher@school.com"/></div>
+    <div class="form-row"><label>ชื่อครู</label><input type="text" id="teacher-name" placeholder="ครูสมหญิง"/></div>
+    <button class="btn btn-blue" onclick="addTeacherProfile()">➕ เพิ่มโปรไฟล์ครู</button>
+    <div id="teachers-list" style="margin-top:12px"></div>
+  </div>
+
+  <!-- Manage Members -->
+  <div class="card">
+    <h3 style="font-size:15px;font-weight:700;color:#374151;margin-bottom:12px">👥 จัดการนักเรียน / ห้องเรียน</h3>
+    <div class="type-toggle">
+      <button id="mtype-student" class="active" onclick="setMType('student')">👤 นักเรียน</button>
+      <button id="mtype-class" onclick="setMType('class')">🏫 ห้องเรียน</button>
+    </div>
+    <div class="form-row"><input type="text" id="member-name-input" placeholder="ชื่อ..."/></div>
+    <div class="flex gap8 ai-center" style="margin-bottom:12px">
+      <div id="m-avatar-preview" style="width:46px;height:46px"></div>
+      <input type="file" id="m-img-file" accept="image/*" style="display:none" onchange="handleMImg(event)"/>
+      <button class="btn btn-blue" style="font-size:13px;padding:6px 12px" onclick="document.getElementById('m-img-file').click()">📷 รูปภาพ</button>
+      <button class="btn btn-gray" id="m-remove-img" style="font-size:13px;padding:6px 12px;display:none" onclick="removeMImg()">ลบรูป</button>
+    </div>
+    <div class="flex gap8">
+      <button class="btn btn-green" style="flex:1" id="save-member-btn" onclick="saveMember()">➕ เพิ่ม</button>
+      <button class="btn btn-gray" id="cancel-member-btn" style="display:none" onclick="cancelMemberEdit()">ยกเลิก</button>
+    </div>
+    <div id="members-list" style="margin-top:12px"></div>
+  </div>
+
+  <!-- Line Notify -->
+  <div class="card">
+    <h3 style="font-size:15px;font-weight:700;color:#374151;margin-bottom:12px">💬 Line Notify</h3>
+    <div style="background:#f0fdf4;border-radius:8px;padding:12px;font-size:13px;margin-bottom:12px">
+      <b>วิธีตั้งค่า:</b><br>
+      1. ไปที่ <a href="https://notify-bot.line.me" target="_blank" style="color:#16a34a">notify-bot.line.me</a> → Login → Generate token<br>
+      2. Copy token มาวางด้านล่าง<br>
+      3. เนื่องจาก CORS ต้องใช้ <b>n8n</b> หรือ <b>Make.com</b> เป็น proxy<br>
+      &nbsp;&nbsp;&nbsp;- สร้าง Webhook ใน n8n → รับ POST → ส่งต่อ Line Notify
+    </div>
+    <div class="form-row"><label>n8n Webhook URL</label><input type="text" id="n8n-url" placeholder="https://your-n8n.com/webhook/xxx"/></div>
+    <div class="form-row"><label>Line Notify Token</label><input type="text" id="line-token" placeholder="xxxxxxxxxxxx"/></div>
+    <button class="btn btn-green" onclick="saveLineConfig()">💾 บันทึก</button>
+    <button class="btn btn-blue" style="margin-left:8px" onclick="testLine()">🧪 ทดสอบส่ง</button>
+  </div>
+
+  <!-- Audit Log -->
+  <div class="card">
+    <h3 style="font-size:15px;font-weight:700;color:#374151;margin-bottom:10px">📜 ประวัติแก้ไขระบบ</h3>
+    <div id="audit-log"></div>
+  </div>
+</div>
+
+</div><!-- end content -->
+</div><!-- end main-app -->
+
+<!-- Toast -->
+<div id="toast" class="toast hidden"></div>
+
+<!-- QR Modal for scanning -->
+<div id="qr-scan-info" class="modal-bg hidden" onclick="if(event.target===this)this.classList.add('hidden')">
+  <div class="modal" style="max-height:60vh">
+    <h3 style="margin-bottom:12px;color:#15803d">📱 สแกน QR Code</h3>
+    <p style="color:#6b7280;font-size:14px">เมื่อนักเรียนสแกน QR Code จะเปิดลิงก์บันทึกข้อมูลพร้อมชื่อตัวเองโดยอัตโนมัติ ครูไม่ต้องพิมพ์ชื่อ</p>
+    <button class="btn btn-green btn-full" style="margin-top:16px" onclick="document.getElementById('qr-scan-info').classList.add('hidden')">เข้าใจแล้ว</button>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════
+// FIREBASE CONFIG
+// ══════════════════════════════════════════
+const firebaseConfig = {
+  apiKey: "AIzaSyDML31kfyPiZtWz6s9ebf7T02W7r2Y5CvA",
+  authDomain: "school-waste-tracker.firebaseapp.com",
+  databaseURL: "https://school-waste-tracker-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "school-waste-tracker",
+  storageBucket: "school-waste-tracker.firebasestorage.app",
+  messagingSenderId: "158534396656",
+  appId: "1:158534396656:web:0bea4a9fe7bff32494b035"
+};
+firebase.initializeApp(firebaseConfig);
+const db   = firebase.database();
+const auth = firebase.auth();
+
+// ══════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════
+let records=[], members=[], teachers=[], auditLogs=[], lineConfig={};
+let selMemberId='', editMemberId=null, mImgB64='', mType='student';
+let currentUser=null, currentRole='teacher', currentName='';
+
+const WASTE=[
+  {key:'plastic',label:'🍶 ขวดพลาสติก',color:'#3b82f6'},
+  {key:'can',    label:'🥫 กระป๋อง',   color:'#f59e0b'},
+  {key:'paper',  label:'📄 กระดาษ',     color:'#10b981'},
+  {key:'other',  label:'🗑️ อื่นๆ',      color:'#8b5cf6'},
+];
+
+const BADGES=[
+  {pts:10,  icon:'🌱', label:'มือใหม่'},
+  {pts:50,  icon:'🌿', label:'นักเก็บ'},
+  {pts:100, icon:'🌳', label:'เพชรเขียว'},
+  {pts:300, icon:'🏆', label:'แชมป์'},
+  {pts:500, icon:'👑', label:'ราชาขยะ'},
+];
+
+// ══════════════════════════════════════════
+// AUTH
+// ══════════════════════════════════════════
+auth.onAuthStateChanged(async user => {
+  if (user) {
+    currentUser = user;
+    // Check role in DB
+    const snap = await db.ref(`users/${user.uid}`).get();
+    if (snap.exists()) {
+      const data = snap.val();
+      currentRole = data.role || 'teacher';
+      currentName = data.name || user.email;
+    } else {
+      // First time: check if first user → admin
+      const allUsers = await db.ref('users').get();
+      currentRole = (!allUsers.exists()) ? 'admin' : 'teacher';
+      currentName = user.email;
+      await db.ref(`users/${user.uid}`).set({email: user.email, name: currentName, role: currentRole});
+    }
+    showApp();
+  } else {
+    showLogin();
+  }
+});
+
+function showLogin(){ document.getElementById('login-page').classList.remove('hidden'); document.getElementById('main-app').classList.add('hidden'); }
+function showApp(){
+  document.getElementById('login-page').classList.add('hidden');
+  document.getElementById('main-app').classList.remove('hidden');
+  document.getElementById('user-badge').textContent = (currentRole==='admin'?'👑 แอดมิน':'👩‍🏫 ครู') + ' ' + currentName;
+  document.getElementById('user-badge').className = 'badge ' + (currentRole==='admin'?'role-admin':'role-teacher');
+  if (currentRole==='admin') document.querySelectorAll('.admin-only').forEach(el=>el.classList.remove('hidden'));
+  initDatetime();
+  startListeners();
+  checkQRParam();
+}
+
+async function doLogin(){
+  const em=document.getElementById('login-email').value.trim();
+  const pw=document.getElementById('login-pass').value;
+  const errEl=document.getElementById('login-err');
+  errEl.style.display='none';
+  try{ await auth.signInWithEmailAndPassword(em,pw); }
+  catch(e){ errEl.textContent='อีเมลหรือรหัสผ่านไม่ถูกต้อง'; errEl.style.display='block'; }
+}
+function doLogout(){ auth.signOut(); }
+
+// ══════════════════════════════════════════
+// REALTIME LISTENERS
+// ══════════════════════════════════════════
+function startListeners(){
+  db.ref('records').on('value', snap=>{
+    const v=snap.val();
+    records = v ? Object.entries(v).map(([k,r])=>({...r,fbKey:k})).sort((a,b)=>new Date(b.date)-new Date(a.date)) : [];
+    renderLog(); renderHistory(); renderDashboard(); renderPoints();
+    document.getElementById('header-sub').textContent = '🔥 Firebase เรียลไทม์ • ' + new Date().toLocaleTimeString('th-TH');
+  });
+  db.ref('members').on('value', snap=>{
+    const v=snap.val();
+    members = v ? Object.entries(v).map(([k,m])=>({...m,fbKey:k})) : [];
+    renderMemberSelector(); renderMembersList(); renderQRSelects(); renderAllQR(); renderPoints();
+  });
+  db.ref('users').on('value', snap=>{
+    const v=snap.val();
+    teachers = v ? Object.entries(v).map(([k,u])=>({...u,uid:k})).filter(u=>u.role==='teacher') : [];
+    renderTeachers();
+  });
+  db.ref('audit').on('value', snap=>{
+    const v=snap.val();
+    auditLogs = v ? Object.entries(v).map(([k,l])=>({...l,fbKey:k})).sort((a,b)=>b.ts-a.ts) : [];
+    renderAudit();
+  });
+  db.ref('config/line').on('value', snap=>{
+    lineConfig = snap.val() || {};
+    if (lineConfig.n8nUrl) document.getElementById('n8n-url').value = lineConfig.n8nUrl;
+    if (lineConfig.token)  document.getElementById('line-token').value = lineConfig.token;
+  });
+}
+
+function loadAll(){ showToast('รีเฟรชแล้ว ✅'); }
+
+// ══════════════════════════════════════════
+// QR PARAM (นักเรียนสแกน QR)
+// ══════════════════════════════════════════
+function checkQRParam(){
+  const p = new URLSearchParams(window.location.search);
+  const mid = p.get('member');
+  if (mid) { selMemberId = mid; switchTab('log'); renderMemberSelector(); }
+}
+
+// ══════════════════════════════════════════
+// RECORDS CRUD
+// ══════════════════════════════════════════
+async function saveRecord(){
+  const vals = WASTE.map(t=>parseInt(document.getElementById('w-'+t.key).value)||0);
+  if(!vals.some(v=>v>0)){ showToast('กรุณากรอกจำนวนขยะอย่างน้อย 1 ประเภท','error'); return; }
+  const member = members.find(m=>m.fbKey===selMemberId)||null;
+  const total = vals.reduce((s,v)=>s+v,0);
+  const rec = {
+    date: document.getElementById('form-date').value,
+    note: document.getElementById('form-note').value,
+    member_id: selMemberId, member_name: member?.name||'', member_img: member?.img||'', member_type: member?.type||'',
+    created_by: currentUser.uid, created_name: currentName,
+    ...Object.fromEntries(WASTE.map((t,i)=>[t.key,vals[i]])),
+    total, pts: total
+  };
+  const ref = await db.ref('records').push(rec);
+  // Update member points
+  if (selMemberId) await db.ref(`members/${selMemberId}/points`).transaction(p=>(p||0)+total);
+  // Audit log
+  await writeAudit('add_record', `บันทึกขยะ ${total} ชิ้น ${member?'('+member.name+')':''}`);
+  // Line Notify
+  await sendLine(`♻️ บันทึกใหม่!\n👤 ${member?.name||'ไม่ระบุ'}\n📦 รวม ${total} ชิ้น\n🕐 ${fmtDT(rec.date)}`);
+  WASTE.forEach(t=>{ document.getElementById('w-'+t.key).value=''; });
+  document.getElementById('form-note').value='';
+  showToast('บันทึกข้อมูลสำเร็จ ✅');
+}
+
+async function deleteRecord(fbKey){
+  if (currentRole!=='admin'){ showToast('เฉพาะแอดมินลบได้','error'); return; }
+  const rec = records.find(r=>r.fbKey===fbKey);
+  if (!rec) return;
+  // Subtract points
+  if (rec.member_id) await db.ref(`members/${rec.member_id}/points`).transaction(p=>Math.max(0,(p||0)-rec.total));
+  await db.ref(`records/${fbKey}`).remove();
+  await writeAudit('delete_record', `ลบบันทึก ${rec.total} ชิ้น (${rec.member_name||'ไม่ระบุ'})`);
+  showToast('ลบแล้ว');
+}
+
+// ══════════════════════════════════════════
+// MEMBERS CRUD (admin only)
+// ══════════════════════════════════════════
+function setMType(t){
+  mType=t;
+  document.getElementById('mtype-student').className=t==='student'?'active':'';
+  document.getElementById('mtype-class').className=t==='class'?'active':'';
+  document.getElementById('member-name-input').placeholder=t==='class'?'ชื่อห้อง เช่น ป.4/1':'ชื่อนักเรียน';
+}
+function handleMImg(e){ const f=e.target.files[0]; if(!f)return; const r=new FileReader(); r.onload=ev=>{mImgB64=ev.target.result; renderMAvatarPreview();}; r.readAsDataURL(f); }
+function removeMImg(){ mImgB64=''; renderMAvatarPreview(); }
+function renderMAvatarPreview(){ document.getElementById('m-avatar-preview').innerHTML=avatarHTML(mImgB64,document.getElementById('member-name-input').value||'?',46); document.getElementById('m-remove-img').style.display=mImgB64?'':'none'; }
+async function saveMember(){
+  if (currentRole!=='admin'){ showToast('เฉพาะแอดมิน','error'); return; }
+  const name=document.getElementById('member-name-input').value.trim();
+  if(!name){ showToast('กรุณากรอกชื่อ','error'); return; }
+  const data={type:mType,name,img:mImgB64||'',points:0};
+  if(editMemberId){ await db.ref(`members/${editMemberId}`).update({type:mType,name,img:mImgB64||''}); await writeAudit('edit_member',`แก้ไข ${name}`); showToast('แก้ไขสำเร็จ'); cancelMemberEdit(); }
+  else { await db.ref('members').push(data); await writeAudit('add_member',`เพิ่ม ${name}`); showToast('เพิ่มสำเร็จ ✅'); }
+  document.getElementById('member-name-input').value=''; mImgB64=''; renderMAvatarPreview();
+}
+function editMemberFn(fbKey){ const m=members.find(x=>x.fbKey===fbKey); if(!m)return; editMemberId=fbKey; mType=m.type; mImgB64=m.img||''; document.getElementById('member-name-input').value=m.name; setMType(m.type); document.getElementById('save-member-btn').textContent='💾 บันทึก'; document.getElementById('cancel-member-btn').style.display=''; renderMAvatarPreview(); }
+function cancelMemberEdit(){ editMemberId=null; mImgB64=''; document.getElementById('member-name-input').value=''; document.getElementById('save-member-btn').textContent='➕ เพิ่ม'; document.getElementById('cancel-member-btn').style.display='none'; setMType('student'); renderMAvatarPreview(); }
+async function deleteMemberFn(fbKey){ if(currentRole!=='admin'){showToast('เฉพาะแอดมิน','error');return;} const m=members.find(x=>x.fbKey===fbKey); await db.ref(`members/${fbKey}`).remove(); await writeAudit('delete_member',`ลบ ${m?.name}`); showToast('ลบแล้ว'); }
+
+// ══════════════════════════════════════════
+// TEACHERS
+// ══════════════════════════════════════════
+async function addTeacherProfile(){
+  const em=document.getElementById('teacher-email').value.trim();
+  const nm=document.getElementById('teacher-name').value.trim();
+  if(!em||!nm){showToast('กรอกให้ครบ','error');return;}
+  // Find user by email in users node
+  const snap=await db.ref('users').orderByChild('email').equalTo(em).get();
+  if(snap.exists()){
+    const uid=Object.keys(snap.val())[0];
+    await db.ref(`users/${uid}`).update({role:'teacher',name:nm});
+    showToast('อัปเดตแล้ว ✅');
+  } else {
+    showToast('ไม่พบบัญชีนี้ในระบบ กรุณาสร้างบัญชีใน Firebase Auth ก่อน','error');
+  }
+  document.getElementById('teacher-email').value=''; document.getElementById('teacher-name').value='';
+}
+
+// ══════════════════════════════════════════
+// LINE NOTIFY (via n8n proxy)
+// ══════════════════════════════════════════
+async function saveLineConfig(){
+  const url=document.getElementById('n8n-url').value.trim();
+  const token=document.getElementById('line-token').value.trim();
+  await db.ref('config/line').set({n8nUrl:url,token});
+  lineConfig={n8nUrl:url,token};
+  showToast('บันทึก Line config แล้ว ✅');
+}
+async function testLine(){ await sendLine('🧪 ทดสอบระบบแจ้งเตือน\n♻️ แอปเก็บขยะโรงเรียน'); }
+async function sendLine(msg){
+  if(!lineConfig.n8nUrl||!lineConfig.token) return;
+  try{
+    await fetch(lineConfig.n8nUrl,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:lineConfig.token,message:msg})});
+  }catch(e){ console.warn('Line notify error',e); }
+}
+
+// ══════════════════════════════════════════
+// AUDIT LOG
+// ══════════════════════════════════════════
+async function writeAudit(action, detail){
+  await db.ref('audit').push({action, detail, by: currentName, ts: Date.now(), date: new Date().toISOString()});
+}
+
+// ══════════════════════════════════════════
+// QR CODE
+// ══════════════════════════════════════════
+function generateQR(){
+  const mid=document.getElementById('qr-member-select').value;
+  const out=document.getElementById('qr-output');
+  out.innerHTML='';
+  document.getElementById('qr-print-btn').style.display='none';
+  if(!mid) return;
+  const member=members.find(m=>m.fbKey===mid);
+  if(!member) return;
+  const url=`${location.origin}${location.pathname}?member=${mid}`;
+  out.innerHTML=`<div style="text-align:center">${avatarHTML(member.img,member.name,60)}<div style="font-weight:700;font-size:16px;margin-top:8px">${member.name}</div><div style="font-size:12px;color:#6b7280;margin-bottom:12px">${member.type==='class'?'ห้องเรียน':'นักเรียน'}</div></div><div id="qr-canvas"></div><div style="font-size:11px;color:#9ca3af;margin-top:8px;word-break:break-all;text-align:center">${url}</div>`;
+  new QRCode(document.getElementById('qr-canvas'),{text:url,width:200,height:200,colorDark:'#15803d',colorLight:'#ffffff'});
+  document.getElementById('qr-print-btn').style.display='';
+}
+function printQR(){ window.print(); }
+function renderQRSelects(){
+  const sel=document.getElementById('qr-member-select');
+  const cur=sel.value;
+  sel.innerHTML='<option value="">-- เลือก --</option>';
+  ['class','student'].forEach(tp=>{
+    const list=members.filter(m=>m.type===tp); if(!list.length) return;
+    const og=document.createElement('optgroup'); og.label=tp==='class'?'ห้องเรียน':'นักเรียน';
+    list.forEach(m=>{ const o=document.createElement('option'); o.value=m.fbKey; o.textContent=m.name; og.appendChild(o); });
+    sel.appendChild(og);
+  });
+  if(cur) sel.value=cur;
+}
+function renderAllQR(){
+  const el=document.getElementById('all-qr-list');
+  if(!members.length){el.innerHTML='<p style="color:#9ca3af;text-align:center;padding:20px">ยังไม่มีรายชื่อ</p>';return;}
+  el.innerHTML=members.map(m=>{
+    const url=`${location.origin}${location.pathname}?member=${m.fbKey}`;
+    return `<div class="flex gap12 ai-center" style="padding:10px 0;border-bottom:1px solid #f3f4f6">
+      ${avatarHTML(m.img,m.name,40)}
+      <div style="flex:1"><div style="font-weight:600;font-size:14px">${m.name}</div><div style="font-size:11px;color:#9ca3af">${m.type==='class'?'ห้องเรียน':'นักเรียน'}</div></div>
+      <button class="btn btn-purple" style="font-size:12px;padding:6px 10px" onclick="document.getElementById('qr-member-select').value='${m.fbKey}';generateQR();switchTab('qr')">🔍 ดู QR</button>
+    </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════
+// RENDER FUNCTIONS
+// ══════════════════════════════════════════
+function avatarHTML(img,name,sz){
+  if(img&&img.length>5) return `<img src="${img}" class="avatar" style="width:${sz}px;height:${sz}px"/>`;
+  return `<div class="avatar-ph" style="width:${sz}px;height:${sz}px;font-size:${Math.round(sz*.38)}px">${(name||'?')[0]}</div>`;
+}
+
+function renderMemberSelector(){
+  const el=document.getElementById('member-selector');
+  if(!members.length){el.innerHTML='<div style="padding:10px;background:#fef3c7;border-radius:8px;font-size:13px;color:#92400e">⚠️ ยังไม่มีรายชื่อ แอดมินเพิ่มได้ที่แท็บ ⚙️</div>';return;}
+  const classes=members.filter(m=>m.type==='class'), studs=members.filter(m=>m.type==='student');
+  let h=`<div onclick="pickMember('')" class="flex gap8 ai-center" style="padding:8px 10px;border:1.5px solid ${selMemberId===''?'#16a34a':'#e5e7eb'};border-radius:8px;margin-bottom:6px;cursor:pointer;background:${selMemberId===''?'#f0fdf4':'#fff'}">
+    <div class="avatar-ph" style="width:34px;height:34px;font-size:14px">❓</div><span style="font-size:13px">ไม่ระบุ</span>${selMemberId===''?'<span style="margin-left:auto;color:#16a34a">✓</span>':''}
+  </div>`;
+  if(classes.length){h+=`<div class="section-label">ห้องเรียน</div>`; classes.forEach(m=>{h+=mRowHTML(m);});}
+  if(studs.length){h+=`<div class="section-label">นักเรียน</div><div style="max-height:180px;overflow-y:auto">`; studs.forEach(m=>{h+=mRowHTML(m);}); h+=`</div>`;}
+  el.innerHTML=h;
+}
+function mRowHTML(m){
+  const sel=selMemberId===m.fbKey;
+  return `<div onclick="pickMember('${m.fbKey}')" class="flex gap8 ai-center" style="padding:8px 10px;border:1.5px solid ${sel?'#16a34a':'#e5e7eb'};border-radius:8px;margin-bottom:5px;cursor:pointer;background:${sel?'#f0fdf4':'#fff'}">
+    ${avatarHTML(m.img,m.name,34)}<span style="font-size:13px;font-weight:600">${m.name}</span>
+    <span style="font-size:12px;color:#9ca3af;margin-left:4px">${(m.points||0)} แต้ม</span>
+    ${sel?'<span style="margin-left:auto;color:#16a34a">✓</span>':''}
+  </div>`;
+}
+function pickMember(id){ selMemberId=id; renderMemberSelector(); }
+
+function renderLog(){
+  const el=document.getElementById('recent-list');
+  el.innerHTML=records.slice(0,3).map(r=>`
+    <div class="card flex gap12 ai-center">
+      ${avatarHTML(r.member_img,r.member_name||'?',42)}
+      <div style="flex:1">
+        <div style="font-weight:700;font-size:14px">${r.member_name||'ไม่ระบุ'}</div>
+        <div style="font-size:12px;color:#6b7280">${fmtDT(r.date)}</div>
+        <div style="font-size:12px;color:#6b7280">${WASTE.filter(t=>r[t.key]>0).map(t=>`${t.label.split(' ')[1]} ${r[t.key]}`).join(' · ')}</div>
+      </div>
+      <div style="text-align:right"><div style="font-weight:800;color:#16a34a;font-size:22px">${r.total}</div><div style="font-size:11px;color:#9ca3af">ชิ้น</div></div>
+    </div>`).join('');
+}
+
+function renderHistory(){
+  const el=document.getElementById('history-list');
+  document.getElementById('history-title').textContent=`📋 ประวัติ (${records.length} รายการ)`;
+  if(!records.length){el.innerHTML='<p style="text-align:center;color:#9ca3af;padding:40px">ยังไม่มีข้อมูล</p>';return;}
+  el.innerHTML=records.map(r=>`
+    <div class="card flex gap12">
+      ${avatarHTML(r.member_img,r.member_name||'?',46)}
+      <div style="flex:1">
+        <div class="flex jc-between ai-center">
+          <div>
+            <div style="font-weight:700;font-size:15px">${r.member_name||'ไม่ระบุ'}</div>
+            ${r.member_type?`<span class="tag" style="background:${r.member_type==='class'?'#dbeafe':'#fce7f3'};color:${r.member_type==='class'?'#1d4ed8':'#be185d'};font-size:11px">${r.member_type==='class'?'ห้องเรียน':'นักเรียน'}</span>`:''}
+            <div style="font-size:12px;color:#6b7280;margin-top:3px">${fmtDT(r.date)} · บันทึกโดย ${r.created_name||'-'}</div>
+          </div>
+          <div style="text-align:right"><div style="font-weight:800;color:#16a34a;font-size:20px">${r.total}</div><div style="font-size:11px;color:#9ca3af">ชิ้น</div></div>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:8px">
+          ${WASTE.filter(t=>r[t.key]>0).map(t=>`<span class="tag" style="background:#f0fdf4;border:1.5px solid ${t.color};color:${t.color}">${t.label} ${r[t.key]}</span>`).join('')}
+        </div>
+        ${r.note?`<div style="font-size:12px;color:#6b7280;margin-top:5px">📌 ${r.note}</div>`:''}
+        ${currentRole==='admin'?`<button class="btn btn-red" style="margin-top:8px;font-size:12px;padding:4px 10px" onclick="deleteRecord('${r.fbKey}')">🗑️ ลบ</button>`:''}
+      </div>
+    </div>`).join('');
+}
+
+function renderDashboard(){
+  const grand=records.reduce((s,r)=>s+r.total,0);
+  document.getElementById('grand-total').textContent=grand.toLocaleString();
+  document.getElementById('grand-sub').textContent=`ชิ้น จาก ${records.length} ครั้ง`;
+
+  document.getElementById('type-stats').innerHTML=WASTE.map(t=>{
+    const tot=records.reduce((s,r)=>s+(r[t.key]||0),0);
+    return `<div class="stat-card card" style="text-align:center;padding:12px"><div style="font-size:20px">${t.label.split(' ')[0]}</div><div style="font-size:22px;font-weight:700;color:${t.color}">${tot}</div><div style="font-size:12px;color:#9ca3af">${t.label.split(' ')[1]}</div></div>`;
+  }).join('');
+
+  // 7-day bar
+  const days={};
+  for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);const k=d.toISOString().slice(0,10);days[k]={label:fmtD(k),total:0};}
+  records.forEach(r=>{const k=r.date?.slice(0,10);if(k&&days[k])days[k].total+=r.total;});
+  const maxV=Math.max(1,...Object.values(days).map(d=>d.total));
+  document.getElementById('bar-chart').innerHTML=Object.values(days).map(d=>`
+    <div style="margin-bottom:7px">
+      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:2px"><span>${d.label}</span><span style="font-weight:700">${d.total}</span></div>
+      <div class="bar-bg"><div class="bar-fill" style="width:${(d.total/maxV*100).toFixed(1)}%;background:#16a34a"></div></div>
+    </div>`).join('');
+
+  // Class breakdown
+  const classList=members.filter(m=>m.type==='class');
+  if(!classList.length){document.getElementById('class-stats').innerHTML='<p style="color:#9ca3af;font-size:13px">ยังไม่มีห้องเรียน</p>';return;}
+  const maxC=Math.max(1,...classList.map(c=>records.filter(r=>r.member_id===c.fbKey).reduce((s,r)=>s+r.total,0)));
+  document.getElementById('class-stats').innerHTML=classList.map(c=>{
+    const tot=records.filter(r=>r.member_id===c.fbKey).reduce((s,r)=>s+r.total,0);
+    return `<div style="margin-bottom:10px">
+      <div class="flex gap8 ai-center" style="margin-bottom:3px">
+        ${avatarHTML(c.img,c.name,28)}
+        <span style="font-size:13px;font-weight:600">${c.name}</span>
+        <span style="margin-left:auto;font-weight:700;color:#16a34a">${tot} ชิ้น</span>
+      </div>
+      <div class="bar-bg"><div class="bar-fill" style="width:${(tot/maxC*100).toFixed(1)}%;background:#3b82f6"></div></div>
+    </div>`;
+  }).join('');
+}
+
+function renderPoints(){
+  const el=document.getElementById('points-list');
+  if(!members.length){el.innerHTML='<p style="text-align:center;color:#9ca3af;padding:40px">ยังไม่มีรายชื่อ</p>';return;}
+  const ranked=[...members].sort((a,b)=>(b.points||0)-(a.points||0));
+  el.innerHTML=ranked.map((m,i)=>{
+    const pts=m.points||0;
+    const badge=BADGES.slice().reverse().find(b=>pts>=b.pts)||null;
+    const next=BADGES.find(b=>pts<b.pts);
+    const pct=next?Math.min(100,(pts/next.pts*100)):100;
+    return `<div class="card">
+      <div class="flex gap12 ai-center">
+        <div style="font-size:${i<3?22:16}px;font-weight:800;width:30px;text-align:center;color:${i===0?'#f59e0b':i===1?'#9ca3af':i===2?'#b45309':'#6b7280'}">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</div>
+        ${avatarHTML(m.img,m.name,46)}
+        <div style="flex:1">
+          <div style="font-weight:700;font-size:15px">${m.name}</div>
+          <div class="flex gap8" style="margin-top:3px;flex-wrap:wrap">
+            ${badge?`<span class="badge" style="background:#fef3c7;color:#92400e">${badge.icon} ${badge.label}</span>`:''}
+            <span style="font-size:12px;color:#9ca3af">${m.type==='class'?'ห้องเรียน':'นักเรียน'}</span>
+          </div>
+          ${next?`<div style="margin-top:6px"><div style="font-size:11px;color:#9ca3af;margin-bottom:2px">ถึง ${next.icon}${next.label}: ${pts}/${next.pts} แต้ม</div><div class="bar-bg"><div class="bar-fill" style="width:${pct}%;background:#f59e0b"></div></div></div>`:`<div style="font-size:12px;color:#16a34a;margin-top:4px">🏆 ระดับสูงสุดแล้ว!</div>`}
+        </div>
+        <div style="text-align:right"><div class="points-big">${pts}</div><div style="font-size:11px;color:#9ca3af">แต้ม</div></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderTeachers(){
+  const el=document.getElementById('teachers-list');
+  if(!el) return;
+  if(!teachers.length){el.innerHTML='<p style="color:#9ca3af;font-size:13px">ยังไม่มีครู</p>';return;}
+  el.innerHTML=`<div class="section-label">ครูในระบบ</div>`+teachers.map(t=>`
+    <div class="flex gap8 ai-center" style="padding:8px 10px;background:#f9fafb;border-radius:8px;margin-bottom:6px">
+      <div class="avatar-ph" style="width:34px;height:34px;font-size:14px">${(t.name||'?')[0]}</div>
+      <div style="flex:1"><div style="font-weight:600;font-size:14px">${t.name}</div><div style="font-size:12px;color:#6b7280">${t.email}</div></div>
+      <span class="badge role-teacher">👩‍🏫 ครู</span>
+    </div>`).join('');
+}
+
+function renderMembersList(){
+  const el=document.getElementById('members-list');
+  if(!el) return;
+  if(!members.length){el.innerHTML='<p style="color:#9ca3af;font-size:13px;padding:10px 0">ยังไม่มีรายชื่อ</p>';return;}
+  let h='';
+  ['class','student'].forEach(tp=>{
+    const list=members.filter(m=>m.type===tp); if(!list.length)return;
+    h+=`<div class="section-label">${tp==='class'?'ห้องเรียน':'นักเรียน'}</div>`;
+    list.forEach(m=>{
+      h+=`<div class="flex gap8 ai-center" style="padding:8px 10px;background:#f9fafb;border-radius:8px;margin-bottom:6px">
+        ${avatarHTML(m.img,m.name,36)}
+        <div style="flex:1"><div style="font-weight:600;font-size:14px">${m.name}</div><div style="font-size:12px;color:#9ca3af">${m.points||0} แต้ม</div></div>
+        <button class="btn btn-yellow" style="font-size:12px;padding:5px 8px" onclick="editMemberFn('${m.fbKey}')">✏️</button>
+        <button class="btn btn-red" style="font-size:12px;padding:5px 8px" onclick="deleteMemberFn('${m.fbKey}')">🗑️</button>
+      </div>`;
+    });
+  });
+  el.innerHTML=h;
+}
+
+function renderAudit(){
+  const el=document.getElementById('audit-log');
+  if(!el) return;
+  if(!auditLogs.length){el.innerHTML='<p style="color:#9ca3af;font-size:13px">ยังไม่มีประวัติ</p>';return;}
+  el.innerHTML=`<div class="tbl-wrap"><table><thead><tr><th>วันที่</th><th>การกระทำ</th><th>รายละเอียด</th><th>โดย</th></tr></thead><tbody>`+
+    auditLogs.slice(0,50).map(l=>`<tr><td style="white-space:nowrap">${fmtDT(l.date)}</td><td>${l.action}</td><td>${l.detail}</td><td>${l.by}</td></tr>`).join('')+
+    `</tbody></table></div>`;
+}
+
+// ══════════════════════════════════════════
+// UI HELPERS
+// ══════════════════════════════════════════
+function switchTab(t){
+  ['log','history','dashboard','points','qr','admin'].forEach(k=>{
+    document.getElementById(`page-${k}`)?.classList.toggle('hidden',k!==t);
+    document.getElementById(`tab-${k}`)?.classList.toggle('active',k===t);
+  });
+}
+
+function initDatetime(){
+  const now=new Date(), pad=n=>String(n).padStart(2,'0');
+  document.getElementById('form-date').value=`${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
+}
+
+let _toastT;
+function showToast(msg,type='success'){
+  const el=document.getElementById('toast');
+  el.textContent=msg; el.style.background=type==='error'?'#ef4444':'#16a34a'; el.classList.remove('hidden');
+  clearTimeout(_toastT); _toastT=setTimeout(()=>el.classList.add('hidden'),3000);
+}
+
+const fmtDT=d=>new Date(d).toLocaleString('th-TH',{dateStyle:'short',timeStyle:'short'});
+const fmtD =d=>new Date(d).toLocaleDateString('th-TH',{weekday:'short',day:'numeric',month:'short'});
+
+// ══════════════════════════════════════════
+// EXPORT CSV
+// ══════════════════════════════════════════
+function downloadCSV(filename, rows){
+  const BOM='\uFEFF'; // UTF-8 BOM for Excel Thai
+  const csv=BOM+rows.map(r=>r.map(c=>`"${String(c??'').replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
+  a.download=filename; a.click();
+}
+
+function exportCSV(){
+  if(!records.length){showToast('ยังไม่มีข้อมูล','error');return;}
+  const header=['วันที่','เวลา','ผู้บันทึก','ประเภท','ขวดพลาสติก','กระป๋อง','กระดาษ','อื่นๆ','รวม(ชิ้น)','แต้มที่ได้','หมายเหตุ','บันทึกโดย'];
+  const rows=records.map(r=>{
+    const d=new Date(r.date);
+    return [
+      d.toLocaleDateString('th-TH'),
+      d.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'}),
+      r.member_name||'ไม่ระบุ',
+      r.member_type==='class'?'ห้องเรียน':r.member_type==='student'?'นักเรียน':'-',
+      r.plastic||0, r.can||0, r.paper||0, r.other||0,
+      r.total||0, r.pts||0,
+      r.note||'', r.created_name||''
+    ];
+  });
+  const date=new Date().toISOString().slice(0,10);
+  downloadCSV(`waste_records_${date}.csv`,[header,...rows]);
+  showToast('Export CSV สำเร็จ ✅');
+}
+
+function exportSummaryCSV(){
+  if(!records.length){showToast('ยังไม่มีข้อมูล','error');return;}
+  // Per-member summary
+  const header=['ชื่อ','ประเภท','จำนวนครั้ง','ขวดพลาสติก','กระป๋อง','กระดาษ','อื่นๆ','รวม(ชิ้น)','แต้มสะสม'];
+  const rows=members.map(m=>{
+    const recs=records.filter(r=>r.member_id===m.fbKey);
+    return [
+      m.name,
+      m.type==='class'?'ห้องเรียน':'นักเรียน',
+      recs.length,
+      recs.reduce((s,r)=>s+(r.plastic||0),0),
+      recs.reduce((s,r)=>s+(r.can||0),0),
+      recs.reduce((s,r)=>s+(r.paper||0),0),
+      recs.reduce((s,r)=>s+(r.other||0),0),
+      recs.reduce((s,r)=>s+(r.total||0),0),
+      m.points||0
+    ];
+  }).sort((a,b)=>b[7]-a[7]);
+  // Total row
+  rows.push(['รวมทั้งหมด','',records.length,
+    records.reduce((s,r)=>s+(r.plastic||0),0),
+    records.reduce((s,r)=>s+(r.can||0),0),
+    records.reduce((s,r)=>s+(r.paper||0),0),
+    records.reduce((s,r)=>s+(r.other||0),0),
+    records.reduce((s,r)=>s+(r.total||0),0),'']);
+  const date=new Date().toISOString().slice(0,10);
+  downloadCSV(`waste_summary_${date}.csv`,[header,...rows]);
+  showToast('Export สรุป CSV สำเร็จ ✅');
+}
+</script>
+</body>
+</html>
