@@ -269,10 +269,14 @@ th{background:#f9fafb;font-weight:700;color:#374151}
 
   <!-- ซ่อมข้อมูล -->
   <div class="card">
-    <h3 style="font-size:15px;font-weight:700;margin-bottom:6px">🔧 ซ่อมข้อมูลบันทึก</h3>
-    <p style="font-size:13px;color:#6b7280;margin-bottom:12px">ตรวจหารายการบันทึกที่ผูกกับนักเรียนที่ถูกลบออกจากระบบแล้ว</p>
-    <button class="btn btn-blue" onclick="scanOrphanRecords()">🔍 ตรวจสอบข้อมูล</button>
+    <h3 style="font-size:15px;font-weight:700;margin-bottom:6px">🔧 ซ่อมข้อมูล</h3>
+    <p style="font-size:13px;color:#6b7280;margin-bottom:12px">ตรวจหาและแก้ไขข้อมูลที่มีปัญหา</p>
+    <div class="flex gap8" style="flex-wrap:wrap">
+      <button class="btn btn-blue" onclick="scanOrphanRecords()">🔍 ตรวจบันทึกไม่มีเจ้าของ</button>
+      <button class="btn btn-yellow" onclick="scanNoRoom()">🏫 ตรวจนักเรียนไม่มีห้อง</button>
+    </div>
     <div id="orphan-result" style="margin-top:12px"></div>
+    <div id="noroom-result" style="margin-top:12px"></div>
   </div>
 
   <!-- Audit -->
@@ -532,8 +536,23 @@ async function saveMember(){
   if(!name){showToast('กรุณากรอกชื่อ','error');return;}
   if(!room){showToast('กรุณาเลือกห้อง','error');return;}
   const data={type:'student',name,room,img:mImgB64||'',points:0};
-  if(editMemberId){await db.ref(`members/${editMemberId}`).update({name,room,img:mImgB64||''});await writeAudit('edit_member',`แก้ไข ${name} (${room})`);showToast('แก้ไขสำเร็จ');cancelMemberEdit();}
-  else{await db.ref('members').push(data);await writeAudit('add_member',`เพิ่ม ${name} (${room})`);showToast('เพิ่มสำเร็จ ✅');}
+  if(editMemberId){
+    await db.ref(`members/${editMemberId}`).update({name,room,img:mImgB64||''});
+    // อัปเดตชื่อ/ห้องใน records ที่ผูกไว้ด้วย
+    const linked=records.filter(r=>r.member_id===editMemberId);
+    if(linked.length){
+      const updates={};
+      linked.forEach(r=>{updates[`records/${r.fbKey}/member_name`]=name;updates[`records/${r.fbKey}/member_room`]=room;updates[`records/${r.fbKey}/member_img`]=mImgB64||records.find(x=>x.fbKey===r.fbKey)?.member_img||'';});
+      await db.ref().update(updates);
+    }
+    await writeAudit('edit_member',`แก้ไข ${name} (${room})`);
+    showToast('แก้ไขสำเร็จ ✅');
+    cancelMemberEdit();
+  } else {
+    await db.ref('members').push(data);
+    await writeAudit('add_member',`เพิ่ม ${name} (${room})`);
+    showToast('เพิ่มสำเร็จ ✅');
+  }
   document.getElementById('m-name').value='';document.getElementById('m-room').value='';mImgB64='';renderMAvatarPreview();
 }
 function editMemberFn(fbKey){const m=members.find(x=>x.fbKey===fbKey);if(!m)return;editMemberId=fbKey;mImgB64=m.img||'';document.getElementById('m-name').value=m.name;document.getElementById('m-room').value=m.room||'';document.getElementById('save-member-btn').textContent='💾 บันทึก';document.getElementById('cancel-member-btn').style.display='';renderMAvatarPreview();}
@@ -600,7 +619,52 @@ async function sendLine(msg){if(!lineConfig.n8nUrl||!lineConfig.token)return;try
 async function writeAudit(action,detail){await db.ref('audit').push({action,detail,by:currentName,ts:Date.now(),date:new Date().toISOString()});}
 function renderAudit(){const el=document.getElementById('audit-log');if(!el)return;if(!auditLogs.length){el.innerHTML='<p style="color:#9ca3af;font-size:13px">ยังไม่มีประวัติ</p>';return;}el.innerHTML=`<div class="tbl-wrap"><table><thead><tr><th>วันที่</th><th>การกระทำ</th><th>รายละเอียด</th><th>โดย</th></tr></thead><tbody>`+auditLogs.slice(0,50).map(l=>`<tr><td style="white-space:nowrap">${fmtDT(l.date)}</td><td>${l.action}</td><td>${l.detail}</td><td>${l.by}</td></tr>`).join('')+`</tbody></table></div>`;}
 
-// ── Orphan Records ──
+// ── Scan no-room members ──
+function scanNoRoom(){
+  const noRoom=members.filter(m=>m.type==='student'&&(!m.room||m.room==='-'||m.room===''));
+  const el=document.getElementById('noroom-result');
+  if(!noRoom.length){
+    el.innerHTML='<div style="background:#f0fdf4;border-radius:8px;padding:12px;color:#16a34a;font-size:14px;font-weight:600">✅ นักเรียนทุกคนมีห้องแล้ว</div>';
+    return;
+  }
+  let h=`<div style="background:#fef3c7;border-radius:8px;padding:10px 12px;font-size:13px;color:#92400e;margin-bottom:12px">
+    ⚠️ พบนักเรียน <b>${noRoom.length} คน</b> ที่ยังไม่มีข้อมูลห้อง
+  </div>`;
+  noRoom.forEach(m=>{
+    h+=`<div style="border:1.5px solid #fcd34d;border-radius:10px;padding:12px;margin-bottom:8px;background:#fffbeb">
+      <div class="flex gap8 ai-center" style="margin-bottom:8px">
+        ${avatarHTML(m.img,m.name,36)}
+        <div style="flex:1"><div style="font-weight:700;font-size:14px">${m.name}</div><div style="font-size:12px;color:#9ca3af">${m.points||0} แต้ม</div></div>
+      </div>
+      <div class="flex gap8">
+        <select id="fix-room-${m.fbKey}" style="flex:1;padding:7px 10px;border:1.5px solid #d1d5db;border-radius:8px;font-size:13px;font-family:inherit">
+          <option value="">-- เลือกห้อง --</option>
+          <optgroup label="อนุบาล"><option value="อนุบาล">อนุบาล</option></optgroup>
+          <optgroup label="ประถม">${['ป.1','ป.2','ป.3','ป.4','ป.5','ป.6'].map(r=>`<option value="${r}">${r}</option>`).join('')}</optgroup>
+        </select>
+        <button class="btn btn-green" style="font-size:13px;padding:7px 12px" onclick="fixMemberRoom('${m.fbKey}','${m.name}')">💾 บันทึก</button>
+        <button class="btn btn-red" style="font-size:13px;padding:7px 12px" onclick="deleteMemberFn('${m.fbKey}')">🗑️</button>
+      </div>
+    </div>`;
+  });
+  el.innerHTML=h;
+}
+
+async function fixMemberRoom(fbKey, name){
+  const room=document.getElementById(`fix-room-${fbKey}`)?.value;
+  if(!room){showToast('กรุณาเลือกห้อง','error');return;}
+  await db.ref(`members/${fbKey}`).update({room});
+  // อัปเดตห้องใน records ที่ผูกไว้ด้วย
+  const linked=records.filter(r=>r.member_id===fbKey);
+  if(linked.length){
+    const updates={};
+    linked.forEach(r=>{updates[`records/${r.fbKey}/member_room`]=room;});
+    await db.ref().update(updates);
+  }
+  await writeAudit('fix_room',`กำหนดห้อง ${name} → ${room} (อัปเดต ${linked.length} บันทึก)`);
+  showToast(`${name} → ${room} แล้ว ✅`);
+  scanNoRoom();
+}
 function scanOrphanRecords(){
   const memberIds=new Set(members.map(m=>m.fbKey));
   // records ที่มี member_id แต่ไม่มีใน members แล้ว
