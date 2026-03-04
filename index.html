@@ -591,7 +591,21 @@ db.ref('superapp_config').on('value', snap => {
     if(v.noticeTxt)  cfg.noticeTxt  = v.noticeTxt;
     if(v.footer)     cfg.footer     = v.footer;
     if(v.logoData)   cfg.logoData   = v.logoData;
-    if(v.apps && Array.isArray(v.apps)) cfg.apps = v.apps;
+    if(v.apps && Array.isArray(v.apps)){
+      // merge: เพิ่มแอปใหม่จาก DEFAULT_APPS ที่ยังไม่มีใน Firebase
+      const saved = v.apps;
+      const merged = [...saved];
+      DEFAULT_APPS.forEach(def => {
+        if(!merged.find(a => a.id === def.id)){
+          merged.push(def); // เพิ่มแอปใหม่ต่อท้าย
+        }
+      });
+      cfg.apps = merged;
+      // ถ้ามีแอปใหม่ ให้บันทึก Firebase อัตโนมัติ
+      if(merged.length > saved.length){
+        db.ref('superapp_config/apps').set(merged);
+      }
+    }
     if(v.layout) cfg.layout = {...cfg.layout, ...v.layout};
   }
   applyConfig();
