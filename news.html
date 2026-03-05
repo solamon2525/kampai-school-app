@@ -1,324 +1,845 @@
-
 <!DOCTYPE html>
 <html lang="th">
+
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>ข่าวการศึกษา • บ้านคำไผ่</title>
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700;800;900&display=swap');
-*{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --bg:#0d1117;--surface:rgba(255,255,255,.05);--border:rgba(255,255,255,.1);
-  --text:#f1f5f9;--muted:#64748b;--accent:#4ade80;--blue:#60a5fa;--yellow:#fbbf24;
-}
-body{font-family:Sarabun,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>ข่าวการศึกษา • บ้านคำไผ่</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700;800;900&display=swap');
 
-/* ── BG ── */
-.bg-layer{position:fixed;inset:0;z-index:0;background:linear-gradient(160deg,#0d1117 0%,#0a1628 50%,#0d1117 100%);pointer-events:none}
-.glow{position:fixed;border-radius:50%;filter:blur(100px);opacity:.12;pointer-events:none}
-.g1{width:500px;height:500px;background:#1d4ed8;top:-150px;left:-100px}
-.g2{width:400px;height:400px;background:#16a34a;bottom:-100px;right:-100px}
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0
+    }
 
-/* ── WRAP ── */
-.wrap{position:relative;z-index:1;max-width:720px;margin:0 auto;padding:20px 16px 60px}
+    :root {
+      --bg: #020b18;
+      --surface: rgba(14, 165, 233, .07);
+      --border: rgba(14, 165, 233, .18);
+      --text: #e0f2fe;
+      --muted: #64748b;
+      --accent: #22d3ee;
+      --blue: #38bdf8;
+      --yellow: #fbbf24;
+    }
 
-/* ── HEADER ── */
-.page-header{padding:24px 0 20px;display:flex;align-items:center;gap:14px}
-.back-btn{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:#94a3b8;width:38px;height:38px;border-radius:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;text-decoration:none;transition:all .2s;flex-shrink:0}
-.back-btn:hover{background:rgba(255,255,255,.12);color:#fff}
-.header-info{flex:1}
-.page-title{font-size:22px;font-weight:900;background:linear-gradient(135deg,#60a5fa,#a5f3fc,#4ade80);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.page-sub{font-size:12px;color:var(--muted);margin-top:2px}
-.refresh-btn{background:rgba(96,165,250,.1);border:1px solid rgba(96,165,250,.3);color:#60a5fa;padding:8px 14px;border-radius:12px;font-size:12px;font-weight:700;cursor:pointer;font-family:Sarabun,sans-serif;transition:all .2s;display:flex;align-items:center;gap:6px}
-.refresh-btn:hover{background:rgba(96,165,250,.2)}
-.refresh-btn.spinning .ri{animation:spin .7s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
+    body {
+      font-family: Sarabun, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden
+    }
 
-/* ── SOURCE TABS ── */
-.source-tabs{display:flex;gap:8px;margin-bottom:18px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
-.source-tabs::-webkit-scrollbar{display:none}
-.src-tab{flex-shrink:0;background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:7px 16px;font-size:12px;font-weight:700;color:var(--muted);cursor:pointer;transition:all .2s;white-space:nowrap;font-family:Sarabun,sans-serif}
-.src-tab.active{background:rgba(96,165,250,.15);border-color:#60a5fa;color:#60a5fa}
+    /* ── BG ── */
+    .bg-layer {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      background: linear-gradient(160deg, #020b18 0%, #031a2e 50%, #020b18 100%);
+      pointer-events: none
+    }
 
-/* ── TICKER ── */
-.ticker-wrap{background:rgba(96,165,250,.08);border:1px solid rgba(96,165,250,.2);border-radius:14px;padding:10px 16px;margin-bottom:20px;display:flex;align-items:center;gap:12px;overflow:hidden}
-.ticker-label{flex-shrink:0;background:#1d4ed8;color:#fff;font-size:10px;font-weight:800;padding:3px 8px;border-radius:6px;letter-spacing:.5px}
-.ticker-track{flex:1;overflow:hidden;position:relative;height:20px}
-.ticker-inner{position:absolute;white-space:nowrap;animation:ticker 28s linear infinite;font-size:13px;color:#93c5fd;top:0;line-height:20px}
-.ticker-inner:hover{animation-play-state:paused;cursor:pointer}
-@keyframes ticker{0%{transform:translateX(100%)}100%{transform:translateX(-100%)}}
+    .glow {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(100px);
+      opacity: .15;
+      pointer-events: none
+    }
 
-/* ── NEWS GRID ── */
-.news-grid{display:flex;flex-direction:column;gap:14px}
+    .g1 {
+      width: 500px;
+      height: 500px;
+      background: #0891b2;
+      top: -150px;
+      left: -100px
+    }
 
-/* ── NEWS CARD ── */
-.news-card{background:var(--surface);border:1px solid var(--border);border-radius:18px;overflow:hidden;transition:transform .2s,border-color .2s;cursor:pointer;text-decoration:none;display:block;color:inherit}
-.news-card:hover{transform:translateY(-3px);border-color:rgba(96,165,250,.4)}
-.news-card-inner{display:flex;gap:0}
-.news-thumb{width:110px;flex-shrink:0;background:linear-gradient(135deg,#1e3a5f,#1d4ed8);position:relative;overflow:hidden;min-height:110px}
-.news-thumb img{width:100%;height:100%;object-fit:cover;display:block}
-.news-thumb-fallback{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:36px;min-height:110px}
-.news-body{flex:1;padding:14px 16px;min-width:0}
-.news-source-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(96,165,250,.1);border:1px solid rgba(96,165,250,.2);border-radius:8px;padding:2px 8px;font-size:10px;font-weight:700;color:#60a5fa;margin-bottom:8px}
-.news-title{font-size:14px;font-weight:800;color:var(--text);line-height:1.4;margin-bottom:6px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.news-desc{font-size:12px;color:var(--muted);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:8px}
-.news-meta{display:flex;align-items:center;gap:8px;font-size:11px;color:#475569}
-.news-date{display:flex;align-items:center;gap:4px}
-.news-arr{color:#374151;font-size:14px;transition:all .2s}
-.news-card:hover .news-arr{color:var(--blue);transform:translateX(3px)}
+    .g2 {
+      width: 400px;
+      height: 400px;
+      background: #0ea5e9;
+      bottom: -100px;
+      right: -100px
+    }
 
-/* featured card */
-.news-card.featured{border-color:rgba(96,165,250,.3);background:linear-gradient(135deg,rgba(29,78,216,.12),rgba(22,163,74,.06))}
-.news-card.featured .news-card-inner{flex-direction:column}
-.news-card.featured .news-thumb{width:100%;height:180px;min-height:180px}
-.news-card.featured .news-title{font-size:17px;-webkit-line-clamp:3}
-.news-card.featured .news-desc{-webkit-line-clamp:3}
+    /* ── WRAP ── */
+    .wrap {
+      position: relative;
+      z-index: 1;
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 20px 16px 60px
+    }
 
-/* ── SKELETON ── */
-.skeleton{background:rgba(255,255,255,.06);border-radius:18px;overflow:hidden;border:1px solid var(--border)}
-.sk-inner{display:flex;gap:0}
-.sk-thumb{width:110px;min-height:110px;background:rgba(255,255,255,.05)}
-.sk-body{flex:1;padding:14px 16px;display:flex;flex-direction:column;gap:8px}
-.sk-line{background:rgba(255,255,255,.07);border-radius:6px;animation:shimmer 1.5s infinite}
-@keyframes shimmer{0%,100%{opacity:.4}50%{opacity:.9}}
+    /* ── HEADER ── */
+    .page-header {
+      padding: 24px 0 20px;
+      display: flex;
+      align-items: center;
+      gap: 14px
+    }
 
-/* ── EMPTY / ERROR ── */
-.state-box{text-align:center;padding:48px 20px;color:var(--muted)}
-.state-icon{font-size:48px;margin-bottom:12px}
-.state-title{font-size:16px;font-weight:700;margin-bottom:6px;color:#94a3b8}
-.state-sub{font-size:13px;line-height:1.6}
-.retry-btn{margin-top:16px;background:rgba(96,165,250,.1);border:1px solid rgba(96,165,250,.3);color:#60a5fa;padding:10px 24px;border-radius:12px;font-size:13px;font-weight:700;cursor:pointer;font-family:Sarabun,sans-serif;transition:all .2s}
-.retry-btn:hover{background:rgba(96,165,250,.2)}
+    .back-btn {
+      background: rgba(255, 255, 255, .06);
+      border: 1px solid rgba(255, 255, 255, .1);
+      color: #94a3b8;
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 18px;
+      text-decoration: none;
+      transition: all .2s;
+      flex-shrink: 0
+    }
 
-/* ── LOAD MORE ── */
-.load-more{text-align:center;margin-top:20px}
-.load-more-btn{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:#94a3b8;padding:12px 32px;border-radius:14px;font-size:14px;font-weight:700;cursor:pointer;font-family:Sarabun,sans-serif;transition:all .2s}
-.load-more-btn:hover{background:rgba(255,255,255,.1);color:#fff}
+    .back-btn:hover {
+      background: rgba(255, 255, 255, .12);
+      color: #fff
+    }
 
-/* ── BACK TO TOP ── */
-.fab{position:fixed;bottom:24px;right:20px;z-index:100;background:rgba(29,78,216,.2);border:1px solid rgba(96,165,250,.3);color:#60a5fa;width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:20px;transition:all .2s;backdrop-filter:blur(10px)}
-.fab:hover{background:rgba(29,78,216,.4);transform:translateY(-2px)}
+    .header-info {
+      flex: 1
+    }
 
-/* ── LAST UPDATED ── */
-.updated-bar{text-align:center;font-size:11px;color:#2d3748;margin-top:10px}
+    .page-title {
+      font-size: 22px;
+      font-weight: 900;
+      background: linear-gradient(135deg, #22d3ee, #7dd3fc, #38bdf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text
+    }
 
-@media(max-width:480px){
-  .news-thumb{width:90px}
-  .news-card.featured .news-thumb{height:140px}
-  .news-title{font-size:13px}
-}
-</style>
+    .page-sub {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 2px
+    }
+
+    .refresh-btn {
+      background: rgba(8, 145, 178, .1);
+      border: 1px solid rgba(34, 211, 238, .3);
+      color: #22d3ee;
+      padding: 8px 14px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: Sarabun, sans-serif;
+      transition: all .2s;
+      display: flex;
+      align-items: center;
+      gap: 6px
+    }
+
+    .refresh-btn:hover {
+      background: rgba(8, 145, 178, .2)
+    }
+
+    .refresh-btn.spinning .ri {
+      animation: spin .7s linear infinite
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg)
+      }
+    }
+
+    /* ── SOURCE TABS ── */
+    .source-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 18px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      scrollbar-width: none
+    }
+
+    .source-tabs::-webkit-scrollbar {
+      display: none
+    }
+
+    .src-tab {
+      flex-shrink: 0;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 7px 16px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all .2s;
+      white-space: nowrap;
+      font-family: Sarabun, sans-serif
+    }
+
+    .src-tab.active {
+      background: rgba(34, 211, 238, .15);
+      border-color: #22d3ee;
+      color: #22d3ee
+    }
+
+    /* ── TICKER ── */
+    .ticker-wrap {
+      background: rgba(8, 145, 178, .1);
+      border: 1px solid rgba(34, 211, 238, .2);
+      border-radius: 14px;
+      padding: 10px 16px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      overflow: hidden
+    }
+
+    .ticker-label {
+      flex-shrink: 0;
+      background: #0891b2;
+      color: #fff;
+      font-size: 10px;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: 6px;
+      letter-spacing: .5px
+    }
+
+    .ticker-track {
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+      height: 20px
+    }
+
+    .ticker-inner {
+      position: absolute;
+      white-space: nowrap;
+      animation: ticker 28s linear infinite;
+      font-size: 13px;
+      color: #7dd3fc;
+      top: 0;
+      line-height: 20px
+    }
+
+    .ticker-inner:hover {
+      animation-play-state: paused;
+      cursor: pointer
+    }
+
+    @keyframes ticker {
+      0% {
+        transform: translateX(100%)
+      }
+
+      100% {
+        transform: translateX(-100%)
+      }
+    }
+
+    /* ── NEWS GRID ── */
+    .news-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 14px
+    }
+
+    /* ── NEWS CARD ── */
+    .news-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      overflow: hidden;
+      transition: transform .2s, border-color .2s;
+      cursor: pointer;
+      text-decoration: none;
+      display: block;
+      color: inherit
+    }
+
+    .news-card:hover {
+      transform: translateY(-3px);
+      border-color: rgba(34, 211, 238, .4)
+    }
+
+    .news-card-inner {
+      display: flex;
+      gap: 0
+    }
+
+    .news-thumb {
+      width: 110px;
+      flex-shrink: 0;
+      background: linear-gradient(135deg, #1e3a5f, #1d4ed8);
+      position: relative;
+      overflow: hidden;
+      min-height: 110px
+    }
+
+    .news-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block
+    }
+
+    .news-thumb-fallback {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 36px;
+      min-height: 110px
+    }
+
+    .news-body {
+      flex: 1;
+      padding: 14px 16px;
+      min-width: 0
+    }
+
+    .news-source-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(34, 211, 238, .1);
+      border: 1px solid rgba(34, 211, 238, .2);
+      border-radius: 8px;
+      padding: 2px 8px;
+      font-size: 10px;
+      font-weight: 700;
+      color: #22d3ee;
+      margin-bottom: 8px
+    }
+
+    .news-title {
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--text);
+      line-height: 1.4;
+      margin-bottom: 6px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden
+    }
+
+    .news-desc {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.5;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      margin-bottom: 8px
+    }
+
+    .news-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      color: #475569
+    }
+
+    .news-date {
+      display: flex;
+      align-items: center;
+      gap: 4px
+    }
+
+    .news-arr {
+      color: #374151;
+      font-size: 14px;
+      transition: all .2s
+    }
+
+    .news-card:hover .news-arr {
+      color: #22d3ee;
+      transform: translateX(3px)
+    }
+
+    /* featured card */
+    .news-card.featured {
+      border-color: rgba(34, 211, 238, .3);
+      background: linear-gradient(135deg, rgba(8, 145, 178, .15), rgba(6, 182, 212, .06))
+    }
+
+    .news-card.featured .news-card-inner {
+      flex-direction: column
+    }
+
+    .news-card.featured .news-thumb {
+      width: 100%;
+      height: 180px;
+      min-height: 180px
+    }
+
+    .news-card.featured .news-title {
+      font-size: 17px;
+      -webkit-line-clamp: 3
+    }
+
+    .news-card.featured .news-desc {
+      -webkit-line-clamp: 3
+    }
+
+    /* ── SKELETON ── */
+    .skeleton {
+      background: rgba(255, 255, 255, .06);
+      border-radius: 18px;
+      overflow: hidden;
+      border: 1px solid var(--border)
+    }
+
+    .sk-inner {
+      display: flex;
+      gap: 0
+    }
+
+    .sk-thumb {
+      width: 110px;
+      min-height: 110px;
+      background: rgba(255, 255, 255, .05)
+    }
+
+    .sk-body {
+      flex: 1;
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px
+    }
+
+    .sk-line {
+      background: rgba(255, 255, 255, .07);
+      border-radius: 6px;
+      animation: shimmer 1.5s infinite
+    }
+
+    @keyframes shimmer {
+
+      0%,
+      100% {
+        opacity: .4
+      }
+
+      50% {
+        opacity: .9
+      }
+    }
+
+    /* ── EMPTY / ERROR ── */
+    .state-box {
+      text-align: center;
+      padding: 48px 20px;
+      color: var(--muted)
+    }
+
+    .state-icon {
+      font-size: 48px;
+      margin-bottom: 12px
+    }
+
+    .state-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: #94a3b8
+    }
+
+    .state-sub {
+      font-size: 13px;
+      line-height: 1.6
+    }
+
+    .retry-btn {
+      margin-top: 16px;
+      background: rgba(8, 145, 178, .1);
+      border: 1px solid rgba(34, 211, 238, .3);
+      color: #22d3ee;
+      padding: 10px 24px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: Sarabun, sans-serif;
+      transition: all .2s
+    }
+
+    .retry-btn:hover {
+      background: rgba(8, 145, 178, .2)
+    }
+
+    /* ── LOAD MORE ── */
+    .load-more {
+      text-align: center;
+      margin-top: 20px
+    }
+
+    .load-more-btn {
+      background: rgba(255, 255, 255, .05);
+      border: 1px solid rgba(255, 255, 255, .1);
+      color: #94a3b8;
+      padding: 12px 32px;
+      border-radius: 14px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: Sarabun, sans-serif;
+      transition: all .2s
+    }
+
+    .load-more-btn:hover {
+      background: rgba(255, 255, 255, .1);
+      color: #fff
+    }
+
+    /* ── BACK TO TOP ── */
+    .fab {
+      position: fixed;
+      bottom: 24px;
+      right: 20px;
+      z-index: 100;
+      background: rgba(8, 145, 178, .2);
+      border: 1px solid rgba(34, 211, 238, .3);
+      color: #22d3ee;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 20px;
+      transition: all .2s;
+      backdrop-filter: blur(10px)
+    }
+
+    .fab:hover {
+      background: rgba(8, 145, 178, .4);
+      transform: translateY(-2px)
+    }
+
+    /* ── LAST UPDATED ── */
+    .updated-bar {
+      text-align: center;
+      font-size: 11px;
+      color: #2d3748;
+      margin-top: 10px
+    }
+
+    @media(max-width:480px) {
+      .news-thumb {
+        width: 90px
+      }
+
+      .news-card.featured .news-thumb {
+        height: 140px
+      }
+
+      .news-title {
+        font-size: 13px
+      }
+    }
+  </style>
 </head>
+
 <body>
-<div class="bg-layer"></div>
-<div class="glow g1"></div>
-<div class="glow g2"></div>
+  <div class="bg-layer"></div>
+  <div class="glow g1"></div>
+  <div class="glow g2"></div>
 
-<div class="wrap">
+  <div class="wrap">
 
-  <!-- Header -->
-  <div class="page-header">
-    <a class="back-btn" href="index.html" title="กลับหน้าหลัก">←</a>
-    <div class="header-info">
-      <div class="page-title">📰 ข่าวการศึกษา</div>
-      <div class="page-sub">ติดตามข่าวสาร ศธ. & สพฐ. อัปเดตอัตโนมัติ</div>
+    <!-- Header -->
+    <div class="page-header">
+      <a class="back-btn" href="index.html" title="กลับหน้าหลัก">←</a>
+      <div class="header-info">
+        <div class="page-title">📰 ข่าวการศึกษา</div>
+        <div class="page-sub">ติดตามข่าวสาร ศธ. & สพฐ. อัปเดตอัตโนมัติ</div>
+      </div>
+      <button class="refresh-btn" id="refresh-btn" onclick="loadNews(true)">
+        <span class="ri">🔄</span> รีเฟรช
+      </button>
     </div>
-    <button class="refresh-btn" id="refresh-btn" onclick="loadNews(true)">
-      <span class="ri">🔄</span> รีเฟรช
-    </button>
-  </div>
 
-  <!-- Ticker -->
-  <div class="ticker-wrap" id="ticker-wrap" style="display:none">
-    <span class="ticker-label">📡 LIVE</span>
-    <div class="ticker-track">
-      <div class="ticker-inner" id="ticker-inner">กำลังโหลด...</div>
+    <!-- Ticker -->
+    <div class="ticker-wrap" id="ticker-wrap" style="display:none">
+      <span class="ticker-label">📡 LIVE</span>
+      <div class="ticker-track">
+        <div class="ticker-inner" id="ticker-inner">กำลังโหลด...</div>
+      </div>
     </div>
+
+    <!-- Source Tabs -->
+    <div class="source-tabs" id="source-tabs">
+      <div class="src-tab active" data-src="all" onclick="switchSource('all',this)">🗞️ ทั้งหมด</div>
+      <div class="src-tab" data-src="moe360" onclick="switchSource('moe360',this)">📘 ศธ.360 องศา</div>
+      <div class="src-tab" data-src="obec" onclick="switchSource('obec',this)">🏫 สพฐ.</div>
+      <div class="src-tab" data-src="eef" onclick="switchSource('eef',this)">💡 กสศ.</div>
+    </div>
+
+    <!-- News Feed -->
+    <div id="news-container"></div>
+    <div class="load-more" id="load-more" style="display:none">
+      <button class="load-more-btn" onclick="loadMore()">โหลดเพิ่มเติม →</button>
+    </div>
+    <div class="updated-bar" id="updated-bar"></div>
   </div>
 
-  <!-- Source Tabs -->
-  <div class="source-tabs" id="source-tabs">
-    <div class="src-tab active" data-src="all" onclick="switchSource('all',this)">🗞️ ทั้งหมด</div>
-    <div class="src-tab" data-src="moe360" onclick="switchSource('moe360',this)">📘 ศธ.360 องศา</div>
-    <div class="src-tab" data-src="obec" onclick="switchSource('obec',this)">🏫 สพฐ.</div>
-    <div class="src-tab" data-src="eef" onclick="switchSource('eef',this)">💡 กสศ.</div>
-  </div>
+  <div class="fab" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="กลับขึ้นบน">↑</div>
 
-  <!-- News Feed -->
-  <div id="news-container"></div>
-  <div class="load-more" id="load-more" style="display:none">
-    <button class="load-more-btn" onclick="loadMore()">โหลดเพิ่มเติม →</button>
-  </div>
-  <div class="updated-bar" id="updated-bar"></div>
-</div>
+  <script>
+    // ═══════════════════════════════════
+    //  CONFIG — RSS sources
+    // ═══════════════════════════════════
+    const SOURCES = {
+      moe360: {
+        name: 'ศธ.360 องศา',
+        url: 'https://moe360.blog/feed',
+        icon: '📘',
+        color: '#60a5fa',
+        thumb_emoji: '🏛️'
+      },
+      obec: {
+        name: 'สพฐ.',
+        url: 'https://www.obec.go.th/feed',
+        icon: '🏫',
+        color: '#4ade80',
+        thumb_emoji: '📚'
+      },
+      eef: {
+        name: 'กสศ.',
+        url: 'https://www.eef.or.th/feed/',
+        icon: '💡',
+        color: '#fbbf24',
+        thumb_emoji: '💡'
+      }
+    };
 
-<div class="fab" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="กลับขึ้นบน">↑</div>
+    // rss2json proxy — free tier, no key needed for low volume
+    const RSS2JSON = 'https://api.rss2json.com/v1/api.json?rss_url=';
+    const PER_PAGE = 8;
 
-<script>
-// ═══════════════════════════════════
-//  CONFIG — RSS sources
-// ═══════════════════════════════════
-const SOURCES = {
-  moe360: {
-    name: 'ศธ.360 องศา',
-    url:  'https://moe360.blog/feed',
-    icon: '📘',
-    color:'#60a5fa',
-    thumb_emoji: '🏛️'
-  },
-  obec: {
-    name: 'สพฐ.',
-    url:  'https://www.obec.go.th/feed',
-    icon: '🏫',
-    color:'#4ade80',
-    thumb_emoji: '📚'
-  },
-  eef: {
-    name: 'กสศ.',
-    url:  'https://www.eef.or.th/feed/',
-    icon: '💡',
-    color:'#fbbf24',
-    thumb_emoji: '💡'
-  }
-};
+    let allItems = [];
+    let filtered = [];
+    let page = 1;
+    let currentSrc = 'all';
+    let loading = false;
 
-// rss2json proxy — free tier, no key needed for low volume
-const RSS2JSON = 'https://api.rss2json.com/v1/api.json?rss_url=';
-const PER_PAGE = 8;
+    // ═══════════════════════════════════
+    //  STATIC FALLBACK NEWS
+    // ═══════════════════════════════════
+    const STATIC_NEWS = [
+      {
+        source: 'moe360', sourceName: 'ศธ.360 องศา', sourceIcon: '📘', sourceColor: '#38bdf8', thumbEmoji: '🏛️',
+        title: 'กระทรวงศึกษาธิการเปิดนโยบาย "เรียนดี มีความสุข" ปีการศึกษา 2569',
+        desc: 'รัฐมนตรีว่าการกระทรวงศึกษาธิการ ประกาศนโยบายหลัก 5 ด้าน มุ่งยกระดับคุณภาพการศึกษาไทย ลดความเหลื่อมล้ำ และส่งเสริมทักษะอาชีพแห่งศตวรรษที่ 21',
+        link: 'https://moe360.blog', date: new Date('2026-03-06'), thumb: null
+      },
+      {
+        source: 'obec', sourceName: 'สพฐ.', sourceIcon: '🏫', sourceColor: '#22d3ee', thumbEmoji: '📚',
+        title: 'สพฐ. เปิดตัวระบบ "OBEC Connect" เชื่อมโยงข้อมูลโรงเรียนทั่วประเทศแบบเรียลไทม์',
+        desc: 'สำนักงานคณะกรรมการการศึกษาขั้นพื้นฐาน เปิดตัวแพลตฟอร์มดิจิทัลกลาง รวมข้อมูลนักเรียน ครู และโรงเรียนกว่า 30,000 แห่ง เพื่อบริหารจัดการอย่างมีประสิทธิภาพ',
+        link: 'https://www.obec.go.th', date: new Date('2026-03-05'), thumb: null
+      },
+      {
+        source: 'eef', sourceName: 'กสศ.', sourceIcon: '💡', sourceColor: '#fbbf24', thumbEmoji: '💡',
+        title: 'กสศ. อัดฉีดทุนการศึกษา 2,000 ล้านบาท ช่วยนักเรียนยากจนพิเศษปี 2569',
+        desc: 'กองทุนเพื่อความเสมอภาคทางการศึกษา ประกาศจัดสรรทุนการศึกษาฉุกเฉิน ครอบคลุมนักเรียนระดับประถมถึงมัธยมทั่วประเทศ มุ่งลดการหลุดออกจากระบบการศึกษา',
+        link: 'https://www.eef.or.th', date: new Date('2026-03-04'), thumb: null
+      },
+      {
+        source: 'moe360', sourceName: 'ศธ.360 องศา', sourceIcon: '📘', sourceColor: '#38bdf8', thumbEmoji: '🏛️',
+        title: 'ประกาศผลสอบ O-NET ปีการศึกษา 2568 คะแนนวิทย์-คณิตพุ่งสูงขึ้น',
+        desc: 'สทศ. ประกาศผลคะแนน O-NET 2568 พบวิชาวิทยาศาสตร์และคณิตศาสตร์มีแนวโน้มสูงขึ้น สะท้อนผลจากนโยบาย STEM ศึกษา และการใช้สื่อดิจิทัลในห้องเรียน',
+        link: 'https://moe360.blog', date: new Date('2026-03-03'), thumb: null
+      },
+      {
+        source: 'obec', sourceName: 'สพฐ.', sourceIcon: '🏫', sourceColor: '#22d3ee', thumbEmoji: '📚',
+        title: 'สพฐ. เดินหน้าโครงการ "โรงเรียนคุณภาพ" เน้นห้องเรียน Active Learning',
+        desc: 'สพฐ. ขยายโครงการโรงเรียนคุณภาพสู่ 7,000 โรงเรียนทั่วประเทศ ส่งเสริมการเรียนการสอนแบบ Active Learning ลดการบรรยาย เพิ่มการลงมือปฏิบัติจริง',
+        link: 'https://www.obec.go.th', date: new Date('2026-03-02'), thumb: null
+      },
+      {
+        source: 'eef', sourceName: 'กสศ.', sourceIcon: '💡', sourceColor: '#fbbf24', thumbEmoji: '💡',
+        title: 'รายงาน: เด็กไทย 6 แสนคนเสี่ยงหลุดออกจากระบบการศึกษา กสศ. เร่งแก้ไข',
+        desc: 'ผลสำรวจล่าสุดของ กสศ. พบนักเรียนกว่า 600,000 คนมีความเสี่ยงสูงที่จะออกจากโรงเรียนกลางคัน ส่วนใหญ่อยู่ในครอบครัวที่มีรายได้น้อยในพื้นที่ห่างไกล',
+        link: 'https://www.eef.or.th', date: new Date('2026-03-01'), thumb: null
+      },
+      {
+        source: 'moe360', sourceName: 'ศธ.360 องศา', sourceIcon: '📘', sourceColor: '#38bdf8', thumbEmoji: '🏛️',
+        title: 'ไทยติดอันดับ 3 อาเซียน ด้านการพัฒนาทักษะดิจิทัลในห้องเรียน',
+        desc: 'รายงานจาก UNESCO พบว่าประเทศไทยก้าวหน้าด้านการนำเทคโนโลยีเข้ามาในการศึกษา โดยเฉพาะการใช้ AI และ Coding ในระดับมัธยมศึกษา',
+        link: 'https://moe360.blog', date: new Date('2026-02-28'), thumb: null
+      },
+      {
+        source: 'obec', sourceName: 'สพฐ.', sourceIcon: '🏫', sourceColor: '#22d3ee', thumbEmoji: '📚',
+        title: 'ปรับหลักสูตรใหม่ 2569 เพิ่มวิชา AI Literacy ทุกระดับชั้น',
+        desc: 'สพฐ. ประกาศปรับหลักสูตรแกนกลาง เพิ่มเนื้อหา AI Literacy และ Computational Thinking ในทุกช่วงชั้น เตรียมพร้อมเด็กไทยสู่โลกดิจิทัล',
+        link: 'https://www.obec.go.th', date: new Date('2026-02-27'), thumb: null
+      },
+      {
+        source: 'eef', sourceName: 'กสศ.', sourceIcon: '💡', sourceColor: '#fbbf24', thumbEmoji: '💡',
+        title: 'กสศ. จับมือ 20 องค์กรเอกชน ส่งเสริมทุนฝึกงานสำหรับเยาวชนชายขอบ',
+        desc: 'กองทุนเสมอภาคฯ ลงนาม MOU กับภาคเอกชนชั้นนำ สร้างโอกาสฝึกทักษะอาชีพ และทุนประกอบอาชีพแก่เยาวชนด้อยโอกาสทั่วประเทศ',
+        link: 'https://www.eef.or.th', date: new Date('2026-02-25'), thumb: null
+      },
+      {
+        source: 'moe360', sourceName: 'ศธ.360 องศา', sourceIcon: '📘', sourceColor: '#38bdf8', thumbEmoji: '🏛️',
+        title: 'เปิดรับสมัครครูบรรจุใหม่ปี 2569 กว่า 10,000 อัตราทั่วประเทศ',
+        desc: 'สพฐ. เปิดรับสมัครสอบบรรจุครูผู้ช่วยรอบใหม่ ครอบคลุมทุกสาขาวิชา เน้นพื้นที่ขาดแคลน ผู้สนใจยื่นสมัครออนไลน์ผ่านเว็บไซต์สพฐ.ได้ตั้งแต่วันนี้',
+        link: 'https://moe360.blog', date: new Date('2026-02-24'), thumb: null
+      }
+    ];
 
-let allItems  = [];
-let filtered  = [];
-let page      = 1;
-let currentSrc= 'all';
-let loading   = false;
+    // ═══════════════════════════════════
+    //  FETCH ONE SOURCE
+    // ═══════════════════════════════════
+    async function fetchSource(key) {
+      const src = SOURCES[key];
+      try {
+        const res = await fetch(`${RSS2JSON}${encodeURIComponent(src.url)}&count=20`);
+        const data = await res.json();
+        if (data.status !== 'ok') return [];
+        return data.items.map(item => ({
+          source: key,
+          sourceName: src.name,
+          sourceIcon: src.icon,
+          sourceColor: src.color,
+          thumbEmoji: src.thumb_emoji,
+          title: item.title || '',
+          desc: stripHtml(item.description || item.content || '').slice(0, 200),
+          link: item.link || '#',
+          date: item.pubDate ? new Date(item.pubDate) : new Date(),
+          thumb: item.thumbnail || extractImg(item.content || item.description || '') || null
+        }));
+      } catch (e) {
+        return [];
+      }
+    }
 
-// ═══════════════════════════════════
-//  FETCH ONE SOURCE
-// ═══════════════════════════════════
-async function fetchSource(key){
-  const src = SOURCES[key];
-  try{
-    const res = await fetch(`${RSS2JSON}${encodeURIComponent(src.url)}&count=20`);
-    const data = await res.json();
-    if(data.status !== 'ok') return [];
-    return data.items.map(item => ({
-      source: key,
-      sourceName: src.name,
-      sourceIcon: src.icon,
-      sourceColor: src.color,
-      thumbEmoji: src.thumb_emoji,
-      title: item.title || '',
-      desc:  stripHtml(item.description || item.content || '').slice(0,200),
-      link:  item.link || '#',
-      date:  item.pubDate ? new Date(item.pubDate) : new Date(),
-      thumb: item.thumbnail || extractImg(item.content || item.description || '') || null
-    }));
-  } catch(e){
-    return [];
-  }
-}
+    function stripHtml(html) {
+      const tmp = document.createElement('div');
+      tmp.innerHTML = html;
+      return tmp.textContent || tmp.innerText || '';
+    }
 
-function stripHtml(html){
-  const tmp = document.createElement('div');
-  tmp.innerHTML = html;
-  return tmp.textContent || tmp.innerText || '';
-}
+    function extractImg(html) {
+      const m = html.match(/<img[^>]+src=["']([^"']+)["']/i);
+      return m ? m[1] : null;
+    }
 
-function extractImg(html){
-  const m = html.match(/<img[^>]+src=["']([^"']+)["']/i);
-  return m ? m[1] : null;
-}
+    // ═══════════════════════════════════
+    //  LOAD ALL
+    // ═══════════════════════════════════
+    async function loadNews(force = false) {
+      if (loading) return;
+      loading = true;
 
-// ═══════════════════════════════════
-//  LOAD ALL
-// ═══════════════════════════════════
-async function loadNews(force=false){
-  if(loading) return;
-  loading = true;
+      const btn = document.getElementById('refresh-btn');
+      btn.classList.add('spinning');
+      showSkeletons(4);
 
-  const btn = document.getElementById('refresh-btn');
-  btn.classList.add('spinning');
-  showSkeletons(4);
+      try {
+        const results = await Promise.allSettled(
+          Object.keys(SOURCES).map(k => fetchSource(k))
+        );
 
-  try{
-    const results = await Promise.allSettled(
-      Object.keys(SOURCES).map(k => fetchSource(k))
-    );
+        allItems = [];
+        results.forEach(r => {
+          if (r.status === 'fulfilled') allItems.push(...r.value);
+        });
 
-    allItems = [];
-    results.forEach(r => {
-      if(r.status === 'fulfilled') allItems.push(...r.value);
-    });
+        // ถ้าโหลดจาก API ไม่ได้ ใช้ข่าว static แทน
+        if (allItems.length === 0) {
+          allItems = STATIC_NEWS;
+        }
 
-    // sort by date desc
-    allItems.sort((a,b) => b.date - a.date);
+        // sort by date desc
+        allItems.sort((a, b) => b.date - a.date);
 
-    // update ticker
-    updateTicker(allItems.slice(0,8));
+        // update ticker
+        updateTicker(allItems.slice(0, 8));
 
-    applyFilter();
-    updateTimestamp();
+        applyFilter();
+        updateTimestamp();
 
-  } catch(e){
-    showError();
-  }
+      } catch (e) {
+        // fallback to static news on error
+        allItems = STATIC_NEWS;
+        allItems.sort((a, b) => b.date - a.date);
+        updateTicker(allItems.slice(0, 8));
+        applyFilter();
+        updateTimestamp();
+      }
 
-  btn.classList.remove('spinning');
-  loading = false;
-}
+      btn.classList.remove('spinning');
+      loading = false;
+    }
 
-// ═══════════════════════════════════
-//  FILTER & RENDER
-// ═══════════════════════════════════
-function switchSource(src, el){
-  currentSrc = src;
-  page = 1;
-  document.querySelectorAll('.src-tab').forEach(t => t.classList.remove('active'));
-  el.classList.add('active');
-  applyFilter();
-}
+    // ═══════════════════════════════════
+    //  FILTER & RENDER
+    // ═══════════════════════════════════
+    function switchSource(src, el) {
+      currentSrc = src;
+      page = 1;
+      document.querySelectorAll('.src-tab').forEach(t => t.classList.remove('active'));
+      el.classList.add('active');
+      applyFilter();
+    }
 
-function applyFilter(){
-  filtered = currentSrc === 'all'
-    ? allItems
-    : allItems.filter(i => i.source === currentSrc);
-  page = 1;
-  renderPage();
-}
+    function applyFilter() {
+      filtered = currentSrc === 'all'
+        ? allItems
+        : allItems.filter(i => i.source === currentSrc);
+      page = 1;
+      renderPage();
+    }
 
-function renderPage(){
-  const container = document.getElementById('news-container');
-  const slice = filtered.slice(0, page * PER_PAGE);
+    function renderPage() {
+      const container = document.getElementById('news-container');
+      const slice = filtered.slice(0, page * PER_PAGE);
 
-  if(slice.length === 0){
-    container.innerHTML = renderEmpty();
-    document.getElementById('load-more').style.display = 'none';
-    return;
-  }
+      if (slice.length === 0) {
+        container.innerHTML = renderEmpty();
+        document.getElementById('load-more').style.display = 'none';
+        return;
+      }
 
-  container.innerHTML = `<div class="news-grid">${slice.map((item,i) => renderCard(item, i===0 && page===1)).join('')}</div>`;
-  document.getElementById('load-more').style.display =
-    filtered.length > slice.length ? 'block' : 'none';
-}
+      container.innerHTML = `<div class="news-grid">${slice.map((item, i) => renderCard(item, i === 0 && page === 1)).join('')}</div>`;
+      document.getElementById('load-more').style.display =
+        filtered.length > slice.length ? 'block' : 'none';
+    }
 
-function loadMore(){
-  page++;
-  renderPage();
-  // scroll into last items
-}
+    function loadMore() {
+      page++;
+      renderPage();
+      // scroll into last items
+    }
 
-// ═══════════════════════════════════
-//  RENDER CARD
-// ═══════════════════════════════════
-function renderCard(item, featured=false){
-  const dateStr = formatDate(item.date);
-  const thumb = item.thumb
-    ? `<img src="${escHtml(item.thumb)}" alt="" loading="lazy" onerror="this.parentElement.innerHTML='<div class=news-thumb-fallback>${item.thumbEmoji}</div>'">`
-    : `<div class="news-thumb-fallback">${item.thumbEmoji}</div>`;
+    // ═══════════════════════════════════
+    //  RENDER CARD
+    // ═══════════════════════════════════
+    function renderCard(item, featured = false) {
+      const dateStr = formatDate(item.date);
+      const thumb = item.thumb
+        ? `<img src="${escHtml(item.thumb)}" alt="" loading="lazy" onerror="this.parentElement.innerHTML='<div class=news-thumb-fallback>${item.thumbEmoji}</div>'">`
+        : `<div class="news-thumb-fallback">${item.thumbEmoji}</div>`;
 
-  if(featured){
-    return `
+      if (featured) {
+        return `
     <a href="${escHtml(item.link)}" target="_blank" rel="noopener" class="news-card featured">
       <div class="news-card-inner">
         <div class="news-thumb">${thumb}</div>
@@ -336,9 +857,9 @@ function renderCard(item, featured=false){
         </div>
       </div>
     </a>`;
-  }
+      }
 
-  return `
+      return `
   <a href="${escHtml(item.link)}" target="_blank" rel="noopener" class="news-card">
     <div class="news-card-inner">
       <div class="news-thumb">${thumb}</div>
@@ -356,88 +877,89 @@ function renderCard(item, featured=false){
       </div>
     </div>
   </a>`;
-}
+    }
 
-// ═══════════════════════════════════
-//  TICKER
-// ═══════════════════════════════════
-function updateTicker(items){
-  if(!items.length) return;
-  const wrap = document.getElementById('ticker-wrap');
-  const inner = document.getElementById('ticker-inner');
-  inner.textContent = items.map(i => `📌 ${i.title}`).join('  ·  ');
-  wrap.style.display = 'flex';
-}
+    // ═══════════════════════════════════
+    //  TICKER
+    // ═══════════════════════════════════
+    function updateTicker(items) {
+      if (!items.length) return;
+      const wrap = document.getElementById('ticker-wrap');
+      const inner = document.getElementById('ticker-inner');
+      inner.textContent = items.map(i => `📌 ${i.title}`).join('  ·  ');
+      wrap.style.display = 'flex';
+    }
 
-// ═══════════════════════════════════
-//  SKELETON / ERROR / EMPTY
-// ═══════════════════════════════════
-function showSkeletons(n){
-  const container = document.getElementById('news-container');
-  container.innerHTML = `<div class="news-grid">${Array(n).fill(0).map((_,i)=>`
+    // ═══════════════════════════════════
+    //  SKELETON / ERROR / EMPTY
+    // ═══════════════════════════════════
+    function showSkeletons(n) {
+      const container = document.getElementById('news-container');
+      container.innerHTML = `<div class="news-grid">${Array(n).fill(0).map((_, i) => `
     <div class="skeleton">
       <div class="sk-inner">
-        <div class="sk-thumb" style="animation-delay:${i*0.1}s"></div>
+        <div class="sk-thumb" style="animation-delay:${i * 0.1}s"></div>
         <div class="sk-body">
-          <div class="sk-line" style="height:10px;width:60%;animation-delay:${i*0.1}s"></div>
-          <div class="sk-line" style="height:14px;width:90%;animation-delay:${i*0.15}s"></div>
-          <div class="sk-line" style="height:12px;width:80%;animation-delay:${i*0.2}s"></div>
-          <div class="sk-line" style="height:11px;width:50%;animation-delay:${i*0.25}s"></div>
+          <div class="sk-line" style="height:10px;width:60%;animation-delay:${i * 0.1}s"></div>
+          <div class="sk-line" style="height:14px;width:90%;animation-delay:${i * 0.15}s"></div>
+          <div class="sk-line" style="height:12px;width:80%;animation-delay:${i * 0.2}s"></div>
+          <div class="sk-line" style="height:11px;width:50%;animation-delay:${i * 0.25}s"></div>
         </div>
       </div>
     </div>`).join('')}</div>`;
-}
+    }
 
-function renderEmpty(){
-  return `<div class="state-box">
+    function renderEmpty() {
+      return `<div class="state-box">
     <div class="state-icon">📭</div>
     <div class="state-title">ไม่พบข่าวสาร</div>
     <div class="state-sub">อาจเกิดจากการเชื่อมต่อหรือแหล่งข่าวชั่วคราว<br>กรุณาลองใหม่อีกครั้ง</div>
     <button class="retry-btn" onclick="loadNews(true)">🔄 ลองใหม่</button>
   </div>`;
-}
+    }
 
-function showError(){
-  document.getElementById('news-container').innerHTML = `
+    function showError() {
+      document.getElementById('news-container').innerHTML = `
   <div class="state-box">
     <div class="state-icon">⚠️</div>
     <div class="state-title">โหลดข่าวไม่สำเร็จ</div>
     <div class="state-sub">ตรวจสอบการเชื่อมต่ออินเทอร์เน็ต<br>หรือกด "รีเฟรช" เพื่อลองใหม่</div>
     <button class="retry-btn" onclick="loadNews(true)">🔄 ลองใหม่</button>
   </div>`;
-}
+    }
 
-// ═══════════════════════════════════
-//  HELPERS
-// ═══════════════════════════════════
-function formatDate(d){
-  if(!(d instanceof Date) || isNaN(d)) return '—';
-  const now = new Date();
-  const diff = Math.floor((now - d) / 60000); // minutes
-  if(diff < 60)   return `${diff} นาทีที่แล้ว`;
-  if(diff < 1440) return `${Math.floor(diff/60)} ชั่วโมงที่แล้ว`;
-  if(diff < 2880) return 'เมื่อวาน';
-  const months=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
-  return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()+543}`;
-}
+    // ═══════════════════════════════════
+    //  HELPERS
+    // ═══════════════════════════════════
+    function formatDate(d) {
+      if (!(d instanceof Date) || isNaN(d)) return '—';
+      const now = new Date();
+      const diff = Math.floor((now - d) / 60000); // minutes
+      if (diff < 60) return `${diff} นาทีที่แล้ว`;
+      if (diff < 1440) return `${Math.floor(diff / 60)} ชั่วโมงที่แล้ว`;
+      if (diff < 2880) return 'เมื่อวาน';
+      const months = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+      return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear() + 543}`;
+    }
 
-function escHtml(s){
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
+    function escHtml(s) {
+      return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
 
-function updateTimestamp(){
-  const now = new Date();
-  const t = `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
-  document.getElementById('updated-bar').textContent = `อัปเดตล่าสุด ${t} น.`;
-}
+    function updateTimestamp() {
+      const now = new Date();
+      const t = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+      document.getElementById('updated-bar').textContent = `อัปเดตล่าสุด ${t} น.`;
+    }
 
-// ═══════════════════════════════════
-//  INIT
-// ═══════════════════════════════════
-loadNews();
+    // ═══════════════════════════════════
+    //  INIT
+    // ═══════════════════════════════════
+    loadNews();
 
-// auto-refresh every 10 min
-setInterval(() => loadNews(true), 10 * 60 * 1000);
-</script>
+    // auto-refresh every 10 min
+    setInterval(() => loadNews(true), 10 * 60 * 1000);
+  </script>
 </body>
+
 </html>
