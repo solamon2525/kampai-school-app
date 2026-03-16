@@ -250,6 +250,8 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);min
 
 <!-- ═══ MAIN ═══ -->
 <div class="main-area">
+
+<div id="auth-bar"></div>
 <div class="topbar">
   <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button>
   <div class="topbar-title" id="topbar-title">ใส่ / แก้ไขคะแนน</div>
@@ -287,8 +289,8 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);min
   <div class="panel">
     <div class="panel-header">
       <span class="panel-title">📝 ตารางบันทึกคะแนน</span>
-      <button class="btn btn-blue btn-sm" onclick="saveAllPending()">💾 บันทึกทั้งหมด</button>
-      <button class="btn btn-green btn-sm" onclick="openAddScoreModal()">+ เพิ่มรายการคะแนน</button>
+      <button class="btn btn-blue btn-sm" data-auth="write" onclick="saveAllPending()">💾 บันทึกทั้งหมด</button>
+      <button class="btn btn-green btn-sm" data-auth="write" onclick="openAddScoreModal()">+ เพิ่มรายการคะแนน</button>
     </div>
     <div class="panel-body">
       <!-- FILTERS -->
@@ -348,7 +350,7 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);min
   <div class="panel">
     <div class="panel-header">
       <span class="panel-title">⚙️ กำหนดคะแนนเต็มแต่ละวิชา</span>
-      <button class="btn btn-blue btn-sm" onclick="saveConfig()">💾 บันทึกค่า</button>
+      <button class="btn btn-blue btn-sm" data-auth="write" onclick="saveConfig()">💾 บันทึกค่า</button>
     </div>
     <div class="panel-body">
       <p style="font-size:12px;color:var(--muted);margin-bottom:16px">ตั้งค่าคะแนนเต็มของแต่ละรายการในแต่ละวิชา คะแนนจากเกมจะนำมาแปลงและรวมในช่อง "คะแนนเกม"</p>
@@ -388,8 +390,8 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);min
         </div>
       </div>
       <div style="display:flex;gap:10px;flex-wrap:wrap">
-        <button class="btn btn-blue" onclick="doExport('csv')">📄 Export CSV</button>
-        <button class="btn btn-green" onclick="doExport('full')">📊 รายงานครบทุกวิชา</button>
+        <button class="btn btn-blue" data-auth="write" onclick="doExport('csv')">📄 Export CSV</button>
+        <button class="btn btn-green" data-auth="write" onclick="doExport('full')">📊 รายงานครบทุกวิชา</button>
       </div>
       <div id="export-preview" style="margin-top:20px"></div>
     </div>
@@ -404,7 +406,7 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);min
 <div class="save-bar" id="save-bar">
   <div class="save-bar-txt">⚡ มีคะแนนที่ยังไม่ได้บันทึก <span class="pending-count" id="pending-count">0</span> รายการ</div>
   <button class="btn btn-outline btn-sm" onclick="discardPending()">ยกเลิก</button>
-  <button class="btn btn-blue btn-sm" onclick="saveAllPending()">💾 บันทึกทั้งหมด</button>
+  <button class="btn btn-blue btn-sm" data-auth="write" onclick="saveAllPending()">💾 บันทึกทั้งหมด</button>
 </div>
 
 <!-- ─── ADD SCORE TYPE MODAL ─── -->
@@ -450,15 +452,18 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);min
 <div class="toast" id="toast"></div>
 
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+<script src="auth-guard.js"></script>
 <script>
-firebase.initializeApp({
+AuthGuard.init('require-login');
+const db=_db;
+if(false)firebase.initializeApp({
   apiKey:"AIzaSyBSUa3gj5l2VSYoUnVFXQwF0OX2SJe6Szc",
   authDomain:"kampai-school-app.firebaseapp.com",
   databaseURL:"https://kampai-school-app-default-rtdb.asia-southeast1.firebasedatabase.app",
   projectId:"kampai-school-app"
 });
-const db=firebase.database();
 
 // ══════════════════════════════════════════
 // SUBJECTS CONFIG
@@ -626,8 +631,8 @@ function renderScoreTable(){
       const isPending=pendingVal!==undefined;
       const isSaved=cur!==''&&!isPending;
       return `<td class="score-cell">
-        <div class="score-input-wrap">
-          <input class="score-input ${isPending?'changed':isSaved?'saved':''}"
+        <div class="score-input" data-auth="write-disable"-wrap">
+          <input class="score-input" data-auth="write-disable" ${isPending?'changed':isSaved?'saved':''}"
             data-sid="${s._id}" data-tid="${t._id}" data-max="${t.max}"
             value="${displayVal}" type="number" min="0" max="${t.max}" step="0.5"
             oninput="onScoreInput(this)"
@@ -705,6 +710,7 @@ function updatePendingUI(){
 // SAVE
 // ══════════════════════════════════════════
 async function saveAllPending(){
+  if(!AuthGuard.requireLogin())return;
   if(!Object.keys(pending).length){toast('ไม่มีรายการที่รอบันทึก','info');return;}
   const updates={};
   for(const[key,val] of Object.entries(pending)){
@@ -748,6 +754,7 @@ function openAddScoreModal(){
 }
 
 async function addScoreType(){
+  if(!AuthGuard.requireLogin())return;
   const subject=document.getElementById('as-subject').value;
   const name=document.getElementById('as-name').value.trim();
   const type=document.getElementById('as-type').value;
@@ -813,6 +820,7 @@ function onConfigChange(el){
 }
 
 async function saveConfig(){
+  if(!AuthGuard.requireLogin())return;
   try{
     await db.ref('score_config').set(CONFIG);
     toast('✅ บันทึกการตั้งค่าแล้ว','ok');
