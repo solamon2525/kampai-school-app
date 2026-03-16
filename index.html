@@ -488,20 +488,26 @@ db.ref('superapp_config').on('value',snap=>{
     if(v.logoData)cfg.logoData=v.logoData;
     if(v.apps&&Array.isArray(v.apps)){
       const saved=v.apps;
-      // ใช้ DEFAULT_APPS เป็นหลักสำหรับ live/url/color/group
-      // คง visible + name/icon/desc ที่ Admin แก้ไว้
+      // ค่าที่ Admin แก้ไว้ (live/url/color/name/icon/desc/visible) มีสิทธิ์สูงกว่า DEFAULT_APPS เสมอ
       const merged=DEFAULT_APPS.map(def=>{
         const s=saved.find(a=>a.id===def.id);
-        return{...def,
-          name:s?.name||def.name,
-          icon:s?.icon||def.icon,
-          desc:s?.desc||def.desc,
-          visible:s?.visible!==undefined?s.visible:def.visible};
+        if(!s) return def;
+        return{
+          ...def,
+          name:s.name||def.name,
+          icon:s.icon||def.icon,
+          desc:s.desc||def.desc,
+          url:s.url||def.url,
+          live:s.live!==undefined?s.live:def.live,
+          color:s.color||def.color,
+          wide:s.wide!==undefined?s.wide:def.wide,
+          visible:s.visible!==undefined?s.visible:def.visible,
+          group:s.group||def.group
+        };
       });
       // เพิ่มแอปที่ Admin สร้างเองนอก DEFAULT_APPS
       saved.forEach(s=>{if(!merged.find(a=>a.id===s.id))merged.push(s);});
       cfg.apps=merged;
-      db.ref('superapp_config/apps').set(merged);
     }
     if(v.layout)cfg.layout={...cfg.layout,...v.layout};
   }
