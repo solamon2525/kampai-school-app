@@ -1,0 +1,1350 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>วงล้อซ่อนหา มหาสนุก "อักษรนำ" (AI Edition)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&family=Mali:wght@600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #ff4757;
+            --secondary-color: #ffa502;
+            --accent-color: #2ed573;
+            --bg-color: #dfe4ea;
+            --text-color: #2f3542;
+            --active-team-bg: #fff200; /* Yellow for active team */
+            --ai-color: #6c5ce7; /* New AI Theme Color */
+        }
+
+        body {
+            font-family: 'Mali', cursive;
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(255, 71, 87, 0.2) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(46, 213, 115, 0.2) 0%, transparent 20%);
+            margin: 0;
+            padding: 10px; /* ลด padding รอบนอก */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+            user-select: none; /* Prevent text selection */
+            transition: padding 0.3s;
+        }
+        
+        /* Fallback Fullscreen Mode (CSS based) */
+        body.fallback-fullscreen {
+            padding: 0 !important;
+            margin: 0 !important;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden; /* ซ่อน Scrollbar */
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 9999;
+            background-attachment: fixed;
+            justify-content: center;
+        }
+
+        body.fallback-fullscreen .container {
+            transform: scale(0.9); /* ย่อเล็กน้อยเพื่อให้พอดีไม่ล้น */
+            height: 100%;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        body.fallback-fullscreen .carnival-header {
+            margin-top: 10px;
+            transform: scale(0.9);
+        }
+
+        /* Setup Screen (New) */
+        .setup-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, #74b9ff, #a29bfe);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            transition: opacity 0.5s;
+        }
+
+        .setup-content {
+            background: white;
+            padding: 40px;
+            border-radius: 30px;
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            border: 8px solid white;
+            max-width: 700px;
+            width: 90%;
+            animation: bounceIn 0.8s;
+        }
+
+        .team-select-container {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .team-select-btn {
+            font-family: 'Mali', cursive;
+            font-size: 2.5rem;
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: 5px solid rgba(255,255,255,0.5);
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: bold;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+            text-shadow: 2px 2px 0 rgba(0,0,0,0.2);
+        }
+
+        .team-select-btn:hover { transform: scale(1.1) translateY(-5px); box-shadow: 0 15px 25px rgba(0,0,0,0.3); }
+        .btn-2 { background: #ff4757; }
+        .btn-3 { background: #ffa502; }
+        .btn-4 { background: #2ed573; }
+        .btn-5 { background: #1e90ff; }
+        
+        .btn-new-game {
+            background-color: #747d8c;
+            color: white;
+            padding: 10px 25px;
+            border-radius: 10px;
+            border: none;
+            font-size: 1.1rem;
+            cursor: pointer;
+            font-family: 'Mali', cursive;
+            margin-top: 15px;
+            width: 100%;
+        }
+        
+        .btn-new-game:hover { background-color: #57606f; }
+
+        /* Carnival Decoration */
+        .carnival-header {
+            background: repeating-linear-gradient(
+                45deg,
+                #ff4757,
+                #ff4757 20px,
+                #ffffff 20px,
+                #ffffff 40px
+            );
+            padding: 10px 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            margin-bottom: 15px;
+            border: 4px solid #2f3542;
+            text-align: center;
+            position: relative;
+            width: 95%;
+            max-width: 1400px;
+        }
+
+        h1 {
+            margin: 0;
+            color: #2f3542;
+            font-size: 2rem;
+            text-shadow: 2px 2px 0px #ffffff;
+            background-color: rgba(255, 255, 255, 0.95);
+            padding: 8px 20px;
+            border-radius: 10px;
+            display: inline-block;
+        }
+
+        /* Current Team Display Banner */
+        .current-turn-banner {
+            background: #2f3542;
+            color: #fff;
+            padding: 8px 30px;
+            border-radius: 50px;
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            border: 3px solid var(--secondary-color);
+            animation: bounceIn 0.5s ease-out;
+            cursor: default;
+        }
+
+        .current-team-name {
+            color: var(--secondary-color);
+            font-weight: bold;
+            text-decoration: underline;
+        }
+
+        @keyframes bounceIn {
+            0% { transform: scale(0.8); opacity: 0; }
+            60% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .container {
+            display: flex;
+            flex-wrap: nowrap; /* บังคับให้อยู่บรรทัดเดียวถ้าจอใหญ่พอ */
+            justify-content: center;
+            gap: 30px;
+            width: 100%;
+            max-width: 1600px; /* เพิ่มความกว้างสูงสุด */
+            align-items: flex-start; /* Align items to top */
+        }
+
+        /* Wheel Section */
+        .wheel-section {
+            display: flex; 
+            flex-direction: column; 
+            align-items: center;
+            flex: 2; /* ให้พื้นที่วงล้อมากกว่า */
+        }
+
+        .wheel-container {
+            position: relative;
+            width: 700px; /* ขยายขนาดวงล้อ */
+            height: 700px; /* ขยายขนาดวงล้อ */
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            box-shadow: 0 0 25px rgba(0,0,0,0.3);
+            border: 12px solid #ffffff;
+            transition: transform 3s cubic-bezier(0.25, 0.1, 0.25, 1);
+        }
+
+        .pointer {
+            position: absolute;
+            top: -25px; /* ขยับขึ้นตามขนาด */
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 35px solid transparent; /* ขยายขนาดตัวชี้ */
+            border-right: 35px solid transparent;
+            border-top: 70px solid #ff4757;
+            filter: drop-shadow(0 4px 4px rgba(0,0,0,0.3));
+            z-index: 10;
+        }
+
+        /* Controls */
+        .controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            margin-top: 20px;
+            width: 100%;
+            max-width: 500px; /* จำกัดความกว้างปุ่ม */
+        }
+
+        .spin-btn {
+            font-family: 'Mali', cursive;
+            font-size: 2rem;
+            padding: 15px 50px;
+            border: none;
+            border-radius: 50px;
+            background: linear-gradient(to bottom, #ffa502, #ff7f50);
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 6px 0 #d35400, 0 10px 15px rgba(0,0,0,0.2);
+            transition: all 0.1s;
+            text-transform: uppercase;
+            font-weight: bold;
+            width: 100%;
+        }
+
+        .spin-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 3px 0 #d35400, 0 5px 8px rgba(0,0,0,0.2);
+        }
+
+        .spin-btn:disabled {
+            background: #a4b0be;
+            box-shadow: none;
+            cursor: not-allowed;
+        }
+
+        /* Full Screen Button */
+        .btn-fullscreen {
+            background: rgba(255, 255, 255, 0.5);
+            border: 2px solid #2f3542;
+            color: #2f3542;
+            padding: 8px 25px;
+            border-radius: 20px;
+            font-family: 'Mali', cursive;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-fullscreen:hover {
+            background: #2f3542;
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .result-display {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #2f3542;
+            background: white;
+            padding: 10px;
+            border-radius: 15px;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            width: 100%;
+            border: 3px solid var(--secondary-color);
+        }
+
+        /* Scoreboard - ปรับให้เล็กลง */
+        .scoreboard {
+            flex: 0 0 280px; /* กำหนดความกว้างคงที่และไม่ขยาย */
+            background: white;
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .scoreboard h2 {
+            text-align: center;
+            color: var(--primary-color);
+            border-bottom: 2px dashed #dfe4ea;
+            padding-bottom: 10px;
+            margin-top: 0;
+            font-size: 1.5rem;
+        }
+        
+        .scoreboard-subtitle {
+            text-align: center;
+            font-size: 0.8rem;
+            color: #747d8c;
+            margin-bottom: 10px;
+        }
+
+        .team-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 8px 10px;
+            background: #f1f2f6;
+            border-radius: 10px;
+            transition: all 0.2s;
+            border: 3px solid transparent; 
+            cursor: pointer; 
+            position: relative;
+        }
+        
+        /* Highlight Active Team */
+        .team-row.active {
+            background-color: #ffeb3b; 
+            background-image: linear-gradient(to bottom, #fff59d, #fdd835); 
+            border-color: #ff6f00; 
+            transform: scale(1.05); 
+            box-shadow: 0 8px 20px rgba(255, 111, 0, 0.4); 
+            z-index: 10; 
+        }
+        
+        .team-row:hover {
+            background-color: #dfe6e9;
+        }
+        
+        .team-row.active:hover {
+            background-color: #fff176; 
+        }
+
+        .team-info {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            flex: 1; 
+            overflow: hidden; /* ป้องกันชื่อยาวเกิน */
+        }
+
+        .team-status-icon {
+            font-size: 1rem;
+            opacity: 0; 
+            transition: all 0.3s;
+        }
+
+        .team-row.active .team-status-icon {
+            opacity: 1;
+            font-size: 1.2rem; 
+            animation: bounce 0.6s infinite alternate; 
+        }
+
+        @keyframes bounce {
+            from { transform: translateY(0); }
+            to { transform: translateY(-5px); }
+        }
+
+        .team-name {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #2f3542;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            white-space: nowrap;
+            transition: all 0.3s;
+        }
+        
+        .team-row.active .team-name {
+            color: #bf360c; 
+            font-size: 1.2rem; 
+            text-shadow: 1px 1px 0px rgba(255,255,255,0.5);
+        }
+
+        /* Edit Icon Style */
+        .edit-icon {
+            font-size: 1rem;
+            color: #2f3542;
+            opacity: 0.6; 
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #e1e1e1;
+            padding: 2px 5px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        .edit-icon:hover {
+            opacity: 1;
+            background: #fff;
+            transform: scale(1.1);
+        }
+
+        .score-controls {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .score-val {
+            font-size: 1.4rem;
+            font-weight: bold;
+            min-width: 35px;
+            text-align: center;
+            color: var(--primary-color);
+            background: #fff;
+            padding: 0 5px;
+            border-radius: 5px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .btn-score {
+            width: 30px;
+            height: 30px;
+            border: none;
+            border-radius: 50%;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            transition: transform 0.2s;
+            line-height: 1;
+        }
+        
+        .btn-score:hover { transform: scale(1.1); }
+        .btn-minus { background-color: #ff6b81; }
+        .btn-plus { background-color: #2ed573; }
+
+        /* General Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            display: none; 
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 600px;
+            width: 90%;
+            animation: popIn 0.3s ease-out;
+            border: 8px solid var(--secondary-color);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* Result Modal Specifics */
+        .big-text {
+            font-size: 3rem;
+            color: var(--primary-color);
+            margin: 10px 0;
+            line-height: 1.2;
+        }
+
+        .desc-text {
+            font-size: 1.5rem;
+            color: #57606f;
+            margin-bottom: 20px;
+        }
+
+        .close-btn {
+            background: var(--text-color);
+            color: white;
+            padding: 10px 30px;
+            border-radius: 30px;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .close-hint {
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: #a4b0be;
+        }
+
+        /* AI Section Styles */
+        .ai-section {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f0f3f8;
+            border-radius: 15px;
+            border: 2px dashed var(--ai-color);
+        }
+
+        .btn-ai-challenge {
+            background: linear-gradient(135deg, #a29bfe, #6c5ce7);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-family: 'Mali', cursive;
+            font-size: 1.1rem;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(108, 92, 231, 0.3);
+            transition: all 0.2s;
+            margin-bottom: 10px;
+            width: 100%;
+        }
+
+        .btn-ai-challenge:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(108, 92, 231, 0.4);
+        }
+
+        .ai-response-box {
+            background: white;
+            padding: 10px;
+            border-radius: 10px;
+            margin-top: 10px;
+            min-height: 40px;
+            font-size: 1.1rem;
+            color: #2d3436;
+            display: none; /* Hidden by default */
+            border: 1px solid #dfe6e9;
+        }
+
+        .ai-checker-row {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .ai-input {
+            flex: 1;
+            padding: 8px;
+            border-radius: 10px;
+            border: 1px solid #b2bec3;
+            font-family: 'Mali', cursive;
+        }
+
+        .btn-ai-check {
+            background: #00cec9;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-family: 'Mali', cursive;
+        }
+
+        /* Input Modal Specifics */
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        .input-text {
+            font-family: 'Mali', cursive;
+            font-size: 1.5rem;
+            padding: 10px;
+            border: 2px solid #ccc;
+            border-radius: 10px;
+            width: 80%;
+            text-align: center;
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .btn-confirm {
+            background-color: var(--accent-color);
+            color: white;
+            padding: 10px 25px;
+            border-radius: 10px;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            font-family: 'Mali', cursive;
+        }
+
+        .btn-cancel {
+            background-color: #a4b0be;
+            color: white;
+            padding: 10px 25px;
+            border-radius: 10px;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            font-family: 'Mali', cursive;
+        }
+
+        /* Decor Elements */
+        .bulb {
+            position: absolute;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: #fff;
+            box-shadow: 0 0 10px #fff;
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 1024px) {
+            .container { flex-direction: column; align-items: center; }
+            .wheel-container { width: 500px; height: 500px; } /* ลดขนาดเมื่อจอเล็ก */
+            .pointer { top: -20px; border-top-width: 50px; border-left-width: 25px; border-right-width: 25px; }
+            .scoreboard { width: 90%; flex: auto; }
+        }
+        
+        @media (max-width: 600px) {
+             .wheel-container { width: 320px; height: 320px; }
+             h1 { font-size: 1.5rem; }
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Setup Screen (New) -->
+    <div id="setupScreen" class="setup-screen">
+        <div class="setup-content">
+            <h1 style="font-size: 3rem; margin:0; color:#2f3542;">🎡 วงล้อซ่อนหา</h1>
+            <h2 style="font-size: 1.8rem; margin:10px 0 30px 0; color:#57606f;">เลือกจำนวนทีมที่จะเล่น</h2>
+            
+            <div class="team-select-container">
+                <button class="team-select-btn btn-2" onclick="initGame(2)">2</button>
+                <button class="team-select-btn btn-3" onclick="initGame(3)">3</button>
+                <button class="team-select-btn btn-4" onclick="initGame(4)">4</button>
+                <button class="team-select-btn btn-5" onclick="initGame(5)">5</button>
+            </div>
+            <p style="margin-top:30px; color:#a4b0be;">(คลิกเพื่อเริ่มเกม)</p>
+        </div>
+    </div>
+
+    <div class="carnival-header">
+        <h1>🎡 วงล้อซ่อนหา "อักษรนำ" 🎡</h1>
+        <!-- Decorative lights generated by JS -->
+    </div>
+
+    <!-- Banner telling who is answering -->
+    <div class="current-turn-banner">
+        🎙️ ทีมที่กำลังตอบ: <span id="currentTeamNameBanner" class="current-team-name">...</span>
+    </div>
+
+    <div class="container">
+        
+        <div class="wheel-section">
+            <div class="wheel-container">
+                <div class="pointer"></div>
+                <!-- เพิ่มความละเอียด Canvas เป็น 800x800 เพื่อความคมชัดเมื่อขยาย -->
+                <canvas id="wheelCanvas" width="800" height="800"></canvas>
+            </div>
+
+            <div class="controls">
+                <div class="result-display" id="resultDisplay">กดปุ่มเพื่อหมุนวงล้อ!</div>
+                <button class="spin-btn" id="spinBtn" onclick="spinWheel()">หมุนเลย! (Spacebar)</button>
+                <button class="btn-fullscreen" onclick="toggleFullScreen()">📺 เต็มหน้าจอ</button>
+            </div>
+        </div>
+
+        <div class="scoreboard">
+            <h2>🏆 ตารางคะแนน</h2>
+            <div class="scoreboard-subtitle">(คลิกชื่อทีมเพื่อเลือกผู้ตอบ | คลิก ✏️ เปลี่ยนชื่อ)</div>
+            <div id="teamContainer">
+                <!-- Teams will be injected here -->
+            </div>
+            <div style="text-align: center; margin-top: 20px;">
+                <button onclick="openResetModal()" style="background:none; border:none; color: #a4b0be; cursor:pointer; text-decoration:underline; font-size: 0.9rem;">รีเซ็ต / ตั้งค่าใหม่</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 1: Game Result & AI -->
+    <div class="modal-overlay" id="resultModal">
+        <div class="modal-content">
+            <h2 style="margin:0;">ภารกิจคือ...</h2>
+            <div class="big-text" id="modalTitle">...</div>
+            <div class="desc-text" id="modalDesc">...</div>
+
+            <!-- AI Section -->
+            <div class="ai-section" id="aiSection">
+                <button class="btn-ai-challenge" onclick="getAIChallenge()">✨ ขอโจทย์ท้าทายจาก AI</button>
+                <div id="aiChallengeBox" class="ai-response-box">...</div>
+
+                <div style="margin-top: 15px; border-top: 1px dashed #ccc; padding-top: 10px;">
+                    <label style="font-size: 0.9rem; color: #636e72;">✨ ให้ AI ช่วยตรวจคำตอบ:</label>
+                    <div class="ai-checker-row">
+                        <input type="text" id="aiCheckInput" class="ai-input" placeholder="พิมพ์คำตอบ (ห้ามซ้ำตัวอย่าง)...">
+                        <button class="btn-ai-check" onclick="checkWithAI()">ตรวจ</button>
+                    </div>
+                    <div id="aiCheckBox" class="ai-response-box" style="margin-top: 5px; font-size: 0.9rem;">...</div>
+                </div>
+            </div>
+
+            <button class="close-btn" onclick="closeModal('resultModal')">รับทราบ!</button>
+            <div class="close-hint">(กด Spacebar หรือ Enter เพื่อปิด)</div>
+        </div>
+    </div>
+
+    <!-- Modal 2: Edit Name -->
+    <div class="modal-overlay" id="editNameModal">
+        <div class="modal-content" style="border-color: #1e90ff;">
+            <h2 style="margin-top:0;">✏️ เปลี่ยนชื่อทีม</h2>
+            <div class="input-group">
+                <input type="text" id="editNameInput" class="input-text" placeholder="พิมพ์ชื่อทีมใหม่..." maxlength="20">
+            </div>
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeModal('editNameModal')">ยกเลิก</button>
+                <button class="btn-confirm" onclick="saveTeamName()">บันทึก</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 3: Confirm Reset -->
+    <div class="modal-overlay" id="resetModal">
+        <div class="modal-content" style="border-color: #ff6b81;">
+            <h2 style="margin-top:0;">⚠️ จัดการเกม</h2>
+            <p style="font-size: 1.1rem; color:#57606f;">ต้องการทำรายการใด?</p>
+            <div class="modal-actions" style="flex-direction:column; gap:10px;">
+                <div style="display:flex; justify-content:center; gap:15px;">
+                    <button class="btn-cancel" onclick="closeModal('resetModal')">กลับไปเล่นต่อ</button>
+                    <button class="btn-confirm" style="background-color: #ff4757;" onclick="confirmResetScores()">รีเซ็ตคะแนนเป็น 0</button>
+                </div>
+                <button class="btn-new-game" onclick="backToSetup()">🔄 ตั้งค่าเกมใหม่ (เลือกจำนวนทีม)</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const apiKey = ""; // System provides key
+
+        // --- Game Config ---
+        // ปรับปรุง: วงล้อ 20 ช่อง ตามหลักสูตรอักษรนำ/คำควบกล้ำ
+        const segments = [
+            // หมวดอักษรนำ/ควบ (1-15 จากโจทย์ + 1 แถมให้ครบ 20)
+            { text: "กร-", color: "#ff7979", desc: "เช่น กราบ, กรุง, โกรธ (คำควบกล้ำแท้)" },
+            { text: "กล-", color: "#badc58", desc: "เช่น กลอง, กลับ, กล้วย (คำควบกล้ำแท้)" },
+            { text: "ขร-", color: "#f9ca24", desc: "เช่น ขรุขระ, ขรึม (คำควบกล้ำแท้)" },
+            { text: "คร-", color: "#686de0", desc: "เช่น ครู, ครัว, ครอบครัว (คำควบกล้ำแท้)" },
+            { text: "คล-", color: "#22a6b3", desc: "เช่น คลอง, คลาน, คล้าย (คำควบกล้ำแท้)" },
+            { text: "ตร-", color: "#be2edd", desc: "เช่น ตรวจ, ตรง, เตรียม (คำควบกล้ำแท้)" },
+            { text: "ปร-", color: "#4834d4", desc: "เช่น ปรับ, ปรุง, โปรด (คำควบกล้ำแท้)" },
+            { text: "ปล-", color: "#eb4d4b", desc: "เช่น ปลา, ปลูก, เปลี่ยน (คำควบกล้ำแท้)" },
+            { text: "พร-", color: "#6ab04c", desc: "เช่น พระ, พร้อม, เพราะ (คำควบกล้ำแท้)" },
+            { text: "พล-", color: "#f0932b", desc: "เช่น เพลง, พลาด, พลอย (คำควบกล้ำแท้)" },
+            { text: "ศร-", color: "#7ed6df", desc: "เช่น เศร้า, ศรี, ศรัทธา (คำควบกล้ำไม่แท้)" },
+            { text: "สร-", color: "#e056fd", desc: "เช่น สร้าง, สร้อย, สระ (คำควบกล้ำไม่แท้)" },
+            { text: "สล-", color: "#ffbe76", desc: "เช่น สลบ, สลัก, สลึก (อักษรนำ)" },
+            { text: "สว-", color: "#30336b", desc: "เช่น สว่าง, สวาย (อักษรนำ)" },
+            { text: "สต-", color: "#535c68", desc: "เช่น สติ, สตางค์ (อักษรนำ)" },
+            { text: "ทร-", color: "#95afc0", desc: "เช่น ทราย, ทราบ, พุทรา (คำควบกล้ำไม่แท้ ออกเสียง ซ)" }, // แถมให้ครบ 20
+
+            // หมวดช่องพิเศษ (17-20)
+            { text: "⭐ เลือกเอง", color: "#f6e58d", desc: "โชคดีมาก! เลือกอักษรนำที่ชอบเองได้เลย", isBonus: true },
+            { text: "🔄 หมุนอีก", color: "#dff9fb", desc: "หมุนวงล้ออีก 1 ครั้ง ลุ้นกันใหม่!", isAction: true },
+            { text: "🎁 เพื่อนช่วย", color: "#ffcccc", desc: "เลือกเพื่อนในห้องมาช่วยตอบได้ 1 คน", isAction: true },
+            { text: "🎉 โบนัส", color: "#7efff5", desc: "รับคะแนนพิเศษไปเลยฟรีๆ!", isBonus: true }
+        ];
+
+        let teams = []; // Teams will be initialized by user
+        let currentResult = null; // Store current spin result for AI
+        let usedExamples = {}; // เก็บประวัติคำใบ้ที่เคยใช้ไปแล้ว (เพื่อไม่ให้ซ้ำ)
+        
+        let activeTeamIndex = 0; // Index of the team currently answering
+        let editingTeamIndex = -1; // Which team is being edited
+
+        // --- Canvas Setup ---
+        const canvas = document.getElementById('wheelCanvas');
+        const ctx = canvas.getContext('2d');
+        const resultDisplay = document.getElementById('resultDisplay');
+        const spinBtn = document.getElementById('spinBtn');
+        
+        let currentAngle = 0;
+        let isSpinning = false;
+        let spinSpeed = 0;
+        let animationFrameId;
+
+        // --- Sound Effects (Web Audio API) ---
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        // Fix: Resume audio context on first user interaction
+        document.body.addEventListener('click', () => {
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }, { once: true });
+        
+        function playTone(freq, type, duration) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + duration);
+        }
+
+        function playTick() { playTone(400, 'triangle', 0.05); }
+        function playWin() { 
+            [523, 659, 784, 1046].forEach((f, i) => setTimeout(() => playTone(f, 'sine', 0.4), i * 100));
+        }
+        function playBoing() {
+             if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.frequency.setValueAtTime(200, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(600, audioCtx.currentTime + 0.5);
+            gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+            gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.5);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.5);
+        }
+
+        // --- Drawing the Wheel ---
+        function drawWheel() {
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = canvas.width / 2 - 20; // ลดขอบเล็กน้อยเพื่อให้พอดีกับขอบขาว
+            const arcSize = (2 * Math.PI) / segments.length;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw Segments
+            ctx.save();
+            ctx.translate(centerX, centerY);
+            ctx.rotate(currentAngle);
+
+            segments.forEach((segment, i) => {
+                const angle = i * arcSize;
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.arc(0, 0, radius, angle, angle + arcSize);
+                ctx.fillStyle = segment.color;
+                ctx.fill();
+                ctx.strokeStyle = "#ffffff";
+                ctx.lineWidth = 4; // ลดขนาดเส้นขอบลงเล็กน้อยเพราะช่องเยอะขึ้น
+                ctx.stroke();
+
+                // Text
+                ctx.save();
+                ctx.rotate(angle + arcSize / 2);
+                ctx.textAlign = "right";
+                ctx.fillStyle = "#fff";
+                // ปรับขนาดฟอนต์ให้เล็กลงเพื่อให้พอดีกับ 20 ช่อง (จาก 50px เป็น 32px)
+                ctx.font = "bold 32px Mali"; 
+                ctx.shadowColor = "rgba(0,0,0,0.5)";
+                ctx.shadowBlur = 4;
+                ctx.fillText(segment.text, radius - 40, 10);
+                ctx.restore();
+            });
+
+            ctx.restore();
+
+            // Center Pin
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, 50, 0, 2 * Math.PI); // ขยายจุดกึ่งกลาง
+            ctx.fillStyle = "#ffffff";
+            ctx.fill();
+            ctx.lineWidth = 8;
+            ctx.strokeStyle = "#2f3542";
+            ctx.stroke();
+            
+            // Center Star
+            ctx.fillStyle = "#ffa502";
+            ctx.font = "50px Mali"; // ขยายดาว
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText("★", centerX, centerY + 4);
+        }
+
+        // --- Spin Logic ---
+        function spinWheel() {
+            if (isSpinning) return;
+            isSpinning = true;
+            spinBtn.disabled = true;
+            resultDisplay.textContent = "กำลังหมุน...";
+            resultDisplay.style.backgroundColor = "#fff";
+            
+            // Random spin duration and speed
+            const spinDuration = 3000 + Math.random() * 2000; // 3-5 seconds
+            const startSpeed = 0.3 + Math.random() * 0.2; 
+            let startTime = null;
+            let lastTickAngle = 0; // Track angle for sound
+
+            function animate(timestamp) {
+                if (!startTime) startTime = timestamp;
+                const progress = timestamp - startTime;
+
+                if (progress < spinDuration) {
+                    const t = 1 - (progress / spinDuration);
+                    const ease = t * t * t; 
+                    spinSpeed = startSpeed * ease; 
+                    currentAngle += spinSpeed;
+                    
+                    // Sound Effect Logic
+                    if (currentAngle - lastTickAngle > 0.5) {
+                        playTick();
+                        lastTickAngle = currentAngle;
+                    }
+                    
+                    drawWheel();
+                    animationFrameId = requestAnimationFrame(animate);
+                } else {
+                    stopSpin();
+                }
+            }
+            requestAnimationFrame(animate);
+        }
+
+        function stopSpin() {
+            isSpinning = false;
+            spinBtn.disabled = false;
+            
+            const degrees = (currentAngle * 180 / Math.PI) % 360;
+            const arcSizeDeg = 360 / segments.length;
+            
+            let index = Math.floor(((360 - degrees + 270) % 360) / arcSizeDeg);
+            currentResult = segments[index]; // Store globally for AI
+
+            // Show result
+            resultDisplay.textContent = currentResult.text;
+            resultDisplay.style.backgroundColor = currentResult.color + "40"; 
+            
+            // Sound
+            if (currentResult.isBonus) playWin();
+            else if (currentResult.isAction) playBoing();
+            else playWin();
+
+            // Open Modal
+            setTimeout(() => {
+                document.getElementById('modalTitle').textContent = currentResult.text;
+                document.getElementById('modalDesc').textContent = currentResult.desc;
+                
+                // Reset AI elements
+                document.getElementById('aiChallengeBox').style.display = 'none';
+                document.getElementById('aiChallengeBox').innerHTML = '...';
+                document.getElementById('aiCheckBox').style.display = 'none';
+                document.getElementById('aiCheckInput').value = '';
+                
+                // Hide AI section for bonus tiles to keep it simple
+                const aiSection = document.getElementById('aiSection');
+                if (currentResult.isBonus) {
+                    aiSection.style.display = 'none';
+                } else {
+                    aiSection.style.display = 'block';
+                }
+
+                document.getElementById('resultModal').style.display = 'flex';
+                playWin();
+            }, 500);
+        }
+
+        // --- Gemini AI Functions ---
+        async function callGemini(promptText) {
+             try {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: promptText }] }]
+                    })
+                });
+
+                if (!response.ok) throw new Error('API Error');
+                const data = await response.json();
+                return data.candidates[0].content.parts[0].text;
+            } catch (error) {
+                console.error("AI Error:", error);
+                return "ขออภัย ระบบ AI ขัดข้องชั่วคราว";
+            }
+        }
+
+        async function getAIChallenge() {
+            if (!currentResult) return;
+            const box = document.getElementById('aiChallengeBox');
+            box.style.display = 'block';
+            box.innerHTML = '🤖 กำลังคิดโจทย์...';
+            
+            const prompt = `Create 1 fun, simple, and short challenge for a Thai elementary student related to the Thai leading consonant rule: '${currentResult.text}' (${currentResult.desc}). The challenge could be to name an animal, a food, an object, or make a funny sentence. Keep it playful. Output ONLY the challenge in Thai.`;
+            
+            const result = await callGemini(prompt);
+            box.innerHTML = `🤖 <b>โจทย์ท้าทาย:</b> ${result}`;
+        }
+
+        // ฟังก์ชันดึงคะแนนจากคำอธิบาย (เช่น "1 คะแนน")
+        function getPointsFromRule(desc) {
+            const match = desc.match(/(\d+)\s*คะแนน/);
+            return match ? parseInt(match[1]) : 1; // ถ้าไม่เจอตัวเลข ให้ค่า default เป็น 1
+        }
+
+        async function checkWithAI() {
+            const input = document.getElementById('aiCheckInput').value.trim();
+            if (!input || !currentResult) return;
+            
+            const box = document.getElementById('aiCheckBox');
+            box.style.display = 'block';
+            box.innerHTML = '🔍 กำลังตรวจ...';
+            
+            // เตรียมรายการคำที่เคยใบ้ไปแล้ว เพื่อบอก AI ว่าห้ามเอามาใช้ซ้ำ
+            if (!usedExamples[currentResult.text]) {
+                usedExamples[currentResult.text] = [];
+            }
+            const forbiddenWords = usedExamples[currentResult.text].join(", ");
+
+            // Prompt สั่งให้ AI ตรวจ และถ้าผิดให้หาคำใหม่ๆ มาเสนอ
+            const prompt = `Act as a kind Thai teacher. Evaluate answer '${input}' for rule: '${currentResult.text}' (${currentResult.desc}).
+
+            Strict Rules:
+            1. Check Dictionary: Is '${input}' a real Thai word? If no, INCORRECT.
+            2. Check Duplicates: Is '${input}' in examples "${currentResult.desc}"? If yes, INCORRECT.
+            3. Check Grammar: Does '${input}' match rule '${currentResult.text}'?
+
+            If INCORRECT:
+            - Explain why briefly.
+            - **IMPORTANT:** Suggest 1 correct example word for '${currentResult.text}' that is NOT '${input}', NOT in "${currentResult.desc}", and NOT in this list of used words: [${forbiddenWords}].
+
+            Response Format:
+            Status: [CORRECT or INCORRECT]
+            Explanation: [Explanation in simple Thai]
+            SuggestedWord: [Only the suggested word here, or 'None' if Correct]`;
+            
+            const resultText = await callGemini(prompt);
+            
+            // แยกผลลัพธ์
+            const isCorrect = resultText.includes("Status: CORRECT");
+            
+            // ดึงคำอธิบายและคำใบ้
+            let explanation = "";
+            let suggestedWord = "None";
+
+            // พยายาม Parse แบบง่ายๆ
+            const lines = resultText.split('\n');
+            lines.forEach(line => {
+                if (line.startsWith("Explanation:")) explanation = line.replace("Explanation:", "").trim();
+                if (line.startsWith("SuggestedWord:")) suggestedWord = line.replace("SuggestedWord:", "").trim();
+            });
+            
+            // Fallback ถ้า Parse ไม่เจอ
+            if (!explanation) explanation = resultText.replace(/Status:.*|SuggestedWord:.*/g, "").trim();
+
+            if (isCorrect) {
+                const points = getPointsFromRule(currentResult.desc);
+                updateScore(null, activeTeamIndex, points);
+                playWin(); 
+                
+                box.innerHTML = `
+                    <div style="color: #2ed573; font-weight: bold; margin-bottom: 5px;">
+                        ✅ ถูกต้อง! (ระบบบวกเพิ่ม ${points} คะแนนให้แล้ว)
+                    </div>
+                    📝 ${explanation}
+                `;
+            } else {
+                playBoing();
+                
+                let suggestionHTML = "";
+                // ถ้ามีคำใบ้ส่งมา และไม่ใช่ None ให้แสดงและเก็บเข้า List
+                if (suggestedWord && suggestedWord !== "None" && suggestedWord !== "-") {
+                    usedExamples[currentResult.text].push(suggestedWord); // จำไว้ว่าใช้แล้ว
+                    suggestionHTML = `<div style="margin-top:8px; padding:5px; background:#e1f5fe; border-radius:5px; color:#0277bd; font-size:0.95rem;">
+                        💡 <b>ลองดูคำนี้สิ:</b> "${suggestedWord}"
+                    </div>`;
+                }
+
+                box.innerHTML = `
+                    <div style="color: #ff4757; font-weight: bold; margin-bottom: 5px;">
+                        ❌ ยังไม่ถูกนะ
+                    </div>
+                    📝 ${explanation}
+                    ${suggestionHTML}
+                `;
+            }
+        }
+
+        // --- Game Initialization (New) ---
+        function initGame(numTeams) {
+            teams = [];
+            const letters = ['A', 'B', 'C', 'D', 'E'];
+            for(let i=0; i<numTeams; i++) {
+                teams.push({ name: `ทีม ${letters[i]}`, score: 0 });
+            }
+            
+            // Setup logic
+            activeTeamIndex = 0;
+            renderScores();
+            setActiveTeam(0); // This sets the banner too
+            
+            // Hide setup screen with fade
+            const screen = document.getElementById('setupScreen');
+            screen.style.opacity = '0';
+            setTimeout(() => {
+                screen.style.display = 'none';
+            }, 500);
+
+            // Trigger audio context resume (user interaction happened on button click)
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+        }
+
+        function backToSetup() {
+            closeModal('resetModal');
+            const screen = document.getElementById('setupScreen');
+            screen.style.display = 'flex';
+            setTimeout(() => {
+                screen.style.opacity = '1';
+            }, 10);
+        }
+
+        // --- Scoreboard & Team Logic ---
+        function setActiveTeam(index) {
+            if (!teams[index]) return;
+            activeTeamIndex = index;
+            renderScores();
+            const nameEl = document.getElementById('currentTeamNameBanner');
+            nameEl.textContent = teams[index].name;
+            playTick();
+        }
+
+        function openEditModal(event, index) {
+            event.stopPropagation();
+            editingTeamIndex = index;
+            const modal = document.getElementById('editNameModal');
+            const input = document.getElementById('editNameInput');
+            
+            input.value = teams[index].name;
+            modal.style.display = 'flex';
+            
+            // Focus input after a short delay (for animation)
+            setTimeout(() => input.focus(), 100);
+        }
+
+        function saveTeamName() {
+            const input = document.getElementById('editNameInput');
+            const newName = input.value.trim();
+            
+            if (newName && editingTeamIndex > -1) {
+                teams[editingTeamIndex].name = newName;
+                renderScores();
+                closeModal('editNameModal');
+            }
+        }
+
+        function renderScores() {
+            const container = document.getElementById('teamContainer');
+            container.innerHTML = '';
+            
+            teams.forEach((team, index) => {
+                const isActive = (index === activeTeamIndex);
+                const row = document.createElement('div');
+                row.className = `team-row ${isActive ? 'active' : ''}`;
+                
+                row.onclick = (e) => {
+                    if(e.target.tagName !== 'BUTTON' && !e.target.closest('.edit-icon')) {
+                        setActiveTeam(index);
+                    }
+                };
+
+                row.innerHTML = `
+                    <div class="team-info">
+                        <span class="team-status-icon">🎙️</span>
+                        <div class="team-name">
+                            ${team.name} 
+                            <button class="edit-icon" onclick="openEditModal(event, ${index})" title="เปลี่ยนชื่อทีม">✏️</button>
+                        </div>
+                    </div>
+                    <div class="score-controls">
+                        <button class="btn-score btn-minus" onclick="updateScore(event, ${index}, -1)">-</button>
+                        <div class="score-val">${team.score}</div>
+                        <button class="btn-score btn-plus" onclick="updateScore(event, ${index}, 1)">+</button>
+                    </div>
+                `;
+                container.appendChild(row);
+            });
+            
+            if (teams[activeTeamIndex]) {
+                document.getElementById('currentTeamNameBanner').textContent = teams[activeTeamIndex].name;
+            }
+        }
+
+        // ปรับปรุงฟังก์ชัน updateScore ให้รองรับการเรียกแบบไม่มี event (auto add)
+        function updateScore(event, index, change) {
+            if (event) event.stopPropagation(); // ถ้ามี event ค่อย stopPropagation
+            teams[index].score += change;
+            renderScores();
+        }
+
+        // --- Modal System ---
+        function openResetModal() {
+            document.getElementById('resetModal').style.display = 'flex';
+        }
+
+        function confirmResetScores() {
+            teams.forEach(t => t.score = 0);
+            renderScores();
+            closeModal('resetModal');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        // --- Full Screen Logic (Fixed) ---
+        let isFallbackFullscreen = false;
+
+        function toggleFullScreen() {
+            if (!document.fullscreenElement && !isFallbackFullscreen) {
+                // Try native fullscreen first
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.warn(`Native full-screen blocked: ${err.message}. Using fallback.`);
+                    // Fallback to Windowed Fullscreen
+                    document.body.classList.add('fallback-fullscreen');
+                    isFallbackFullscreen = true;
+                    // Optional: You could show a small toast here if you wanted to explain
+                });
+            } else {
+                // Exit logic
+                if (document.fullscreenElement) {
+                    document.exitFullscreen();
+                }
+                if (isFallbackFullscreen) {
+                    document.body.classList.remove('fallback-fullscreen');
+                    isFallbackFullscreen = false;
+                }
+            }
+        }
+
+        // --- Event Listeners ---
+        
+        // Handle "Enter" key in Edit Name Input
+        document.getElementById('editNameInput').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                saveTeamName();
+            }
+        });
+
+        // Handle "Enter" key in AI Check Input
+        document.getElementById('aiCheckInput').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                checkWithAI();
+            }
+        });
+
+        // Keyboard Controls for Game
+        document.addEventListener('keydown', (e) => {
+            const resultModal = document.getElementById('resultModal');
+            const isResultOpen = resultModal.style.display === 'flex';
+            const isEditOpen = document.getElementById('editNameModal').style.display === 'flex';
+            const isResetOpen = document.getElementById('resetModal').style.display === 'flex';
+            const isSetupOpen = document.getElementById('setupScreen').style.display === 'flex';
+
+            // If setup or editing name, don't trigger game controls
+            if (isEditOpen || isSetupOpen) return;
+
+            // If typing in AI check input, don't trigger spacebar close
+            if (document.activeElement === document.getElementById('aiCheckInput')) return;
+
+            if (e.code === 'Space' || e.code === 'Enter') {
+                if (isResetOpen) {
+                    // Do nothing in reset modal with spacebar to avoid accidents
+                    return;
+                }
+                
+                e.preventDefault(); 
+
+                if (isResultOpen) {
+                    closeModal('resultModal');
+                } else if (!isSpinning) {
+                    spinWheel();
+                }
+            }
+        });
+
+        // Initialize
+        drawWheel();
+        // Do not render scores yet, wait for initGame
+        
+        // Add decorative lights
+        const header = document.querySelector('.carnival-header');
+        for(let i=0; i<10; i++) {
+            const bulb = document.createElement('div');
+            bulb.className = 'bulb';
+            bulb.style.top = '5px';
+            bulb.style.left = (10 + i*10) + '%';
+            bulb.style.animation = `blink 1s infinite alternate ${i*0.1}s`;
+            header.appendChild(bulb);
+        }
+
+    </script>
+</body>
+</html>
