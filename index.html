@@ -201,6 +201,30 @@
     .wide-toggle-row{display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:12px 16px;margin-bottom:8px}
     .wide-toggle-info{font-size:13px;font-weight:700;color:var(--text)}
     .wide-toggle-sub{font-size:11px;color:var(--muted);margin-top:2px}
+
+    /* ── ACCORDION GROUP ── */
+    .app-group{margin-bottom:8px;border-radius:16px;overflow:hidden;border:1px solid rgba(14,165,233,.12);transition:border-color .2s}
+    .app-group.open{border-color:rgba(34,211,238,.25)}
+    .group-header{display:flex;align-items:center;gap:12px;padding:14px 18px;cursor:pointer;background:rgba(255,255,255,.03);transition:background .2s;user-select:none}
+    .group-header:hover{background:rgba(14,165,233,.07)}
+    .app-group.open .group-header{background:rgba(14,165,233,.08)}
+    .group-icon{font-size:24px;flex-shrink:0;transition:transform .3s}
+    .group-title{font-size:15px;font-weight:800;color:var(--text);flex:1}
+    .group-meta{font-size:11px;color:var(--muted);background:rgba(255,255,255,.06);border-radius:20px;padding:2px 10px;flex-shrink:0}
+    .group-chevron{font-size:13px;color:var(--muted);transition:transform .3s;flex-shrink:0}
+    .app-group.open .group-chevron{transform:rotate(180deg);color:var(--accent)}
+    .group-body{display:none;padding:0 12px 14px;background:rgba(0,0,0,.1)}
+    .app-group.open .group-body{display:block;animation:groupOpen .22s ease}
+    @keyframes groupOpen{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+    .group-body .apps-grid{margin-bottom:0}
+    /* group color accents */
+    .grp-student .group-header{border-left:3px solid rgba(99,102,241,.6)}
+    .grp-learn   .group-header{border-left:3px solid rgba(14,165,233,.6)}
+    .grp-admin   .group-header{border-left:3px solid rgba(14,165,233,.5)}
+    .grp-staff   .group-header{border-left:3px solid rgba(239,68,68,.5)}
+    .grp-school  .group-header{border-left:3px solid rgba(56,189,248,.5)}
+    .grp-finance .group-header{border-left:3px solid rgba(20,184,166,.5)}
+    .grp-activity.group-header{border-left:3px solid rgba(20,184,166,.4)}
     @media(max-width:420px){.apps-grid{grid-template-columns:1fr}.apps-grid.cols-2{grid-template-columns:1fr 1fr}.apps-grid.cols-3{grid-template-columns:1fr 1fr 1fr}.wide{grid-column:1}.school-name{font-size:22px}}
   </style>
 </head>
@@ -312,6 +336,13 @@
       </div>
       <div class="layout-section">
         <div class="layout-section-label">👁️ การแสดงผล</div>
+        <div class="wide-toggle-row" style="background:rgba(34,211,238,.06);border-color:rgba(34,211,238,.2)">
+          <div>
+            <div class="wide-toggle-info" style="color:#22d3ee">แสดงแบบกลุ่มเมนู (Accordion)</div>
+            <div class="wide-toggle-sub">เปิด = กดหัวข้อกลุ่มเพื่อกางดูเมนูย่อย</div>
+          </div>
+          <label class="toggle"><input type="checkbox" id="layout-group-mode" onchange="setLayoutOption('groupMode',this.checked)"/><span class="toggle-slider"></span></label>
+        </div>
         <div class="wide-toggle-row">
           <div><div class="wide-toggle-info">แสดงหมวด "เร็วๆ นี้"</div><div class="wide-toggle-sub">ปิด = ซ่อนแอปที่ยังไม่พร้อมทั้งหมด</div></div>
           <label class="toggle"><input type="checkbox" id="layout-show-coming" onchange="setLayoutOption('showComing',this.checked)" checked/><span class="toggle-slider"></span></label>
@@ -382,61 +413,55 @@ const db=firebase.database();
 const DEFAULT_APPS=[
 
   // ══════════════════════════════════════
-  // กลุ่ม 1: นักเรียน
+  // กลุ่ม 1: 🎒 นักเรียน
+  //   รวม: นักเรียน + เรียนรู้ + เกม + คะแนน
   // ══════════════════════════════════════
-  {id:'profile',    icon:'👤', name:'ประวัตินักเรียน',   desc:'ข้อมูลส่วนตัว • คะแนนทุกวิชา • badge • ประวัติเกม',        url:'student-profile.html',      color:'cp', live:true,  wide:true,  visible:true,  group:'นักเรียน'},
-  {id:'portal',     icon:'🎓', name:'พอร์ทัลนักเรียน',   desc:'แดชบอร์ดนักเรียน • ดูคะแนน • ประกาศ',                     url:'student-portal.html',       color:'cb', live:true,  wide:false, visible:true,  group:'นักเรียน'},
-  {id:'scores',     icon:'📊', name:'คะแนนรายวิชา',      desc:'คะแนนเก็บทุกวิชา • เกมช่วยเพิ่มคะแนน • กราฟพัฒนาการ',   url:'games/scores.html',         color:'cy', live:false, wide:false, visible:true,  group:'นักเรียน'},
-  {id:'leaderboard',icon:'🏆', name:'อันดับคะแนน',       desc:'Leaderboard รวมทุกเกม • กรองตามวิชา • ห้องเรียน',         url:'games/leaderboard.html',    color:'cg', live:false, wide:false, visible:true,  group:'นักเรียน'},
+  {id:'profile',     icon:'👤', name:'ประวัตินักเรียน',    desc:'ข้อมูลส่วนตัว • คะแนนทุกวิชา • badge • ประวัติเกม',       url:'student-profile.html',   color:'cp', live:true,  wide:true,  visible:true, group:'นักเรียน'},
+  {id:'portal',      icon:'🎓', name:'พอร์ทัลนักเรียน',    desc:'แดชบอร์ดนักเรียน • ดูคะแนน • ประกาศ',                    url:'student-portal.html',    color:'cb', live:true,  wide:false, visible:true, group:'นักเรียน'},
+  {id:'games',       icon:'🎮', name:'เกมส์การเรียนรู้',   desc:'มินิเกมส์ฝึกทักษะ • ภาษาไทย • คณิต • เทคโนโลยี',       url:'games/index.html',       color:'cp', live:true,  wide:false, visible:true, group:'นักเรียน'},
+  {id:'scores',      icon:'📊', name:'คะแนนรายวิชา',       desc:'คะแนนเก็บทุกวิชา • เกมช่วยเพิ่มคะแนน • กราฟพัฒนาการ',  url:'games/scores.html',      color:'cy', live:false, wide:false, visible:true, group:'นักเรียน'},
+  {id:'leaderboard', icon:'🏆', name:'อันดับคะแนน',        desc:'Leaderboard รวมทุกเกม • กรองตามวิชา • ห้องเรียน',        url:'games/leaderboard.html', color:'cg', live:false, wide:false, visible:true, group:'นักเรียน'},
+  {id:'reward',      icon:'⭐', name:'คะแนนความดี',         desc:'บันทึกความดี • คะแนนพฤติกรรม • รางวัล • สะสมแต้ม',      url:'reward.html',            color:'cy', live:true,  wide:false, visible:true, group:'นักเรียน'},
+  {id:'homework',    icon:'📋', name:'การบ้าน/งานมอบหมาย', desc:'มอบหมายงาน • ส่งงานออนไลน์ • ติดตามสถานะ',              url:'homework.html',          color:'cb', live:false, wide:false, visible:true, group:'นักเรียน'},
 
   // ══════════════════════════════════════
-  // กลุ่ม 2: เรียนรู้ & เกม
+  // กลุ่ม 2: 🗂️ ธุรการ
+  //   รวม: ทะเบียนนักเรียน + เอกสารราชการ
   // ══════════════════════════════════════
-  {id:'games',      icon:'🎮', name:'เกมส์การเรียนรู้',  desc:'มินิเกมส์ฝึกทักษะ • ภาษาไทย • คณิต • เทคโนโลยี',        url:'games/index.html',          color:'cp', live:true,  wide:false, visible:true,  group:'เรียนรู้'},
-  {id:'homework',   icon:'📋', name:'การบ้าน/งานมอบหมาย',desc:'มอบหมายงาน • ส่งงานออนไลน์ • ติดตามสถานะ',               url:'homework.html',             color:'cb', live:false, wide:false, visible:true,  group:'เรียนรู้'},
+  {id:'student-reg', icon:'🗂️', name:'ทะเบียนนักเรียน',   desc:'เพิ่ม/แก้ไข/ค้นหานักเรียน • ข้อมูลครบทุกด้าน',         url:'student-register.html',  color:'cb', live:true,  wide:false, visible:true, group:'ธุรการ'},
+  {id:'leave',       icon:'📄', name:'ใบลา / ขาดเรียน',   desc:'ยื่นใบลา • ติดตามสถิติขาด/ลา/มาสาย • แจ้งผู้ปกครอง',  url:'leave-request.html',     color:'cb', live:false, wide:false, visible:true, group:'ธุรการ'},
+  {id:'transfer',    icon:'🔄', name:'ย้าย / เข้า / ออก', desc:'ทะเบียนย้ายนักเรียน • รับนักเรียนใหม่ • จำหน่ายออก',   url:'transfer.html',          color:'cb', live:false, wide:false, visible:true, group:'ธุรการ'},
+  {id:'documents',   icon:'📁', name:'หนังสือราชการ',      desc:'รับ-ส่งหนังสือ • เลขทะเบียน • ค้นหาเอกสาร',             url:'documents.html',         color:'cb', live:false, wide:false, visible:true, group:'ธุรการ'},
 
   // ══════════════════════════════════════
-  // กลุ่ม 3: ธุรการโรงเรียน
+  // กลุ่ม 3: 👨‍🏫 บุคลากร
+  //   รวม: ครู + ตาราง + ลา + การเงิน + ครุภัณฑ์
   // ══════════════════════════════════════
-  {id:'student-reg',icon:'🗂️', name:'ทะเบียนนักเรียน',   desc:'เพิ่ม/แก้ไข/ค้นหานักเรียน • ข้อมูลครบทุกด้าน',          url:'student-register.html',     color:'cb', live:false, wide:false, visible:true,  group:'ธุรการ'},
-  {id:'leave',      icon:'📄', name:'ใบลา / ขาดเรียน',   desc:'ยื่นใบลา • ติดตามสถิติขาด/ลา/มาสาย • แจ้งผู้ปกครอง',   url:'leave-request.html',        color:'cb', live:false, wide:false, visible:true,  group:'ธุรการ'},
-  {id:'transfer',   icon:'🔄', name:'ย้าย / เข้า / ออก', desc:'ทะเบียนย้ายนักเรียน • รับนักเรียนใหม่ • จำหน่ายออก',    url:'transfer.html',             color:'cb', live:false, wide:false, visible:true,  group:'ธุรการ'},
-  {id:'documents',  icon:'📁', name:'หนังสือราชการ',      desc:'รับ-ส่งหนังสือ • เลขทะเบียน • ค้นหาเอกสาร',              url:'documents.html',            color:'cb', live:false, wide:false, visible:true,  group:'ธุรการ'},
+  {id:'teacher-prof',icon:'👨‍🏫',name:'ประวัติครู/บุคลากร', desc:'ข้อมูลครู • วุฒิการศึกษา • ภาระงาน',                   url:'teacher-profile.html',   color:'cr', live:true,  wide:false, visible:true, group:'บุคลากร'},
+  {id:'teacher',     icon:'📝', name:'จัดการคะแนน',        desc:'ครูใส่คะแนนรายวิชา • รายงานห้องเรียน • export CSV',      url:'teacher-dashboard.html', color:'cr', live:true,  wide:false, visible:true, group:'บุคลากร'},
+  {id:'schedule',    icon:'🗓️', name:'ตารางสอน / ตารางเรียน',desc:'ตารางเรียนรายชั้น • ตารางสอนครู • จัดตารางได้',       url:'schedule.html',          color:'cr', live:true,  wide:false, visible:true, group:'บุคลากร'},
+  {id:'teacher-leave',icon:'🏖️',name:'ลาครู / ปฏิบัติงาน', desc:'ยื่นลา • อนุมัติ • สรุปวันลา • ปฏิบัติงานนอก',        url:'teacher-leave.html',     color:'cr', live:false, wide:false, visible:true, group:'บุคลากร'},
+  {id:'budget',      icon:'💰', name:'งบประมาณ',            desc:'แผนงบประมาณ • รายรับ-รายจ่าย • รายงานการเงิน',          url:'budget.html',            color:'cg', live:false, wide:false, visible:true, group:'บุคลากร'},
+  {id:'assets',      icon:'🖥️', name:'ครุภัณฑ์ / พัสดุ',   desc:'ทะเบียนครุภัณฑ์ • ยืม-คืน • ซ่อมบำรุง • สต๊อก',        url:'assets.html',            color:'cg', live:false, wide:false, visible:true, group:'บุคลากร'},
+  {id:'fee',         icon:'💳', name:'ค่าธรรมเนียม',        desc:'ค่าบำรุงการศึกษา • ติดตามการชำระ • ใบเสร็จ',            url:'fee.html',               color:'cg', live:false, wide:false, visible:true, group:'บุคลากร'},
 
   // ══════════════════════════════════════
-  // กลุ่ม 4: บุคลากร & ครู
+  // กลุ่ม 4: 🏫 โรงเรียน
+  //   รวม: เช็คชื่อ + ข่าว + ประกาศ + ผู้ปกครอง
   // ══════════════════════════════════════
-  {id:'teacher-prof',icon:'👨‍🏫',name:'ประวัติครู/บุคลากร',desc:'ข้อมูลครู • วุฒิการศึกษา • ภาระงาน',                    url:'teacher-profile.html',      color:'cr', live:false, wide:false, visible:true,  group:'บุคลากร'},
-  {id:'teacher',    icon:'📝', name:'จัดการคะแนน',       desc:'ครูใส่คะแนนรายวิชา • รายงานห้องเรียน • export CSV',       url:'teacher-dashboard.html',    color:'cr', live:true,  wide:false, visible:true,  group:'บุคลากร'},
-  {id:'schedule',   icon:'🗓️', name:'ตารางสอน / เรียน',  desc:'ตารางเรียนรายชั้น • ตารางสอนครู • ห้องเรียน',             url:'schedule.html',             color:'cr', live:false, wide:false, visible:true,  group:'บุคลากร'},
-  {id:'teacher-leave',icon:'🏖️',name:'ลาครู / ปฏิบัติงาน',desc:'ยื่นลา • อนุมัติ • สรุปวันลา • ปฏิบัติงานนอกสถานที่',   url:'teacher-leave.html',        color:'cr', live:false, wide:false, visible:true,  group:'บุคลากร'},
+  {id:'attend',      icon:'✅', name:'เช็คชื่อนักเรียน',   desc:'เช็คชื่อออนไลน์ • สรุปการมาเรียน • รายงานรายเดือน',     url:'attendance.html',        color:'cy', live:true,  wide:false, visible:true, group:'โรงเรียน'},
+  {id:'news',        icon:'📰', name:'ข่าวสาร',            desc:'ข่าว ศธ.360 • สพฐ. • กสศ. อัปเดตอัตโนมัติ',             url:'news.html',              color:'cy', live:true,  wide:false, visible:true, group:'โรงเรียน'},
+  {id:'announce',    icon:'📢', name:'ประกาศ / ปฏิทิน',   desc:'ประกาศโรงเรียน • ปฏิทินกิจกรรม • วันหยุดราชการ',        url:'announcement.html',      color:'cy', live:false, wide:false, visible:true, group:'โรงเรียน'},
+  {id:'parent',      icon:'👨‍👩‍👧',name:'ติดต่อผู้ปกครอง',  desc:'ข้อมูลผู้ปกครอง • แจ้งเตือน • รายงานนักเรียน',          url:'parent-contact.html',    color:'cy', live:false, wide:false, visible:true, group:'โรงเรียน'},
 
   // ══════════════════════════════════════
-  // กลุ่ม 5: โรงเรียน & ชุมชน
+  // กลุ่ม 5: 🌱 กิจกรรม & สิ่งแวดล้อม
+  //   รวม: ขยะ + กีฬา + อาหาร + ธรรมชาติ
   // ══════════════════════════════════════
-  {id:'attend',     icon:'✅', name:'เช็คชื่อนักเรียน',  desc:'เช็คชื่อออนไลน์ • สรุปการมาเรียน • รายงานรายเดือน',      url:'attendance.html',           color:'cy', live:true,  wide:false, visible:true,  group:'โรงเรียน'},
-  {id:'news',       icon:'📰', name:'ข่าวสาร',           desc:'ข่าว ศธ.360 • สพฐ. • กสศ. อัปเดตอัตโนมัติ',              url:'news.html',                 color:'cy', live:true,  wide:false, visible:true,  group:'โรงเรียน'},
-  {id:'announce',   icon:'📢', name:'ประกาศ / ปฏิทิน',  desc:'ประกาศโรงเรียน • ปฏิทินกิจกรรม • วันหยุดราชการ',         url:'announcement.html',         color:'cy', live:false, wide:false, visible:true,  group:'โรงเรียน'},
-  {id:'parent',     icon:'👨‍👩‍👧', name:'ติดต่อผู้ปกครอง', desc:'ข้อมูลผู้ปกครอง • แจ้งเตือน • รายงานนักเรียน',           url:'parent-contact.html',       color:'cy', live:false, wide:false, visible:true,  group:'โรงเรียน'},
-
-  // ══════════════════════════════════════
-  // กลุ่ม 6: การเงิน & ทรัพยากร
-  // ══════════════════════════════════════
-  {id:'budget',     icon:'💰', name:'งบประมาณ',          desc:'แผนงบประมาณ • รายรับ-รายจ่าย • รายงานการเงิน',            url:'budget.html',               color:'cg', live:false, wide:false, visible:true,  group:'การเงิน'},
-  {id:'assets',     icon:'🖥️', name:'ครุภัณฑ์ / พัสดุ',  desc:'ทะเบียนครุภัณฑ์ • ยืม-คืน • ซ่อมบำรุง • สต๊อก',         url:'assets.html',               color:'cg', live:false, wide:false, visible:true,  group:'การเงิน'},
-  {id:'fee',        icon:'💳', name:'ค่าธรรมเนียม',      desc:'ค่าบำรุงการศึกษา • ติดตามการชำระ • ใบเสร็จ',             url:'fee.html',                  color:'cg', live:false, wide:false, visible:true,  group:'การเงิน'},
-
-  // ══════════════════════════════════════
-  // กลุ่ม 7: กิจกรรม & สิ่งแวดล้อม
-  // ══════════════════════════════════════
-  {id:'waste',      icon:'♻️', name:'ธนาคารขยะ',         desc:'บันทึกการเก็บขยะ • ระบบคะแนน • Leaderboard',              url:'waste/index.html',          color:'ct', live:true,  wide:false, visible:true,  group:'กิจกรรม'},
-  {id:'board',      icon:'🏅', name:'อันดับขยะ',          desc:'Leaderboard นักเรียน • ดูได้ทุกคน ไม่ต้อง Login',         url:'waste/public.html',         color:'ct', live:true,  wide:false, visible:true,  group:'กิจกรรม'},
-  {id:'activity',   icon:'🎪', name:'กิจกรรมนักเรียน',   desc:'บันทึกกิจกรรม • ชมรม • โครงการ • ชั่วโมงกิจกรรม',        url:'activity.html',             color:'ct', live:false, wide:false, visible:true,  group:'กิจกรรม'},
-  {id:'health',     icon:'🩺', name:'สุขภาพนักเรียน',    desc:'บันทึกสุขภาพ • น้ำหนัก-ส่วนสูง • การฉีดวัคซีน',          url:'health.html',               color:'ct', live:false, wide:false, visible:true,  group:'กิจกรรม'},
-  {id:'garden',     icon:'🌱', name:'รดน้ำต้นไม้',        desc:'ติดตามกิจกรรมสีเขียว • ปลูกผัก • สวนโรงเรียน',           url:'#',                         color:'cc', live:false, wide:false, visible:true,  group:'กิจกรรม'},
-  {id:'lunch',      icon:'🍱', name:'อาหารกลางวัน',       desc:'สั่งอาหาร • เมนูประจำวัน • โภชนาการ',                    url:'#',                         color:'cc', live:false, wide:false, visible:true,  group:'กิจกรรม'},
-  {id:'library',    icon:'📚', name:'ห้องสมุด',           desc:'ยืม-คืนหนังสือออนไลน์ • ค้นหาหนังสือ',                   url:'#',                         color:'cc', live:false, wide:false, visible:true,  group:'กิจกรรม'},
-  {id:'reward',     icon:'⭐', name:'คะแนนความดี',        desc:'ระบบ reward • ความประพฤติ • ความดีสะสม',                  url:'#',                         color:'cc', live:false, wide:false, visible:true,  group:'กิจกรรม'},
+  {id:'waste',       icon:'♻️', name:'ธนาคารขยะ',          desc:'บันทึกการเก็บขยะ • ระบบคะแนน • Leaderboard',             url:'waste/index.html',       color:'ct', live:true,  wide:false, visible:true, group:'กิจกรรม'},
+  {id:'board',       icon:'🏅', name:'อันดับขยะ',           desc:'Leaderboard นักเรียน • ดูได้ทุกคน ไม่ต้อง Login',        url:'waste/public.html',      color:'ct', live:true,  wide:false, visible:true, group:'กิจกรรม'},
+  {id:'lunch',       icon:'🍱', name:'อาหารกลางวัน',        desc:'สั่งอาหาร • เมนูประจำวัน • โภชนาการ',                   url:'#',                      color:'cc', live:false, wide:false, visible:true, group:'กิจกรรม'},
+  {id:'garden',      icon:'🌱', name:'รดน้ำต้นไม้',         desc:'ติดตามกิจกรรมสีเขียว • ปลูกผัก • สวนโรงเรียน',          url:'#',                      color:'cc', live:false, wide:false, visible:true, group:'กิจกรรม'},
 ];
 
 // ── STATE ──
@@ -447,7 +472,7 @@ let cfg={
   footer:'Super App บ้านคำไผ่ • พัฒนาด้วย ❤️ เพื่อการศึกษา',
   logoData:null,
   apps:JSON.parse(JSON.stringify(DEFAULT_APPS)),
-  layout:{cols:'2',size:'md',wideFirst:false,showComing:true,showHeader:true}
+  layout:{cols:'2',size:'md',wideFirst:false,showComing:true,showHeader:true,groupMode:false}
 };
 let pendingLogoData=null;
 
@@ -463,10 +488,20 @@ db.ref('superapp_config').on('value',snap=>{
     if(v.logoData)cfg.logoData=v.logoData;
     if(v.apps&&Array.isArray(v.apps)){
       const saved=v.apps;
-      const merged=[...saved];
-      DEFAULT_APPS.forEach(def=>{if(!merged.find(a=>a.id===def.id))merged.push(def);});
+      // ใช้ DEFAULT_APPS เป็นหลักสำหรับ live/url/color/group
+      // คง visible + name/icon/desc ที่ Admin แก้ไว้
+      const merged=DEFAULT_APPS.map(def=>{
+        const s=saved.find(a=>a.id===def.id);
+        return{...def,
+          name:s?.name||def.name,
+          icon:s?.icon||def.icon,
+          desc:s?.desc||def.desc,
+          visible:s?.visible!==undefined?s.visible:def.visible};
+      });
+      // เพิ่มแอปที่ Admin สร้างเองนอก DEFAULT_APPS
+      saved.forEach(s=>{if(!merged.find(a=>a.id===s.id))merged.push(s);});
       cfg.apps=merged;
-      if(merged.length>saved.length)db.ref('superapp_config/apps').set(merged);
+      db.ref('superapp_config/apps').set(merged);
     }
     if(v.layout)cfg.layout={...cfg.layout,...v.layout};
   }
@@ -498,31 +533,47 @@ function renderApps(apps){
   const sizeClass=L.size&&L.size!=='md'?'size-'+L.size:'';
   const gridClass=['apps-grid',colClass,sizeClass].filter(Boolean).join(' ');
 
-  // กลุ่มและ icon ของแต่ละกลุ่ม
-  const GROUP_ICON={
-    'นักเรียน':'🎒', 'เรียนรู้':'🎮', 'ธุรการ':'🗂️',
-    'บุคลากร':'👨‍🏫', 'โรงเรียน':'🏫', 'การเงิน':'💰', 'กิจกรรม':'🌱'
-  };
+  const GROUP_ICON={'นักเรียน':'🎒','ธุรการ':'🗂️','บุคลากร':'👨‍🏫','โรงเรียน':'🏫','กิจกรรม':'🌱'};
+  const GROUP_CLS={'นักเรียน':'grp-student','ธุรการ':'grp-admin','บุคลากร':'grp-staff','โรงเรียน':'grp-school','กิจกรรม':'grp-activity'};
+  // กลุ่มที่กางไว้ใน localStorage
+  const openGroups=new Set(JSON.parse(localStorage.getItem('kampai_open_groups')||'[]'));
 
   const visApps=apps.filter(a=>a.visible);
   let html='';
 
-  if(L.showHeader===false){
-    // โหมดไม่แสดง header — รวมทุกอย่างไว้กริดเดียว
+  if(L.groupMode){
+    // ── โหมด ACCORDION ──
+    const groups=[...new Set(visApps.map(a=>a.group||'อื่นๆ'))];
+    groups.forEach(grp=>{
+      const grpApps=visApps.filter(a=>(a.group||'อื่นๆ')===grp);
+      const allApps=[...grpApps.filter(a=>a.live),...(L.showComing!==false?grpApps.filter(a=>!a.live):[])];
+      if(!allApps.length)return;
+      const ico=GROUP_ICON[grp]||'📌';
+      const cls=GROUP_CLS[grp]||'';
+      const isOpen=openGroups.has(grp);
+      const liveCount=grpApps.filter(a=>a.live).length;
+      html+=`<div class="app-group ${cls} ${isOpen?'open':''}" id="grp-${grp}">
+        <div class="group-header" onclick="toggleGroup('${grp}')">
+          <span class="group-icon">${ico}</span>
+          <span class="group-title">${grp}</span>
+          <span class="group-meta">${liveCount} แอป</span>
+          <span class="group-chevron">▼</span>
+        </div>
+        <div class="group-body">
+          <div class="${gridClass}" style="padding-top:10px">
+            ${allApps.map((a,i)=>a.live?renderCard(a,L,false):renderCardSoon(a)).join('')}
+          </div>
+        </div>
+      </div>`;
+    });
+  } else if(L.showHeader===false){
+    // ── โหมดไม่แสดง header ──
     const liveApps=visApps.filter(a=>a.live);
     const comingApps=visApps.filter(a=>!a.live);
-    if(liveApps.length){
-      html+=`<div class="${gridClass}">`;
-      liveApps.forEach((a,i)=>{html+=renderCard(a,L,i===0);});
-      html+=`</div>`;
-    }
-    if(comingApps.length&&L.showComing!==false){
-      html+=`<div class="${gridClass}">`;
-      comingApps.forEach(a=>{html+=renderCardSoon(a);});
-      html+=`</div>`;
-    }
+    if(liveApps.length){html+=`<div class="${gridClass}">`;liveApps.forEach((a,i)=>{html+=renderCard(a,L,i===0);});html+=`</div>`;}
+    if(comingApps.length&&L.showComing!==false){html+=`<div class="${gridClass}">`;comingApps.forEach(a=>{html+=renderCardSoon(a);});html+=`</div>`;}
   } else {
-    // โหมดแสดง header ตามกลุ่ม
+    // ── โหมด Header ตามกลุ่ม (เดิม) ──
     const groups=[...new Set(visApps.map(a=>a.group||'อื่นๆ'))];
     groups.forEach(grp=>{
       const grpApps=visApps.filter(a=>(a.group||'อื่นๆ')===grp);
@@ -544,6 +595,16 @@ function renderApps(apps){
     });
   }
   container.innerHTML=html;
+}
+
+function toggleGroup(grp){
+  const el=document.getElementById('grp-'+grp);
+  if(!el)return;
+  const isOpen=el.classList.toggle('open');
+  // บันทึกสถานะใน localStorage
+  let openGroups=new Set(JSON.parse(localStorage.getItem('kampai_open_groups')||'[]'));
+  if(isOpen)openGroups.add(grp);else openGroups.delete(grp);
+  localStorage.setItem('kampai_open_groups',JSON.stringify([...openGroups]));
 }
 
 function renderCard(a,L,forceWide){
@@ -678,6 +739,7 @@ function applyLayoutUI(){
   const wf=document.getElementById('layout-wide-first');if(wf)wf.checked=!!L.wideFirst;
   const sc=document.getElementById('layout-show-coming');if(sc)sc.checked=L.showComing!==false;
   const sh=document.getElementById('layout-show-header');if(sh)sh.checked=L.showHeader!==false;
+  const gm=document.getElementById('layout-group-mode');if(gm)gm.checked=!!L.groupMode;
 }
 function setLayout(type,val){if(type==='cols')cfg.layout.cols=val;if(type==='size')cfg.layout.size=val;applyLayoutUI();renderApps(cfg.apps);}
 function setWideFirst(v){cfg.layout.wideFirst=v;renderApps(cfg.apps);}
