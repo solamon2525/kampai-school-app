@@ -7,7 +7,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:Sarabun,sans-serif;background:#f0fdf4;min-height:100vh;font-size:15px}
@@ -646,7 +646,7 @@ function generateQR(){
   if(!mid) return;
   const m=members.find(x=>x.fbKey===mid);if(!m)return;
 
-  // ✅ URL ชี้ไป student-portal.html
+  // URL ชี้ไป student-portal.html
   const url=portalURL(mid);
   const col=ROOM_COLORS[m.room]||'#15803d';
 
@@ -657,13 +657,18 @@ function generateQR(){
       <span class="member-room-tag" style="background:${col}22;color:${col}">${m.room||'-'}</span>
       <div style="font-size:12px;color:#6b7280;margin:6px 0 12px">scan เพื่อดูคะแนนตัวเอง</div>
     </div>
-    <div id="qr-canvas"></div>
+    <canvas id="qr-canvas" style="display:block;margin:0 auto"></canvas>
     <div class="portal-link-box" style="margin-top:12px">
       🔗 <span style="word-break:break-all">${url}</span>
     </div>`;
 
-  new QRCode(document.getElementById('qr-canvas'),{
-    text:url,width:200,height:200,colorDark:col,colorLight:'#ffffff'
+  // ✅ ใช้ QRious แทน QRCode.js (ไม่ใช้ eval — ผ่าน CSP)
+  new QRious({
+    element: document.getElementById('qr-canvas'),
+    value: url,
+    size: 200,
+    foreground: col,
+    background: '#ffffff'
   });
   document.getElementById('qr-print-btn').style.display='';
 }
