@@ -230,7 +230,7 @@ th{background:#f9fafb;font-weight:700;color:#374151}
 <div id="page-students" class="hidden">
   <h2 style="font-size:17px;color:#15803d;margin-bottom:14px">👤 เพิ่มนักเรียน</h2>
   <div class="card">
-    <div class="form-row"><label>ชื่อนักเรียน</label><input type="text" id="t-name" placeholder="เช่น เด็กชายสมชาย"/></div>
+    <div class="form-row"><label>ชื่อนักเรียน</label><input type="text" id="t-name" placeholder="เช่น เด็กชายสมชาย" oninput="renderTAvatarPreview()"/></div>
     <div class="form-row">
       <label>ห้องเรียน</label>
       <select id="t-room">
@@ -242,6 +242,12 @@ th{background:#f9fafb;font-weight:700;color:#374151}
           <option value="ป.5">ป.5</option><option value="ป.6">ป.6</option>
         </optgroup>
       </select>
+    </div>
+    <div class="flex gap8 ai-center form-row">
+      <div id="t-avatar-preview" style="width:46px;height:46px"></div>
+      <input type="file" id="t-img-file" accept="image/*" style="display:none" onchange="handleTImg(event)"/>
+      <button class="btn btn-blue" style="font-size:13px;padding:6px 12px" onclick="document.getElementById('t-img-file').click()">📷 รูปภาพ</button>
+      <button class="btn btn-gray" id="t-remove-img" style="font-size:13px;padding:6px 12px;display:none" onclick="removeTImg()">ลบรูป</button>
     </div>
     <button class="btn btn-green btn-full" onclick="teacherAddMember()">➕ เพิ่มนักเรียน</button>
   </div>
@@ -466,15 +472,27 @@ function loadAll(){showToast('รีเฟรชแล้ว ✅');}
 function renderAll(){renderMemberSelector();renderRecent();renderHistory();renderDashboard();renderPoints();renderMembersList();renderTeacherMembersList();renderQRSelect();renderRoomFilters();}
 
 // ── ฟังก์ชันสำหรับครู: เพิ่มนักเรียน ──
+let tImgB64='';
+function handleTImg(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{tImgB64=ev.target.result;renderTAvatarPreview();};r.readAsDataURL(f);}
+function removeTImg(){tImgB64='';renderTAvatarPreview();}
+function renderTAvatarPreview(){
+  const el=document.getElementById('t-avatar-preview');if(!el)return;
+  el.innerHTML=avatarHTML(tImgB64,document.getElementById('t-name')?.value||'?',46);
+  const removeBtn=document.getElementById('t-remove-img');
+  if(removeBtn) removeBtn.style.display=tImgB64?'':'none';
+}
+
 async function teacherAddMember(){
   const name=document.getElementById('t-name').value.trim();
   const room=document.getElementById('t-room').value;
   if(!name){showToast('กรุณากรอกชื่อ','error');return;}
   if(!room){showToast('กรุณาเลือกห้อง','error');return;}
-  await db.ref('members').push({type:'student',name,room,img:'',points:0});
+  await db.ref('members').push({type:'student',name,room,img:tImgB64||'',points:0});
   await writeAudit('add_member',`เพิ่ม ${name} (${room}) โดยครู ${currentName}`);
   document.getElementById('t-name').value='';
   document.getElementById('t-room').value='';
+  tImgB64='';
+  renderTAvatarPreview();
   showToast('เพิ่มนักเรียนสำเร็จ ✅');
 }
 
