@@ -143,11 +143,13 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);min
 <div class="bg-stars" id="bg-stars"></div>
 <div class="bg-glow"></div>
 
+
+<div id="auth-bar"></div>
 <div class="page">
   <div class="nav">
     <a href="index.html" class="back-btn">← หน้าหลัก</a>
     <div class="nav-title">⭐ คะแนนความดี</div>
-    <button class="btn btn-gold" onclick="openAddModal()">+ บันทึกความดี</button>
+    <button class="btn btn-gold" data-auth="write" onclick="openAddModal()">+ บันทึกความดี</button>
   </div>
 
   <div class="hero-band">
@@ -257,15 +259,18 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);min
 <div class="toast" id="toast"></div>
 
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+<script src="auth-guard.js"></script>
 <script>
-firebase.initializeApp({
+AuthGuard.init('read-only');
+const db=_db;
+if(false)firebase.initializeApp({
   apiKey:"AIzaSyBSUa3gj5l2VSYoUnVFXQwF0OX2SJe6Szc",
   authDomain:"kampai-school-app.firebaseapp.com",
   databaseURL:"https://kampai-school-app-default-rtdb.asia-southeast1.firebasedatabase.app",
   projectId:"kampai-school-app"
 });
-const db=firebase.database();
 
 const PRESETS_POS=['ช่วยเหลือเพื่อน','ส่งงานตรงเวลา','ตั้งใจเรียน','ความประพฤติดี','ชนะการแข่งขัน','ช่วยเหลืองานโรงเรียน','มาเรียนตรงเวลา'];
 const PRESETS_NEG=['ลืมส่งการบ้าน','มาสาย','พฤติกรรมไม่เหมาะสม','ทะเลาะกับเพื่อน','ไม่ตั้งใจเรียน'];
@@ -340,8 +345,8 @@ function renderRank(){
       <div class="sc-pts"><span class="num">${s.pts}</span><span class="lbl">คะแนน</span></div>
       <div class="sc-bar"><div class="sc-bar-fill" style="width:${pct}%"></div></div>
       <div class="sc-actions">
-        <button class="btn btn-gold" style="font-size:11px;padding:5px 8px" onclick="event.stopPropagation();quickAdd('${s._id}','pos')">+⭐</button>
-        <button class="btn btn-danger" style="font-size:11px;padding:5px 8px" onclick="event.stopPropagation();quickAdd('${s._id}','neg')">-</button>
+        <button class="btn btn-gold" style="font-size:11px;padding:5px 8px" data-auth='write' onclick="event.stopPropagation();quickAdd('${s._id}','pos')">+⭐</button>
+        <button class="btn btn-danger" style="font-size:11px;padding:5px 8px" data-auth='write' onclick="event.stopPropagation();quickAdd('${s._id}','neg')">-</button>
       </div>
     </div>`;
   }).join('');
@@ -418,6 +423,7 @@ function openStudentHistory(sid){
 }
 
 async function saveRecord(){
+  if(!AuthGuard.requireLogin())return;
   const sid=document.getElementById('a-student').value;
   const pts=parseInt(document.getElementById('a-pts').value)||0;
   const reason=document.getElementById('a-reason').value.trim();
