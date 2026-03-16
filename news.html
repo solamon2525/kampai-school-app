@@ -553,9 +553,14 @@
       }
     }
   </style>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+  <script src="auth-guard.js"></script>
 </head>
 
 <body>
+  <div id="auth-bar"></div>
   <div class="bg-layer"></div>
   <div class="glow g1"></div>
   <div class="glow g2"></div>
@@ -601,6 +606,8 @@
   <div class="fab" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="กลับขึ้นบน">↑</div>
 
   <script>
+    AuthGuard.init('read-only');
+
     // ═══════════════════════════════════
     //  CONFIG — RSS sources
     // ═══════════════════════════════════

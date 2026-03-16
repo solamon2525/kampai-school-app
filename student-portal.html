@@ -7,7 +7,9 @@
 <title>Student Portal • ธนาคารขยะ</title>
 <link href="https://fonts.googleapis.com/css2?family=Mitr:wght@300;400;500;600;700&family=Sarabun:wght@300;400;600;700&display=swap" rel="stylesheet"/>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+<script src="auth-guard.js"></script>
 <style>
 :root{
   --bg:#0a0e0b;
@@ -214,6 +216,7 @@ body{
 </style>
 </head>
 <body>
+<div id="auth-bar"></div>
 <div class="bg-noise"></div>
 <div class="bg-orb orb1"></div>
 <div class="bg-orb orb2"></div>
@@ -235,17 +238,9 @@ body{
 <div id="portal" class="wrap"></div>
 
 <script>
-const fbConfig={
-  apiKey:"AIzaSyDML31kfyPiZtWz6s9ebf7T02W7r2Y5CvA",
-  authDomain:"school-waste-tracker.firebaseapp.com",
-  databaseURL:"https://school-waste-tracker-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId:"school-waste-tracker",
-  storageBucket:"school-waste-tracker.firebasestorage.app",
-  messagingSenderId:"158534396656",
-  appId:"1:158534396656:web:0bea4a9fe7bff32494b035"
-};
-firebase.initializeApp(fbConfig);
-const db=firebase.database();
+// ── auth-guard.js จัดการ Firebase init แล้ว ──
+AuthGuard.init('read-only');
+const db=_db;
 
 const BADGES=[
   {pts:500,icon:'👑',label:'ราชาขยะ'},
