@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>คะแนนความดี — โรงเรียนบ้านคำไผ่</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0a0f;--bg2:#0f1020;--surface:#141525;--surface2:#1a1c30;--surface3:#1f2238;
+  --border:#252845;--border2:#2d3255;
+  --text:#f0f0ff;--muted:#6070a0;--hint:#3a4060;
+  --gold:#f5c518;--gold2:#ffd84d;--gold3:#fff0a0;
+  --purple:#8b5cf6;--purple2:#a78bfa;--purple3:#ddd6fe;
+  --green:#10b981;--green2:#34d399;--green3:#a7f3d0;
+  --r:12px
+}
+body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+.bg-stars{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.star{position:absolute;border-radius:50%;background:#fff;animation:twinkle ease-in-out infinite}
+@keyframes twinkle{0%,100%{opacity:.1;transform:scale(1)}50%{opacity:.6;transform:scale(1.4)}}
+.bg-glow{position:fixed;inset:0;z-index:0;pointer-events:none}
+.bg-glow::before{content:'';position:absolute;width:600px;height:600px;background:radial-gradient(circle,rgba(139,92,246,.1) 0%,transparent 65%);top:-200px;left:-150px;animation:drift1 20s ease-in-out infinite}
+.bg-glow::after{content:'';position:absolute;width:500px;height:500px;background:radial-gradient(circle,rgba(245,197,24,.06) 0%,transparent 65%);bottom:-100px;right:-100px;animation:drift2 16s ease-in-out infinite}
+@keyframes drift1{0%,100%{transform:translate(0,0)}50%{transform:translate(40px,30px)}}
+@keyframes drift2{0%,100%{transform:translate(0,0)}50%{transform:translate(-30px,-20px)}}
+.page{position:relative;z-index:1;max-width:800px;margin:0 auto;padding:0 16px 80px}
+.nav{display:flex;align-items:center;gap:12px;padding:18px 0 22px;border-bottom:1px solid var(--border);margin-bottom:28px}
+.back-btn{display:flex;align-items:center;gap:6px;text-decoration:none;color:var(--muted);font-size:13px;font-weight:600;padding:7px 14px;border:1px solid var(--border);border-radius:8px;transition:.2s}
+.back-btn:hover{color:var(--gold2);border-color:var(--gold);background:rgba(245,197,24,.07)}
+.nav-title{font-size:18px;font-weight:900;color:var(--text);flex:1}
+/* HERO */
+.hero-band{background:linear-gradient(135deg,rgba(139,92,246,.15),rgba(245,197,24,.08));border:1px solid rgba(245,197,24,.2);border-radius:16px;padding:20px 24px;margin-bottom:24px;display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.hero-icon{font-size:52px;filter:drop-shadow(0 4px 16px rgba(245,197,24,.5));animation:starFloat 3s ease-in-out infinite}
+@keyframes starFloat{0%,100%{transform:translateY(0) rotate(-5deg)}50%{transform:translateY(-8px) rotate(5deg)}}
+.hero-text h1{font-size:20px;font-weight:900;color:var(--gold2);margin-bottom:4px}
+.hero-text p{font-size:13px;color:var(--muted)}
+.kpi-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;position:relative;overflow:hidden;text-align:center}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--kc,var(--gold))}
+.kpi-num{font-size:26px;font-weight:900;color:var(--text);line-height:1.1}
+.kpi-lbl{font-size:11px;color:var(--muted);margin-top:4px}
+/* TOOLBAR */
+.toolbar{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap}
+.search-wrap{position:relative;flex:1;min-width:180px}
+.search-wrap input{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 14px 10px 36px;color:var(--text);font-family:'Sarabun',sans-serif;font-size:13px;outline:none;transition:.2s}
+.search-wrap input:focus{border-color:var(--gold)}
+.search-wrap input::placeholder{color:var(--hint)}
+.si{position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:14px;color:var(--hint)}
+.sel{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 12px;color:var(--text);font-family:'Sarabun',sans-serif;font-size:13px;outline:none;cursor:pointer;min-width:130px}
+.sel:focus{border-color:var(--gold)}
+.sel option{background:#0f1020}
+.btn{display:inline-flex;align-items:center;gap:7px;padding:9px 16px;border-radius:9px;border:none;font-family:'Sarabun',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:.2s}
+.btn-gold{background:linear-gradient(135deg,var(--gold),#d4a00a);color:#1a0f00;box-shadow:0 3px 14px rgba(245,197,24,.3)}
+.btn-gold:hover{transform:translateY(-1px);box-shadow:0 5px 18px rgba(245,197,24,.4)}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--muted)}
+.btn-outline:hover{border-color:var(--gold);color:var(--gold2);background:rgba(245,197,24,.06)}
+.btn-danger{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.25);color:#fca5a5}
+.btn-danger:hover{background:rgba(239,68,68,.22)}
+/* STUDENT CARDS */
+.students-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+.student-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px;cursor:pointer;transition:transform .2s,border-color .2s,box-shadow .2s;position:relative;overflow:hidden;animation:cardIn .3s ease both}
+@keyframes cardIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.student-card:hover{transform:translateY(-4px);border-color:rgba(245,197,24,.35);box-shadow:0 8px 28px rgba(0,0,0,.4)}
+.student-card.rank-1{border-color:rgba(245,197,24,.5);background:linear-gradient(135deg,rgba(245,197,24,.1),var(--surface))}
+.student-card.rank-2{border-color:rgba(192,192,192,.4);background:linear-gradient(135deg,rgba(180,180,180,.08),var(--surface))}
+.student-card.rank-3{border-color:rgba(205,127,50,.4);background:linear-gradient(135deg,rgba(180,100,30,.1),var(--surface))}
+.rank-badge{position:absolute;top:10px;right:10px;font-size:18px}
+.sc-avatar{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--purple2));display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;color:#fff;margin-bottom:10px;border:2px solid rgba(139,92,246,.3);overflow:hidden}
+.sc-avatar img{width:100%;height:100%;object-fit:cover}
+.sc-name{font-size:14px;font-weight:800;margin-bottom:2px}
+.sc-class{font-size:11px;color:var(--muted);margin-bottom:10px}
+.sc-pts{display:flex;align-items:baseline;gap:4px;margin-bottom:8px}
+.sc-pts .num{font-size:28px;font-weight:900;color:var(--gold2);line-height:1}
+.sc-pts .lbl{font-size:11px;color:var(--muted)}
+.sc-bar{height:5px;background:var(--surface3);border-radius:3px;overflow:hidden;margin-bottom:10px}
+.sc-bar-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--gold),var(--gold2));transition:width .6s ease}
+.sc-actions{display:flex;gap:6px}
+.sc-actions .btn{flex:1;padding:6px 8px;font-size:11px;border-radius:7px}
+/* HISTORY LIST */
+.history-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-top:20px}
+.hp-head{display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--surface2);border-bottom:1px solid var(--border)}
+.hp-title{font-size:13px;font-weight:800;flex:1}
+.history-list{display:flex;flex-direction:column}
+.h-row{display:flex;align-items:center;gap:12px;padding:11px 16px;border-bottom:1px solid rgba(37,40,69,.5);transition:background .15s;animation:rowIn .25s ease both}
+@keyframes rowIn{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:none}}
+.h-row:last-child{border-bottom:none}
+.h-row:hover{background:rgba(245,197,24,.04)}
+.h-badge{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.h-badge.good{background:rgba(16,185,129,.15);border:1px solid rgba(16,185,129,.25)}
+.h-badge.bad{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2)}
+.h-info{flex:1;min-width:0}
+.h-student{font-size:13px;font-weight:700}
+.h-reason{font-size:11px;color:var(--muted);margin-top:1px}
+.h-pts{font-size:15px;font-weight:800}
+.h-pts.pos{color:var(--green2)}
+.h-pts.neg{color:#f87171}
+.h-date{font-size:10px;color:var(--hint)}
+.empty-msg{text-align:center;padding:40px;color:var(--hint);font-size:13px}
+/* MODAL */
+.modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(6px);z-index:300;display:flex;align-items:center;justify-content:center;padding:16px;opacity:0;pointer-events:none;transition:.25s}
+.modal-ov.open{opacity:1;pointer-events:all}
+.modal{background:#0e1020;border:1px solid var(--border2);border-radius:18px;width:100%;max-width:440px;padding:26px 22px;position:relative;transform:translateY(20px) scale(.97);transition:.25s;max-height:90vh;overflow-y:auto;scrollbar-width:thin}
+.modal-ov.open .modal{transform:none}
+.modal-top{height:3px;background:linear-gradient(90deg,var(--gold),var(--purple2));border-radius:3px;margin-bottom:18px}
+.modal h3{font-size:16px;font-weight:900;margin-bottom:18px}
+.modal-close{position:absolute;top:16px;right:16px;background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--muted);width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;transition:.2s}
+.modal-close:hover{color:var(--text);background:rgba(255,255,255,.14)}
+.form-g{display:flex;flex-direction:column;gap:5px;margin-bottom:14px}
+.form-g label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.form-g input,.form-g select,.form-g textarea{background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:'Sarabun',sans-serif;font-size:13px;outline:none;transition:.2s;width:100%}
+.form-g input:focus,.form-g select:focus,.form-g textarea:focus{border-color:var(--gold);background:rgba(245,197,24,.05)}
+.form-g select option{background:#0e1020}
+.pts-type{display:flex;gap:8px;margin-bottom:14px}
+.pts-btn{flex:1;padding:10px;border-radius:9px;border:1px solid var(--border);background:transparent;font-family:'Sarabun',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:.2s;color:var(--muted)}
+.pts-btn.pos.active{background:rgba(16,185,129,.15);border-color:rgba(16,185,129,.4);color:var(--green2)}
+.pts-btn.neg.active{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.3);color:#fca5a5}
+.pts-btn:hover{border-color:var(--gold);color:var(--gold2)}
+.modal-footer{display:flex;gap:8px;margin-top:18px}
+.modal-footer .btn{flex:1}
+/* PRESET REASONS */
+.presets{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.preset-chip{background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-size:11px;cursor:pointer;transition:.2s;color:var(--muted)}
+.preset-chip:hover{border-color:var(--gold);color:var(--gold2);background:rgba(245,197,24,.06)}
+.preset-chip.selected{background:rgba(245,197,24,.12);border-color:var(--gold);color:var(--gold2)}
+/* TOAST */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:rgba(10,10,20,.96);border:1px solid var(--border2);color:var(--text);padding:10px 20px;border-radius:20px;font-size:13px;font-weight:700;z-index:999;transition:transform .3s;backdrop-filter:blur(10px);white-space:nowrap}
+.toast.show{transform:translateX(-50%)}
+.toast.ok{border-color:rgba(16,185,129,.4);color:var(--green2)}
+.toast.err{border-color:rgba(239,68,68,.4);color:#fca5a5}
+.spinner{display:inline-block;width:28px;height:28px;border:2.5px solid rgba(255,255,255,.08);border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-wrap{text-align:center;padding:48px}
+/* TABS */
+.tabs{display:flex;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:3px;gap:3px;margin-bottom:20px}
+.tab{flex:1;padding:8px;border-radius:7px;border:none;font-family:'Sarabun',sans-serif;font-size:13px;font-weight:700;cursor:pointer;color:var(--muted);background:transparent;transition:.2s}
+.tab.active{background:rgba(245,197,24,.12);color:var(--gold2);border:1px solid rgba(245,197,24,.2)}
+@media(max-width:500px){.kpi-row{grid-template-columns:1fr 1fr}.students-grid{grid-template-columns:1fr 1fr}.toolbar{flex-direction:column}}
+</style>
+</head>
+<body>
+<div class="bg-stars" id="bg-stars"></div>
+<div class="bg-glow"></div>
+
+<div class="page">
+  <div class="nav">
+    <a href="index.html" class="back-btn">← หน้าหลัก</a>
+    <div class="nav-title">⭐ คะแนนความดี</div>
+    <button class="btn btn-gold" onclick="openAddModal()">+ บันทึกความดี</button>
+  </div>
+
+  <div class="hero-band">
+    <div class="hero-icon">⭐</div>
+    <div class="hero-text">
+      <h1>ระบบคะแนนความดี</h1>
+      <p>บันทึกพฤติกรรม • สะสมแต้ม • มอบรางวัล • โรงเรียนบ้านคำไผ่</p>
+    </div>
+  </div>
+
+  <div class="kpi-row">
+    <div class="kpi" style="--kc:var(--gold)">
+      <div class="kpi-num" id="kpi-students">—</div>
+      <div class="kpi-lbl">นักเรียนทั้งหมด</div>
+    </div>
+    <div class="kpi" style="--kc:var(--green2)">
+      <div class="kpi-num" id="kpi-total-pts" style="color:var(--gold2)">—</div>
+      <div class="kpi-lbl">คะแนนรวมทั้งหมด</div>
+    </div>
+    <div class="kpi" style="--kc:var(--purple2)">
+      <div class="kpi-num" id="kpi-records">—</div>
+      <div class="kpi-lbl">รายการบันทึก</div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" id="tab-rank" onclick="switchTab('rank')">🏆 อันดับ</button>
+    <button class="tab" id="tab-history" onclick="switchTab('history')">📋 ประวัติ</button>
+  </div>
+
+  <!-- RANK VIEW -->
+  <div id="view-rank">
+    <div class="toolbar">
+      <div class="search-wrap">
+        <span class="si">🔍</span>
+        <input type="text" id="search" placeholder="ค้นหาชื่อนักเรียน..." oninput="renderRank()"/>
+      </div>
+      <select class="sel" id="sel-class" onchange="renderRank()">
+        <option value="">ทุกห้องเรียน</option>
+      </select>
+    </div>
+    <div class="students-grid" id="rank-grid">
+      <div class="loading-wrap" style="grid-column:1/-1"><div class="spinner"></div></div>
+    </div>
+  </div>
+
+  <!-- HISTORY VIEW -->
+  <div id="view-history" style="display:none">
+    <div class="toolbar">
+      <select class="sel" id="h-student" onchange="renderHistory()">
+        <option value="">นักเรียนทั้งหมด</option>
+      </select>
+      <select class="sel" id="h-type" onchange="renderHistory()">
+        <option value="">ทุกประเภท</option>
+        <option value="pos">เพิ่มคะแนน</option>
+        <option value="neg">ลดคะแนน</option>
+      </select>
+    </div>
+    <div class="history-panel">
+      <div class="hp-head">
+        <span class="hp-title">📋 ประวัติการบันทึก</span>
+        <span id="h-count" style="font-size:11px;color:var(--muted)"></span>
+      </div>
+      <div class="history-list" id="history-list">
+        <div class="loading-wrap"><div class="spinner"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD MODAL -->
+<div class="modal-ov" id="add-modal">
+  <div class="modal">
+    <div class="modal-top"></div>
+    <button class="modal-close" onclick="closeModal('add-modal')">✕</button>
+    <h3>⭐ บันทึกคะแนนความดี</h3>
+    <div class="pts-type">
+      <button class="pts-btn pos active" id="type-pos" onclick="setType('pos')">⬆ เพิ่มคะแนน</button>
+      <button class="pts-btn neg" id="type-neg" onclick="setType('neg')">⬇ ลดคะแนน</button>
+    </div>
+    <div class="form-g">
+      <label>นักเรียน *</label>
+      <select id="a-student">
+        <option value="">— เลือกนักเรียน —</option>
+      </select>
+    </div>
+    <div class="form-g">
+      <label>คะแนน *</label>
+      <input id="a-pts" type="number" placeholder="1" min="1" max="100" value="1"/>
+    </div>
+    <div class="form-g">
+      <label>เหตุผล</label>
+      <div class="presets" id="presets-wrap"></div>
+      <input id="a-reason" placeholder="ระบุเหตุผล..."/>
+    </div>
+    <div class="form-g">
+      <label>บันทึกโดย</label>
+      <input id="a-by" placeholder="ชื่อครู"/>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('add-modal')">ยกเลิก</button>
+      <button class="btn btn-gold" onclick="saveRecord()">💾 บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+<script>
+firebase.initializeApp({
+  apiKey:"AIzaSyBSUa3gj5l2VSYoUnVFXQwF0OX2SJe6Szc",
+  authDomain:"kampai-school-app.firebaseapp.com",
+  databaseURL:"https://kampai-school-app-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId:"kampai-school-app"
+});
+const db=firebase.database();
+
+const PRESETS_POS=['ช่วยเหลือเพื่อน','ส่งงานตรงเวลา','ตั้งใจเรียน','ความประพฤติดี','ชนะการแข่งขัน','ช่วยเหลืองานโรงเรียน','มาเรียนตรงเวลา'];
+const PRESETS_NEG=['ลืมส่งการบ้าน','มาสาย','พฤติกรรมไม่เหมาะสม','ทะเลาะกับเพื่อน','ไม่ตั้งใจเรียน'];
+
+let STUDENTS=[],RECORDS=[],currentType='pos',currentTab='rank';
+
+// LOAD
+db.ref('students').on('value',snap=>{
+  STUDENTS=[];
+  snap.forEach(c=>STUDENTS.push({...c.val(),_id:c.key}));
+  STUDENTS.sort((a,b)=>(a.fname||'').localeCompare(b.fname||'','th'));
+  buildSelects();
+  buildClassFilter();
+  renderRank();
+});
+db.ref('reward_records').on('value',snap=>{
+  RECORDS=[];
+  snap.forEach(c=>RECORDS.push({...c.val(),_id:c.key}));
+  RECORDS.sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
+  renderRank();
+  renderHistory();
+  updateKPI();
+});
+
+function getPoints(sid){
+  return RECORDS.filter(r=>r.studentId===sid).reduce((s,r)=>s+(r.type==='pos'?r.pts:-(r.pts||0)),0);
+}
+function classLabel(s){return s.grade?(s.room?`${s.grade}/${s.room}`:s.grade):'';}
+
+function updateKPI(){
+  document.getElementById('kpi-students').textContent=STUDENTS.length;
+  const total=RECORDS.reduce((s,r)=>s+(r.type==='pos'?r.pts:0),0);
+  document.getElementById('kpi-total-pts').textContent=total.toLocaleString();
+  document.getElementById('kpi-records').textContent=RECORDS.length;
+}
+
+function buildSelects(){
+  const opts=STUDENTS.map(s=>`<option value="${s._id}">${s.fname} ${s.lname} (${classLabel(s)||'—'})</option>`).join('');
+  document.getElementById('a-student').innerHTML='<option value="">— เลือกนักเรียน —</option>'+opts;
+  document.getElementById('h-student').innerHTML='<option value="">นักเรียนทั้งหมด</option>'+opts;
+}
+function buildClassFilter(){
+  const classes=[...new Set(STUDENTS.map(s=>classLabel(s)).filter(Boolean))];
+  document.getElementById('sel-class').innerHTML='<option value="">ทุกห้องเรียน</option>'+classes.map(c=>`<option>${c}</option>`).join('');
+}
+
+// RANK
+function renderRank(){
+  const q=(document.getElementById('search')?.value||'').toLowerCase();
+  const cls=document.getElementById('sel-class')?.value||'';
+  const grid=document.getElementById('rank-grid');
+  if(!grid)return;
+
+  let list=STUDENTS
+    .filter(s=>(!cls||classLabel(s)===cls)&&(!q||`${s.fname} ${s.lname}`.toLowerCase().includes(q)))
+    .map(s=>({...s,pts:getPoints(s._id)}))
+    .sort((a,b)=>b.pts-a.pts);
+
+  if(!list.length){grid.innerHTML='<div class="empty-msg" style="grid-column:1/-1">ไม่พบนักเรียน</div>';return;}
+  const maxPts=Math.max(1,...list.map(s=>s.pts));
+  const medals=['🥇','🥈','🥉'];
+
+  grid.innerHTML=list.map((s,i)=>{
+    const pct=Math.max(0,(s.pts/maxPts)*100);
+    const cls2=i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':'';
+    const ini=s.fname?s.fname[0]:'?';
+    return `<div class="student-card ${cls2}" style="animation-delay:${i*.03}s" onclick="openStudentHistory('${s._id}')">
+      ${i<3?`<div class="rank-badge">${medals[i]}</div>`:`<div class="rank-badge" style="font-size:12px;color:var(--hint)">#${i+1}</div>`}
+      <div class="sc-avatar">${s.photo?`<img src="${s.photo}" alt=""/>`:`<span>${ini}</span>`}</div>
+      <div class="sc-name">${s.fname} ${s.lname}</div>
+      <div class="sc-class">${classLabel(s)||'—'} เลขที่ ${s.no||'—'}</div>
+      <div class="sc-pts"><span class="num">${s.pts}</span><span class="lbl">คะแนน</span></div>
+      <div class="sc-bar"><div class="sc-bar-fill" style="width:${pct}%"></div></div>
+      <div class="sc-actions">
+        <button class="btn btn-gold" style="font-size:11px;padding:5px 8px" onclick="event.stopPropagation();quickAdd('${s._id}','pos')">+⭐</button>
+        <button class="btn btn-danger" style="font-size:11px;padding:5px 8px" onclick="event.stopPropagation();quickAdd('${s._id}','neg')">-</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// HISTORY
+function renderHistory(){
+  const sid=document.getElementById('h-student')?.value||'';
+  const type=document.getElementById('h-type')?.value||'';
+  const list=document.getElementById('history-list');
+  if(!list)return;
+  let recs=RECORDS.filter(r=>(!sid||r.studentId===sid)&&(!type||r.type===type));
+  document.getElementById('h-count').textContent=`${recs.length} รายการ`;
+  if(!recs.length){list.innerHTML='<div class="empty-msg">ยังไม่มีประวัติ</div>';return;}
+  list.innerHTML=recs.slice(0,50).map((r,i)=>{
+    const s=STUDENTS.find(x=>x._id===r.studentId);
+    const name=s?`${s.fname} ${s.lname}`:'—';
+    const d=r.createdAt?new Date(r.createdAt).toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';
+    const isPos=r.type==='pos';
+    return `<div class="h-row" style="animation-delay:${i*.02}s">
+      <div class="h-badge ${isPos?'good':'bad'}">${isPos?'⬆':'⬇'}</div>
+      <div class="h-info">
+        <div class="h-student">${name}</div>
+        <div class="h-reason">${r.reason||'—'} ${r.by?`• โดย ${r.by}`:''}</div>
+      </div>
+      <div style="text-align:right">
+        <div class="h-pts ${isPos?'pos':'neg'}">${isPos?'+':'–'}${r.pts}</div>
+        <div class="h-date">${d}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ADD RECORD
+function setType(t){
+  currentType=t;
+  document.getElementById('type-pos').classList.toggle('active',t==='pos');
+  document.getElementById('type-neg').classList.toggle('active',t==='neg');
+  buildPresets();
+}
+
+function buildPresets(){
+  const presets=currentType==='pos'?PRESETS_POS:PRESETS_NEG;
+  const wrap=document.getElementById('presets-wrap');
+  const cur=document.getElementById('a-reason').value;
+  wrap.innerHTML=presets.map(p=>`<span class="preset-chip ${p===cur?'selected':''}" onclick="selectPreset('${p}')">${p}</span>`).join('');
+}
+
+function selectPreset(p){
+  document.getElementById('a-reason').value=p;
+  buildPresets();
+}
+
+function openAddModal(){
+  document.getElementById('a-pts').value=1;
+  document.getElementById('a-reason').value='';
+  document.getElementById('a-by').value=localStorage.getItem('reward_teacher')||'';
+  setType('pos');
+  openModal('add-modal');
+}
+
+function quickAdd(sid,type){
+  document.getElementById('a-student').value=sid;
+  document.getElementById('a-pts').value=1;
+  document.getElementById('a-reason').value='';
+  setType(type);
+  openModal('add-modal');
+}
+
+function openStudentHistory(sid){
+  document.getElementById('h-student').value=sid;
+  switchTab('history');
+  renderHistory();
+}
+
+async function saveRecord(){
+  const sid=document.getElementById('a-student').value;
+  const pts=parseInt(document.getElementById('a-pts').value)||0;
+  const reason=document.getElementById('a-reason').value.trim();
+  const by=document.getElementById('a-by').value.trim();
+  if(!sid){toast('❌ เลือกนักเรียน','err');return;}
+  if(!pts||pts<1){toast('❌ ใส่คะแนนที่ถูกต้อง','err');return;}
+  if(by)localStorage.setItem('reward_teacher',by);
+  try{
+    await db.ref('reward_records').push({
+      studentId:sid,type:currentType,pts,reason:reason||'—',by:by||'',
+      createdAt:new Date().toISOString()
+    });
+    toast(currentType==='pos'?`✅ เพิ่ม +${pts} คะแนน`:`✅ ลด -${pts} คะแนน`,'ok');
+    closeModal('add-modal');
+  }catch(e){toast('❌ '+e.message,'err');}
+}
+
+// TAB
+function switchTab(t){
+  currentTab=t;
+  document.getElementById('tab-rank').classList.toggle('active',t==='rank');
+  document.getElementById('tab-history').classList.toggle('active',t==='history');
+  document.getElementById('view-rank').style.display=t==='rank'?'':'none';
+  document.getElementById('view-history').style.display=t==='history'?'':'none';
+  if(t==='history')renderHistory();
+}
+
+// MODAL / TOAST
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+function toast(msg,type=''){const t=document.getElementById('toast');t.textContent=msg;t.className='toast'+(type?' '+type:'');t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}
+document.querySelectorAll('.modal-ov').forEach(el=>el.addEventListener('click',e=>{if(e.target===el)el.classList.remove('open');}));
+
+// STARS BG
+const bg=document.getElementById('bg-stars');
+for(let i=0;i<60;i++){
+  const s=document.createElement('div');s.className='star';
+  const sz=Math.random()*2+1;
+  s.style.cssText=`width:${sz}px;height:${sz}px;top:${Math.random()*100}%;left:${Math.random()*100}%;animation-duration:${2+Math.random()*4}s;animation-delay:${Math.random()*4}s`;
+  bg.appendChild(s);
+}
+</script>
+</body>
+</html>
