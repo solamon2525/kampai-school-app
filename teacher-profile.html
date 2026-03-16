@@ -219,6 +219,8 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);min
 <div class="bg-layer"></div>
 <div class="bg-accent"></div>
 
+
+<div id="auth-bar"></div>
 <div class="page">
 
   <!-- NAV -->
@@ -255,8 +257,8 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);min
       <div class="hero-stat-label">กลุ่มสาระ</div>
     </div>
     <div class="hero-divider"></div>
-    <button class="btn btn-gold" onclick="openAddModal()">+ เพิ่มบุคลากร</button>
-    <button class="btn btn-outline" onclick="exportCSV()">📥 Export</button>
+    <button class="btn btn-gold" data-auth="write" onclick="openAddModal()">+ เพิ่มบุคลากร</button>
+    <button class="btn btn-outline" data-auth="write" onclick="exportCSV()">📥 Export</button>
   </div>
 
   <!-- TOOLBAR -->
@@ -484,15 +486,18 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);min
 <div class="toast" id="toast"></div>
 
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+<script src="auth-guard.js"></script>
 <script>
-firebase.initializeApp({
+AuthGuard.init('read-only');
+const db=_db;
+if(false)firebase.initializeApp({
   apiKey:"AIzaSyBSUa3gj5l2VSYoUnVFXQwF0OX2SJe6Szc",
   authDomain:"kampai-school-app.firebaseapp.com",
   databaseURL:"https://kampai-school-app-default-rtdb.asia-southeast1.firebasedatabase.app",
   projectId:"kampai-school-app"
 });
-const db=firebase.database();
 const REF=db.ref('teachers');
 
 let ALL=[],filtered=[],viewMode='card',page=1,PAGE=20;
@@ -589,8 +594,8 @@ function teacherCard(t,i){
       </div>
       <div class="card-actions">
         <button class="btn btn-outline" onclick="openDetail('${t._id}')">👁 ดู</button>
-        <button class="btn btn-gold" style="background:rgba(212,168,67,.15);color:var(--gold2);border:1px solid rgba(212,168,67,.25);box-shadow:none" onclick="openEdit('${t._id}')">✏️</button>
-        <button class="btn btn-danger" style="padding:7px 10px" onclick="confirmDel('${t._id}')">🗑</button>
+        <button class="btn btn-gold" style="background:rgba(212,168,67,.15);color:var(--gold2);border:1px solid rgba(212,168,67,.25);box-shadow:none" data-auth='write' onclick="openEdit('${t._id}')">✏️</button>
+        <button class="btn btn-danger" style="padding:7px 10px" data-auth='write' onclick="confirmDel('${t._id}')">🗑</button>
       </div>
     </div>
   </div>`;
@@ -628,8 +633,8 @@ function renderList(){
       <div class="ld"><span class="status-badge ${isActive?'on':'off'}">${t.status||'ปฏิบัติหน้าที่'}</span></div>
       <div class="ld list-actions">
         <button class="icon-btn view" onclick="openDetail('${t._id}')" title="ดูรายละเอียด">👁</button>
-        <button class="icon-btn edit" onclick="openEdit('${t._id}')" title="แก้ไข">✏️</button>
-        <button class="icon-btn del" onclick="confirmDel('${t._id}')" title="ลบ">🗑</button>
+        <button class="icon-btn edit" data-auth='write' onclick="openEdit('${t._id}')" title="แก้ไข">✏️</button>
+        <button class="icon-btn del" data-auth='write' onclick="confirmDel('${t._id}')" title="ลบ">🗑</button>
       </div>
     </div>`;
   }).join('');
@@ -758,6 +763,7 @@ function setPhotoPrev(src){
 
 // ── SAVE ──
 async function saveTeacher(){
+  if(!AuthGuard.requireLogin())return;
   const fname=document.getElementById('e-fname').value.trim();
   const lname=document.getElementById('e-lname').value.trim();
   const pos=document.getElementById('e-position').value;
