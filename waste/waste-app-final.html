@@ -130,6 +130,7 @@ th{background:#f9fafb;font-weight:700;color:#374151}
     <button class="tab-btn"        id="tab-points"    onclick="switchTab('points')">🏆 คะแนน</button>
     <button class="tab-btn"        id="tab-qr"        onclick="switchTab('qr')">📱 QR</button>
     <button class="tab-btn admin-only hidden" id="tab-admin" onclick="switchTab('admin')">⚙️ แอดมิน</button>
+    <button class="tab-btn teacher-only hidden" id="tab-students" onclick="switchTab('students')">👤 นักเรียน</button>
     <button class="btn btn-green" style="margin:4px 8px;padding:6px 10px;font-size:16px;border-radius:8px" onclick="loadAll()" title="รีเฟรช">🔄</button>
   </div>
 </div>
@@ -223,6 +224,29 @@ th{background:#f9fafb;font-weight:700;color:#374151}
       เห็นคะแนน badge และประวัติตัวเองได้ทันที ไม่ต้อง login
     </div>
   </div>
+</div>
+
+<!-- ═══ STUDENTS (ครูทั่วไป) ═══ -->
+<div id="page-students" class="hidden">
+  <h2 style="font-size:17px;color:#15803d;margin-bottom:14px">👤 เพิ่มนักเรียน</h2>
+  <div class="card">
+    <div class="form-row"><label>ชื่อนักเรียน</label><input type="text" id="t-name" placeholder="เช่น เด็กชายสมชาย"/></div>
+    <div class="form-row">
+      <label>ห้องเรียน</label>
+      <select id="t-room">
+        <option value="">-- เลือกห้อง --</option>
+        <optgroup label="อนุบาล"><option value="อนุบาล">อนุบาล</option></optgroup>
+        <optgroup label="ประถมศึกษา">
+          <option value="ป.1">ป.1</option><option value="ป.2">ป.2</option>
+          <option value="ป.3">ป.3</option><option value="ป.4">ป.4</option>
+          <option value="ป.5">ป.5</option><option value="ป.6">ป.6</option>
+        </optgroup>
+      </select>
+    </div>
+    <button class="btn btn-green btn-full" onclick="teacherAddMember()">➕ เพิ่มนักเรียน</button>
+  </div>
+  <h3 style="font-size:14px;color:#374151;margin:4px 0 10px">📋 รายชื่อนักเรียนทั้งหมด</h3>
+  <div id="teacher-members-list"></div>
 </div>
 
 <!-- ═══ ADMIN ═══ -->
@@ -400,8 +424,15 @@ auth.onAuthStateChanged(async user=>{
   if(user){
     currentUser=user;
     const snap=await db.ref(`users/${user.uid}`).get();
-    if(snap.exists()){const d=snap.val();currentRole=d.role||'teacher';currentName=d.name||user.email;}
-    else{const all=await db.ref('users').get();currentRole=!all.exists()?'admin':'teacher';currentName=user.email;await db.ref(`users/${user.uid}`).set({email:user.email,name:currentName,role:currentRole});}
+    if(snap.exists()){
+      const d=snap.val();currentRole=d.role||'teacher';currentName=d.name||user.email;
+    } else {
+      const all=await db.ref('users').get();
+      const userCount=all.exists()?Object.keys(all.val()).length:0;
+      currentRole=userCount===0?'admin':'teacher';
+      currentName=user.email;
+      await db.ref(`users/${user.uid}`).set({email:user.email,name:currentName,role:currentRole});
+    }
     showApp();
   } else showLogin();
 });
@@ -411,7 +442,13 @@ function showApp(){
   document.getElementById('main-app').classList.remove('hidden');
   document.getElementById('user-badge').textContent=(currentRole==='admin'?'👑 แอดมิน':'👩‍🏫 ครู')+' '+currentName;
   document.getElementById('user-badge').className='badge '+(currentRole==='admin'?'role-admin':'role-teacher');
-  if(currentRole==='admin') document.querySelectorAll('.admin-only').forEach(el=>el.classList.remove('hidden'));
+  if(currentRole==='admin'){
+    // แอดมิน: เห็นแท็บ admin เท่านั้น (ไม่เห็น teacher tab)
+    document.querySelectorAll('.admin-only').forEach(el=>el.classList.remove('hidden'));
+  } else {
+    // ครู: เห็นแท็บ "นักเรียน" แทน admin
+    document.querySelectorAll('.teacher-only').forEach(el=>el.classList.remove('hidden'));
+  }
   initDatetime(); startListeners(); checkQRParam();
 }
 async function doLogin(){const em=document.getElementById('login-email').value.trim(),pw=document.getElementById('login-pass').value,err=document.getElementById('login-err');err.style.display='none';try{await auth.signInWithEmailAndPassword(em,pw);}catch(e){err.textContent='อีเมลหรือรหัสผ่านไม่ถูกต้อง';err.style.display='block';}}
@@ -426,7 +463,40 @@ function startListeners(){
   db.ref('config/line').on('value',snap=>{lineConfig=snap.val()||{};if(lineConfig.n8nUrl)document.getElementById('n8n-url').value=lineConfig.n8nUrl;if(lineConfig.token)document.getElementById('line-token').value=lineConfig.token;});
 }
 function loadAll(){showToast('รีเฟรชแล้ว ✅');}
-function renderAll(){renderMemberSelector();renderRecent();renderHistory();renderDashboard();renderPoints();renderMembersList();renderQRSelect();renderRoomFilters();}
+function renderAll(){renderMemberSelector();renderRecent();renderHistory();renderDashboard();renderPoints();renderMembersList();renderTeacherMembersList();renderQRSelect();renderRoomFilters();}
+
+// ── ฟังก์ชันสำหรับครู: เพิ่มนักเรียน ──
+async function teacherAddMember(){
+  const name=document.getElementById('t-name').value.trim();
+  const room=document.getElementById('t-room').value;
+  if(!name){showToast('กรุณากรอกชื่อ','error');return;}
+  if(!room){showToast('กรุณาเลือกห้อง','error');return;}
+  await db.ref('members').push({type:'student',name,room,img:'',points:0});
+  await writeAudit('add_member',`เพิ่ม ${name} (${room}) โดยครู ${currentName}`);
+  document.getElementById('t-name').value='';
+  document.getElementById('t-room').value='';
+  showToast('เพิ่มนักเรียนสำเร็จ ✅');
+}
+
+function renderTeacherMembersList(){
+  const el=document.getElementById('teacher-members-list');if(!el)return;
+  const studs=members.filter(m=>m.type==='student');
+  if(!studs.length){el.innerHTML='<p style="text-align:center;color:#9ca3af;padding:20px">ยังไม่มีรายชื่อนักเรียน</p>';return;}
+  let h='';
+  ROOMS.forEach(room=>{
+    const list=studs.filter(m=>m.room===room);if(!list.length)return;
+    const col=ROOM_COLORS[room]||'#16a34a';
+    h+=`<div style="margin-bottom:14px"><div style="font-size:12px;font-weight:700;color:${col};background:${col}18;border-radius:8px;padding:4px 10px;margin-bottom:6px;display:inline-block">🏫 ${room} (${list.length} คน)</div>`;
+    list.forEach(m=>{
+      h+=`<div class="flex gap8 ai-center" style="padding:8px 10px;background:#f9fafb;border-radius:10px;margin-bottom:6px;border:1.5px solid #e5e7eb">
+        ${avatarHTML(m.img,m.name,36)}
+        <div style="flex:1"><div style="font-weight:600;font-size:14px">${m.name}</div><div style="font-size:12px;color:#9ca3af">${m.points||0} แต้ม</div></div>
+      </div>`;
+    });
+    h+='</div>';
+  });
+  el.innerHTML=h;
+}
 
 // ── Room filters ──
 function renderRoomFilters(){
@@ -586,7 +656,8 @@ function handleMImg(e){const f=e.target.files[0];if(!f)return;const r=new FileRe
 function removeMImg(){mImgB64='';renderMAvatarPreview();}
 function renderMAvatarPreview(){document.getElementById('m-avatar-preview').innerHTML=avatarHTML(mImgB64,document.getElementById('m-name').value||'?',46);document.getElementById('m-remove-img').style.display=mImgB64?'':'none';}
 async function saveMember(){
-  if(currentRole!=='admin'){showToast('เฉพาะแอดมิน','error');return;}
+  // ครูเพิ่มได้ แต่แก้ไขได้เฉพาะแอดมิน
+  if(editMemberId&&currentRole!=='admin'){showToast('เฉพาะแอดมินแก้ไขได้','error');return;}
   const name=document.getElementById('m-name').value.trim(),room=document.getElementById('m-room').value;
   if(!name){showToast('กรุณากรอกชื่อ','error');return;}
   if(!room){showToast('กรุณาเลือกห้อง','error');return;}
@@ -597,7 +668,7 @@ async function saveMember(){
     await writeAudit('edit_member',`แก้ไข ${name} (${room})`);showToast('แก้ไขสำเร็จ ✅');cancelMemberEdit();
   } else {
     await db.ref('members').push({type:'student',name,room,img:mImgB64||'',points:0});
-    await writeAudit('add_member',`เพิ่ม ${name} (${room})`);showToast('เพิ่มสำเร็จ ✅');
+    await writeAudit('add_member',`เพิ่ม ${name} (${room}) โดย ${currentName}`);showToast('เพิ่มสำเร็จ ✅');
   }
   document.getElementById('m-name').value='';document.getElementById('m-room').value='';mImgB64='';renderMAvatarPreview();
 }
@@ -613,7 +684,13 @@ function renderMembersList(){
     const list=members.filter(m=>m.room===room&&m.type==='student');if(!list.length)return;
     const col=ROOM_COLORS[room]||'#16a34a';
     h+=`<div style="margin-bottom:14px"><div style="font-size:12px;font-weight:700;color:${col};background:${col}18;border-radius:8px;padding:4px 10px;margin-bottom:6px;display:inline-block">🏫 ${room} (${list.length} คน)</div>`;
-    list.forEach(m=>{h+=`<div class="flex gap8 ai-center" style="padding:8px 10px;background:#f9fafb;border-radius:10px;margin-bottom:6px;border:1.5px solid #e5e7eb">${avatarHTML(m.img,m.name,36)}<div style="flex:1"><div style="font-weight:600;font-size:14px">${m.name}</div><div style="font-size:12px;color:#9ca3af">${m.points||0} แต้ม</div></div><button class="btn btn-yellow" style="font-size:12px;padding:5px 8px" onclick="editMemberFn('${m.fbKey}')">✏️</button><button class="btn btn-red" style="font-size:12px;padding:5px 8px" onclick="deleteMemberFn('${m.fbKey}')">🗑️</button></div>`;});
+    list.forEach(m=>{
+      h+=`<div class="flex gap8 ai-center" style="padding:8px 10px;background:#f9fafb;border-radius:10px;margin-bottom:6px;border:1.5px solid #e5e7eb">
+        ${avatarHTML(m.img,m.name,36)}
+        <div style="flex:1"><div style="font-weight:600;font-size:14px">${m.name}</div><div style="font-size:12px;color:#9ca3af">${m.points||0} แต้ม</div></div>
+        ${currentRole==='admin'?`<button class="btn btn-yellow" style="font-size:12px;padding:5px 8px" onclick="editMemberFn('${m.fbKey}')">✏️</button><button class="btn btn-red" style="font-size:12px;padding:5px 8px" onclick="deleteMemberFn('${m.fbKey}')">🗑️</button>`:''}
+      </div>`;
+    });
     h+='</div>';
   });
   el.innerHTML=h||'<p style="color:#9ca3af;font-size:13px">ยังไม่มีรายชื่อ</p>';
@@ -831,7 +908,12 @@ async function remapOrphan(oldMid){const sel=document.getElementById(`remap-${ol
 async function deleteOrphan(mid,count){if(!confirm(`ยืนยันลบ ${count} บันทึก?\nข้อมูลจะหายถาวร`))return;const toDelete=records.filter(r=>r.member_id===mid);const updates={};toDelete.forEach(r=>{updates[`records/${r.fbKey}`]=null;});await db.ref().update(updates);await writeAudit('delete_orphan',`ลบ ${toDelete.length} บันทึก`);showToast(`ลบ ${toDelete.length} รายการแล้ว`);scanOrphanRecords();}
 
 // ── UI ──
-function switchTab(t){['log','history','dashboard','points','qr','admin'].forEach(k=>{document.getElementById(`page-${k}`)?.classList.toggle('hidden',k!==t);document.getElementById(`tab-${k}`)?.classList.toggle('active',k===t);});}
+function switchTab(t){
+  ['log','history','dashboard','points','qr','admin','students'].forEach(k=>{
+    document.getElementById(`page-${k}`)?.classList.toggle('hidden',k!==t);
+    document.getElementById(`tab-${k}`)?.classList.toggle('active',k===t);
+  });
+}
 function initDatetime(){const now=new Date(),pad=n=>String(n).padStart(2,'0');document.getElementById('form-date').value=`${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;}
 let _tt;
 function showToast(msg,type='success'){const el=document.getElementById('toast');el.textContent=msg;el.style.background=type==='error'?'#ef4444':'#16a34a';el.classList.remove('hidden');clearTimeout(_tt);_tt=setTimeout(()=>el.classList.add('hidden'),3000);}
