@@ -110,13 +110,15 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);min
 </head>
 <body>
 <div class="bg-fx"></div>
+
+<div id="auth-bar"></div>
 <div class="page">
 
   <div class="nav">
     <a href="index.html" class="back-btn">← หน้าหลัก</a>
     <div class="nav-title">🗓️ ตารางสอน / ตารางเรียน</div>
-    <button class="btn btn-blue" onclick="openAddModal()">+ เพิ่มคาบเรียน</button>
-    <button class="btn btn-outline" onclick="saveSchedule()">💾 บันทึก</button>
+    <button class="btn btn-blue" data-auth="write" onclick="openAddModal()">+ เพิ่มคาบเรียน</button>
+    <button class="btn btn-outline" data-auth="write" onclick="saveSchedule()">💾 บันทึก</button>
   </div>
 
   <!-- MODE TABS -->
@@ -224,15 +226,18 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);min
 <div class="toast" id="toast"></div>
 
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+<script src="auth-guard.js"></script>
 <script>
-firebase.initializeApp({
+AuthGuard.init('read-only');
+const db=_db;
+if(false)firebase.initializeApp({
   apiKey:"AIzaSyBSUa3gj5l2VSYoUnVFXQwF0OX2SJe6Szc",
   authDomain:"kampai-school-app.firebaseapp.com",
   databaseURL:"https://kampai-school-app-default-rtdb.asia-southeast1.firebasedatabase.app",
   projectId:"kampai-school-app"
 });
-const db=firebase.database();
 
 const DAYS=['จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์'];
 const DAY_EN=['Mon','Tue','Wed','Thu','Fri'];
@@ -347,6 +352,7 @@ function openAddModal(day,period){
 }
 
 function addEntry(){
+  if(!AuthGuard.requireLogin())return;
   const target=getTarget();
   if(!target){toast('❌ เลือกห้องเรียนหรือครูก่อน','err');closeModal('add-modal');return;}
   const day=parseInt(document.getElementById('a-day').value);
@@ -371,6 +377,7 @@ function addEntry(){
 }
 
 function delEntry(cellKey){
+  if(!AuthGuard.requireLogin())return;
   if(!confirm('ลบคาบเรียนนี้?'))return;
   db.ref(`schedule/${getKey()}/${cellKey}`).remove()
     .then(()=>toast('🗑 ลบแล้ว','ok'))
