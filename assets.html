@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>ระบบยืม-คืน ทรัพย์สิน • โรงเรียนบ้านคำไผ่</title>
+
+    <link rel="manifest" href="manifest.json" />
+    <meta name="theme-color" content="#f59e0b" />
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600&display=swap');
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Sarabun', sans-serif;
+            min-height: 100vh;
+            background: #020b18;
+            color: #e0f2fe;
+            overflow-x: hidden;
+        }
+
+        /* ── Bg Effects ── */
+        .bg-layer {
+            position: fixed;
+            inset: 0;
+            z-index: -2;
+            background: linear-gradient(160deg, #020b18 0%, #291500 40%, #1e1000 100%);
+        }
+
+        .glow {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(100px);
+            opacity: 0.15;
+            z-index: -1;
+            animation: gMove 12s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        .g1 {
+            width: 400px;
+            height: 400px;
+            background: #f59e0b;
+            top: -100px;
+            left: -100px;
+        }
+
+        .g2 {
+            width: 300px;
+            height: 300px;
+            background: #fbbf24;
+            bottom: 10%;
+            right: -50px;
+            animation-delay: 4s;
+        }
+
+        @keyframes gMove {
+
+            0%,
+            100% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            50% {
+                transform: translate(30px, -20px) scale(1.1);
+            }
+        }
+
+        /* ── Utility ── */
+        .wrap {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px 16px 80px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .top-nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .back-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #e0f2fe;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            font-size: 18px;
+            transition: 0.2s;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .page-title {
+            font-family: 'Mitr', sans-serif;
+            font-size: 20px;
+            font-weight: 600;
+            background: linear-gradient(135deg, #fcd34d, #f59e0b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* ── Search Bar ── */
+        .search-box {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            transition: 0.2s;
+        }
+
+        .search-box:focus-within {
+            border-color: #f59e0b;
+            background: rgba(245, 158, 11, 0.05);
+        }
+
+        .search-icon {
+            color: #94a3b8;
+            font-size: 16px;
+        }
+
+        .search-input {
+            background: none;
+            border: none;
+            outline: none;
+            color: #fff;
+            font-family: 'Sarabun', sans-serif;
+            font-size: 15px;
+            width: 100%;
+        }
+
+        /* ── Tabs ── */
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #94a3b8;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .tab.active {
+            background: rgba(245, 158, 11, 0.15);
+            color: #fbbf24;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        .view-section {
+            display: none;
+        }
+
+        .view-section.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ── Asset Grid ── */
+        .asset-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .asset-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 16px;
+            text-align: center;
+            transition: 0.2s;
+            position: relative;
+        }
+
+        .asset-card:hover {
+            border-color: rgba(245, 158, 11, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .asset-img {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            margin: 0 auto 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+        }
+
+        .asset-name {
+            font-weight: 700;
+            font-size: 14px;
+            color: #f8fafc;
+            margin-bottom: 4px;
+        }
+
+        .asset-stock {
+            font-size: 12px;
+            color: #94a3b8;
+            margin-bottom: 12px;
+        }
+
+        .stock-badge {
+            background: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 8px;
+        }
+
+        .stock-badge.empty {
+            background: rgba(239, 68, 68, 0.15);
+            color: #f87171;
+        }
+
+        .btn-borrow {
+            width: 100%;
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            color: #fbbf24;
+            border-radius: 10px;
+            padding: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            font-family: 'Sarabun', sans-serif;
+        }
+
+        .btn-borrow:hover {
+            background: rgba(245, 158, 11, 0.25);
+        }
+
+        .btn-borrow:disabled {
+            opacity: 0.4;
+            pointer-events: none;
+        }
+
+        /* ── My Borrows List ── */
+        .borrow-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .b-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .b-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .b-info {
+            flex: 1;
+        }
+
+        .b-title {
+            font-weight: 700;
+            font-size: 15px;
+            color: #f8fafc;
+            margin-bottom: 2px;
+        }
+
+        .b-date {
+            font-size: 12px;
+            color: #94a3b8;
+        }
+
+        .b-status {
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 8px;
+            margin-top: 6px;
+            display: inline-block;
+        }
+
+        .b-status.active {
+            background: rgba(245, 158, 11, 0.15);
+            color: #fbbf24;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        .b-status.returned {
+            background: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-return {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+            border-radius: 10px;
+            padding: 8px 12px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            font-family: 'Sarabun', sans-serif;
+        }
+
+        .btn-return:hover {
+            background: rgba(239, 68, 68, 0.2);
+        }
+    </style>
+</head>
+
+<body>
+    <div id="auth-bar"></div>
+
+    <div class="bg-layer"></div>
+    <div class="glow g1"></div>
+    <div class="glow g2"></div>
+
+    <div class="wrap">
+        <div class="top-nav">
+            <div class="nav-left">
+                <a href="index.html" class="back-btn">←</a>
+                <div class="page-title">ศูนย์รวมทรัพยากร/อุปกรณ์</div>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('items')">📦 รายการอุปกรณ์</div>
+            <div class="tab" onclick="switchTab('my-borrows')">📋 รายการยืมของฉัน</div>
+        </div>
+
+        <!-- ── ASSET LIST ── -->
+        <div id="sec-items" class="view-section active">
+
+            <div class="search-box">
+                <div class="search-icon">🔍</div>
+                <input type="text" class="search-input" placeholder="ค้นหาชื่ออุปกรณ์, กีฬา, สื่อการสอน..."
+                    onkeyup="filterAssets(this.value)">
+            </div>
+
+            <div class="asset-grid" id="assetGrid">
+                <!-- Item 1 -->
+                <div class="asset-card" data-name="ลูกฟุตบอล กีฬา">
+                    <div class="asset-img">⚽</div>
+                    <div class="asset-name">ลูกฟุตบอล (เบอร์ 5)</div>
+                    <div class="asset-stock">คงเหลือ: <span class="stock-badge">12 ลูก</span></div>
+                    <button class="btn-borrow" onclick="borrowItem('ลูกฟุตบอล (เบอร์ 5)')"
+                        data-auth="write-disable">ขอยืมอุปกรณ์</button>
+                </div>
+                <!-- Item 2 -->
+                <div class="asset-card" data-name="ลูกบาสเกตบอล กีฬา">
+                    <div class="asset-img">🏀</div>
+                    <div class="asset-name">ลูกบาสเกตบอล</div>
+                    <div class="asset-stock">คงเหลือ: <span class="stock-badge">5 ลูก</span></div>
+                    <button class="btn-borrow" onclick="borrowItem('ลูกบาสเกตบอล')"
+                        data-auth="write-disable">ขอยืมอุปกรณ์</button>
+                </div>
+                <!-- Item 3 -->
+                <div class="asset-card" data-name="โปรเจคเตอร์ สื่อการสอน ทีวี">
+                    <div class="asset-img">📽️</div>
+                    <div class="asset-name">โปรเจคเตอร์พกพา</div>
+                    <div class="asset-stock">คงเหลือ: <span class="stock-badge empty">0 เครื่อง</span></div>
+                    <button class="btn-borrow" disabled>ถูกยืมหมดแล้ว</button>
+                </div>
+                <!-- Item 4 -->
+                <div class="asset-card" data-name="ลำโพง บลูทูธ เครื่องเสียง">
+                    <div class="asset-img">🔊</div>
+                    <div class="asset-name">ลำโพง Bluetooth</div>
+                    <div class="asset-stock">คงเหลือ: <span class="stock-badge">2 เครื่อง</span></div>
+                    <button class="btn-borrow" onclick="borrowItem('ลำโพง Bluetooth')"
+                        data-auth="write-disable">ขอยืมอุปกรณ์</button>
+                </div>
+                <!-- Item 5 -->
+                <div class="asset-card" data-name="กล้อง ดิจิตอล ถ่ายรูป">
+                    <div class="asset-img">📷</div>
+                    <div class="asset-name">กล้อง DSLR โรงเรียน</div>
+                    <div class="asset-stock">คงเหลือ: <span class="stock-badge">1 เครื่อง</span></div>
+                    <button class="btn-borrow" onclick="borrowItem('กล้อง DSLR โรงเรียน')"
+                        data-auth="write-disable">ขอยืมอุปกรณ์</button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ── MY BORROWS ── -->
+        <div id="sec-my-borrows" class="view-section">
+            <div class="borrow-list">
+
+                <div class="b-card">
+                    <div class="b-icon">📷</div>
+                    <div class="b-info">
+                        <div class="b-title">กล้อง DSLR โรงเรียน</div>
+                        <div class="b-date">ยืมเมื่อ: วันนี้ (13:00 น.)</div>
+                        <div class="b-status active">กำลังยืม</div>
+                    </div>
+                    <button class="btn-return" onclick="returnItem(this)">คืนของ</button>
+                </div>
+
+                <div class="b-card">
+                    <div class="b-icon">⚽</div>
+                    <div class="b-info">
+                        <div class="b-title">ลูกฟุตบอล (เบอร์ 5)</div>
+                        <div class="b-date">ยืมเมื่อ: 10 มิ.ย. 2026 (คืนแล้ว)</div>
+                        <div class="b-status returned">คืนแล้ว ✓</div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Firebase & Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script src="auth-guard.js"></script>
+
+    <script>
+        AuthGuard.init('read-only');
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
+
+            event.currentTarget.classList.add('active');
+            document.getElementById('sec-' + tabId).classList.add('active');
+        }
+
+        function filterAssets(val) {
+            const q = val.toLowerCase();
+            document.querySelectorAll('.asset-card').forEach(card => {
+                const name = card.getAttribute('data-name').toLowerCase();
+                if (name.includes(q)) card.style.display = 'block';
+                else card.style.display = 'none';
+            });
+        }
+
+        function borrowItem(itemName) {
+            if (!AuthGuard.requireLogin('กรุณาลงชื่อเข้าใช้ระบบก่อนยืมอุปกรณ์')) return;
+
+            const confirmBorrow = confirm(`ยืนยันการทำรายการขอยืม : ${itemName} ใช่หรือไม่?`);
+            if (confirmBorrow) {
+                // Here you would write to Firebase
+                alert(`✅ ทำรายการยืม ${itemName} สำเร็จ\nกรุณาไปรับของที่ห้องพัสดุ`);
+                document.querySelectorAll('.tab')[1].click(); // switch to history tab (mock behavior)
+            }
+        }
+
+        function returnItem(btnElem) {
+            if (confirm('ยืนยันว่าคุณต้องการส่งคืนอุปกรณ์ชิ้นนี้?')) {
+                btnElem.parentElement.querySelector('.b-status').className = 'b-status returned';
+                btnElem.parentElement.querySelector('.b-status').textContent = 'คืนแล้ว ✓';
+                btnElem.remove(); // Remove the return button
+                alert('ระบบบันทึกการส่งคืนสำเร็จ');
+            }
+        }
+    </script>
+</body>
+
+</html>

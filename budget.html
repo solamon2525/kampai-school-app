@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>ข้อมูลการใช้จ่าย/งบประมาณ • โรงเรียนบ้านคำไผ่</title>
+
+    <link rel="manifest" href="manifest.json" />
+    <meta name="theme-color" content="#10b981" />
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600&display=swap');
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Sarabun', sans-serif;
+            min-height: 100vh;
+            background: #020b18;
+            color: #e0f2fe;
+            overflow-x: hidden;
+        }
+
+        /* ── Bg Effects ── */
+        .bg-layer {
+            position: fixed;
+            inset: 0;
+            z-index: -2;
+            background: linear-gradient(160deg, #022c22 0%, #064e3b 40%, #020b18 100%);
+        }
+
+        .glow {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(100px);
+            opacity: 0.15;
+            z-index: -1;
+            animation: gMove 12s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        .g1 {
+            width: 400px;
+            height: 400px;
+            background: #10b981;
+            top: -100px;
+            left: -100px;
+        }
+
+        .g2 {
+            width: 300px;
+            height: 300px;
+            background: #059669;
+            bottom: 10%;
+            right: -50px;
+            animation-delay: 4s;
+        }
+
+        @keyframes gMove {
+
+            0%,
+            100% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            50% {
+                transform: translate(30px, -20px) scale(1.1);
+            }
+        }
+
+        /* ── Utility ── */
+        .wrap {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px 16px 80px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .top-nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .back-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #e0f2fe;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            font-size: 18px;
+            transition: 0.2s;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .page-title {
+            font-family: 'Mitr', sans-serif;
+            font-size: 20px;
+            font-weight: 600;
+            background: linear-gradient(135deg, #6ee7b7, #10b981);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* ── Summary Dashboard ── */
+        .summary-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: 20px;
+            padding: 24px;
+            backdrop-filter: blur(10px);
+            margin-bottom: 24px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .summary-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, #10b981, #059669);
+        }
+
+        .sum-title {
+            font-size: 14px;
+            color: #a7f3d0;
+            margin-bottom: 8px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .sum-amt {
+            font-family: 'Mitr', sans-serif;
+            font-size: 36px;
+            font-weight: 700;
+            color: #fff;
+            line-height: 1;
+        }
+
+        .sum-desc {
+            font-size: 12px;
+            color: #6ee7b7;
+            margin-top: 8px;
+        }
+
+        /* Custom CSS Chart / Progress Bars */
+        .chart-box {
+            margin-top: 24px;
+            text-align: left;
+        }
+
+        .chart-row {
+            margin-bottom: 16px;
+        }
+
+        .chart-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            margin-bottom: 6px;
+        }
+
+        .chart-label {
+            color: #e2e8f0;
+            font-weight: 600;
+        }
+
+        .chart-val {
+            color: #94a3b8;
+        }
+
+        .progress-bg {
+            height: 10px;
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            border-radius: 10px;
+        }
+
+        .p-1 {
+            background: #3b82f6;
+            width: 45%;
+        }
+
+        .p-2 {
+            background: #10b981;
+            width: 30%;
+        }
+
+        .p-3 {
+            background: #f59e0b;
+            width: 15%;
+        }
+
+        .p-4 {
+            background: #ec4899;
+            width: 10%;
+        }
+
+        /* ── Transactions List ── */
+        .section-title {
+            font-family: 'Mitr', sans-serif;
+            font-size: 16px;
+            font-weight: 600;
+            color: #e2e8f0;
+            margin-bottom: 16px;
+            margin-top: 24px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .list-box {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+        }
+
+        .tx-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .tx-item:last-child {
+            border-bottom: none;
+        }
+
+        .tx-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .tx-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .tx-title {
+            font-weight: 700;
+            font-size: 14px;
+            color: #f8fafc;
+            margin-bottom: 4px;
+        }
+
+        .tx-date {
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        .tx-right {
+            text-align: right;
+        }
+
+        .tx-amt {
+            font-family: 'Mitr', sans-serif;
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .tx-amt.out {
+            color: #fca5a5;
+        }
+
+        .tx-amt.in {
+            color: #86efac;
+        }
+
+        .tx-tag {
+            display: inline-block;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #cbd5e1;
+            margin-top: 4px;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Auth Guard UI injected here -->
+    <div id="auth-bar"></div>
+
+    <div class="bg-layer"></div>
+    <div class="glow g1"></div>
+    <div class="glow g2"></div>
+
+    <div class="wrap">
+        <div class="top-nav">
+            <div class="nav-left">
+                <a href="index.html" class="back-btn">←</a>
+                <div class="page-title">ข้อมูลงบประมาณ โปร่งใส</div>
+            </div>
+        </div>
+
+        <!-- Dashboard -->
+        <div class="summary-card">
+            <div class="sum-title">ปีการศึกษา 2566 (เทอม 1)</div>
+            <div class="sum-amt">฿ 1,450,000</div>
+            <div class="sum-desc">งบประมาณรวมที่ได้รับจัดสรร (รอการอัปเดตข้อมูลจริง)</div>
+
+            <div class="chart-box">
+                <div class="chart-row">
+                    <div class="chart-info">
+                        <span class="chart-label">📘 ค่าจัดการเรียนการสอน (45%)</span>
+                        <span class="chart-val">฿ 652,500</span>
+                    </div>
+                    <div class="progress-bg">
+                        <div class="progress-bar p-1"></div>
+                    </div>
+                </div>
+                <div class="chart-row">
+                    <div class="chart-info">
+                        <span class="chart-label">🍽️ อาหารกลางวัน (30%)</span>
+                        <span class="chart-val">฿ 435,000</span>
+                    </div>
+                    <div class="progress-bg">
+                        <div class="progress-bar p-2"></div>
+                    </div>
+                </div>
+                <div class="chart-row">
+                    <div class="chart-info">
+                        <span class="chart-label">🏫 ปรับปรุงอาคารสถานที่ (15%)</span>
+                        <span class="chart-val">฿ 217,500</span>
+                    </div>
+                    <div class="progress-bg">
+                        <div class="progress-bar p-3"></div>
+                    </div>
+                </div>
+                <div class="chart-row">
+                    <div class="chart-info">
+                        <span class="chart-label">⚽ กิจกรรมพัฒนาผู้เรียน (10%)</span>
+                        <span class="chart-val">฿ 145,000</span>
+                    </div>
+                    <div class="progress-bg">
+                        <div class="progress-bar p-4"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Transactions -->
+        <div class="section-title">
+            <span style="font-size: 20px;">📜</span> รายการเบิกจ่ายล่าสุด (ตัวอย่าง)
+        </div>
+
+        <div class="list-box">
+
+            <div class="tx-item">
+                <div class="tx-left">
+                    <div class="tx-icon" style="background:rgba(239,68,68,0.1); color:#f87171">🏗️</div>
+                    <div>
+                        <div class="tx-title">ซ่อมแซมหลังคาโรงอาหาร</div>
+                        <div class="tx-date">15 มิ.ย. 2026 • ผู้รับเหมา: บ.สมชายก่อสร้าง</div>
+                    </div>
+                </div>
+                <div class="tx-right">
+                    <div class="tx-amt out">- ฿ 45,000</div>
+                    <div class="tx-tag">อาคารสถานที่</div>
+                </div>
+            </div>
+
+            <div class="tx-item">
+                <div class="tx-left">
+                    <div class="tx-icon" style="background:rgba(59,130,246,0.1); color:#60a5fa">📚</div>
+                    <div>
+                        <div class="tx-title">จัดซื้อหนังสือเรียน ป.4 - ป.6</div>
+                        <div class="tx-date">10 มิ.ย. 2026 • ร้านศึกษาภัณฑ์</div>
+                    </div>
+                </div>
+                <div class="tx-right">
+                    <div class="tx-amt out">- ฿ 120,500</div>
+                    <div class="tx-tag">จัดการเรียนการสอน</div>
+                </div>
+            </div>
+
+            <div class="tx-item">
+                <div class="tx-left">
+                    <div class="tx-icon" style="background:rgba(16,185,129,0.1); color:#34d399">💵</div>
+                    <div>
+                        <div class="tx-title">รับเงินอุดหนุนรายหัว (สพฐ.)</div>
+                        <div class="tx-date">1 มิ.ย. 2026 • โอนเข้าบัญชีโรงเรียน</div>
+                    </div>
+                </div>
+                <div class="tx-right">
+                    <div class="tx-amt in">+ ฿ 725,000</div>
+                    <div class="tx-tag">รายรับ</div>
+                </div>
+            </div>
+
+            <div class="tx-item">
+                <div class="tx-left">
+                    <div class="tx-icon" style="background:rgba(245,158,11,0.1); color:#fbbf24">🏆</div>
+                    <div>
+                        <div class="tx-title">ค่าเดินทางแข่งขันทักษะวิชาการ</div>
+                        <div class="tx-date">28 พ.ค. 2026 • ระดับเขตพื้นที่</div>
+                    </div>
+                </div>
+                <div class="tx-right">
+                    <div class="tx-amt out">- ฿ 4,500</div>
+                    <div class="tx-tag">กิจกรรมพัฒนาผู้เรียน</div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Note -->
+        <div style="text-align:center; font-size:12px; color:#64748b; margin-top:24px; padding:0 20px;">
+            ข้อมูลนี้อัปเดตทุกสิ้นเดือน เพื่อความโปร่งใสในการบริหารงบประมาณของโรงเรียนบ้านคำไผ่<br />
+            (ในอนาคตจะสามารถดาวน์โหลดรายงาน PDF ได้)
+        </div>
+
+    </div>
+
+    <!-- Firebase & Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script src="auth-guard.js"></script>
+
+    <script>
+        // Only logged-in users (teachers/staff/parents with acc) might see this,
+        // or we can leave it as read-only for public awareness
+        AuthGuard.init('read-only');
+
+        // Currently showing static mock data.  
+        // In a full implementation, you'd fetch from Firebase:
+        // window._db.ref('budgets').on('value', snap => { renderData(snap.val()) });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>ระบบการลาบุคลากร • โรงเรียนบ้านคำไผ่</title>
+
+    <link rel="manifest" href="manifest.json" />
+    <meta name="theme-color" content="#0891b2" />
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600&display=swap');
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Sarabun', sans-serif;
+            min-height: 100vh;
+            background: #020b18;
+            color: #e0f2fe;
+            overflow-x: hidden;
+        }
+
+        /* ── Bg Effects ── */
+        .bg-layer {
+            position: fixed;
+            inset: 0;
+            z-index: -2;
+            background: linear-gradient(160deg, #020b18 0%, #031a2e 40%, #0a1628 100%);
+        }
+
+        .glow {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(90px);
+            opacity: 0.15;
+            z-index: -1;
+            animation: gMove 10s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        .g1 {
+            width: 450px;
+            height: 450px;
+            background: #8b5cf6;
+            top: -100px;
+            left: -100px;
+        }
+
+        .g2 {
+            width: 350px;
+            height: 350px;
+            background: #ec4899;
+            bottom: 10%;
+            right: -50px;
+            animation-delay: 4s;
+        }
+
+        @keyframes gMove {
+
+            0%,
+            100% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            50% {
+                transform: translate(30px, -20px) scale(1.1);
+            }
+        }
+
+        /* ── Utility ── */
+        .wrap {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px 16px 80px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .top-nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .nav-right {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 700;
+            color: #a5b4fc;
+            border: 1px solid rgba(165, 180, 252, 0.3);
+        }
+
+        .back-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #e0f2fe;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            font-size: 18px;
+            transition: 0.2s;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .page-title {
+            font-family: 'Mitr', sans-serif;
+            font-size: 20px;
+            font-weight: 600;
+            background: linear-gradient(135deg, #a5b4fc, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* ── Dashboard Cards (Balance) ── */
+        .balance-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .kpi-card {
+            background: rgba(139, 92, 246, 0.08);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            border-radius: 16px;
+            padding: 16px;
+            text-align: center;
+            backdrop-filter: blur(8px);
+        }
+
+        .kpi-val {
+            font-family: 'Mitr', sans-serif;
+            font-size: 28px;
+            font-weight: 700;
+            color: #c084fc;
+            line-height: 1;
+            margin-bottom: 4px;
+        }
+
+        .kpi-label {
+            font-size: 13px;
+            color: #94a3b8;
+        }
+
+        .kpi-max {
+            font-size: 11px;
+            color: #64748b;
+            margin-top: 2px;
+        }
+
+        /* ── Tabs ── */
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #94a3b8;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .tab.active {
+            background: rgba(139, 92, 246, 0.15);
+            color: #c084fc;
+            border: 1px solid rgba(139, 92, 246, 0.3);
+        }
+
+        .view-section {
+            display: none;
+        }
+
+        .view-section.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ── Form Card ── */
+        .form-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            padding: 24px;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #94a3b8;
+            margin-bottom: 6px;
+        }
+
+        .form-input,
+        .form-select,
+        .form-textarea {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 12px;
+            padding: 12px 14px;
+            color: #e0f2fe;
+            font-family: 'Sarabun', sans-serif;
+            font-size: 15px;
+            transition: all 0.2s;
+            outline: none;
+        }
+
+        .form-input:focus,
+        .form-select:focus,
+        .form-textarea:focus {
+            border-color: #8b5cf6;
+            background: rgba(139, 92, 246, 0.05);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .form-select option {
+            background: #0f172a;
+            color: #fff;
+        }
+
+        .date-row {
+            display: flex;
+            gap: 12px;
+        }
+
+        .date-row .form-group {
+            flex: 1;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 14px;
+            border-radius: 14px;
+            border: none;
+            background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+            color: #fff;
+            font-size: 16px;
+            font-family: 'Mitr', sans-serif;
+            cursor: pointer;
+            transition: 0.2s;
+            font-weight: 500;
+            margin-top: 10px;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+        }
+
+        .btn-submit:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* ── Status List ── */
+        .status-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+        }
+
+        .status-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .status-icon.sick {
+            background: rgba(236, 72, 153, 0.15);
+            color: #f472b6;
+        }
+
+        .status-icon.personal {
+            background: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+        }
+
+        .status-info {
+            flex: 1;
+        }
+
+        .status-title {
+            font-weight: 700;
+            font-size: 15px;
+            margin-bottom: 4px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .status-badge {
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+
+        .badge-pending {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .badge-approved {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .status-desc {
+            font-size: 13px;
+            color: #94a3b8;
+            line-height: 1.4;
+        }
+
+        .status-dates {
+            font-size: 12px;
+            color: #64748b;
+            margin-top: 6px;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Auth Guard UI injected here -->
+    <div id="auth-bar"></div>
+
+    <div class="bg-layer"></div>
+    <div class="glow g1"></div>
+    <div class="glow g2"></div>
+
+    <div class="wrap">
+        <div class="top-nav">
+            <div class="nav-left">
+                <a href="index.html" class="back-btn">←</a>
+                <div class="page-title">ระบบการลาบุคลากร</div>
+            </div>
+            <div class="nav-right" id="user-role-badge">สำหรับครู</div>
+        </div>
+
+        <!-- KPI Dashboard -->
+        <div class="balance-grid">
+            <div class="kpi-card">
+                <div class="kpi-val" id="kpi-sick">0</div>
+                <div class="kpi-label">ลาป่วย (วัน)</div>
+                <div class="kpi-max">สิทธิ์สูงสุด 45 วัน</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-val" id="kpi-personal">0</div>
+                <div class="kpi-label">ลากิจ (วัน)</div>
+                <div class="kpi-max">สิทธิ์สูงสุด 10 วัน</div>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('request')">📝 เขียนใบลา</div>
+            <div class="tab" onclick="switchTab('history')">🕒 ประวัติการลา</div>
+        </div>
+
+        <!-- ── FORM SECTION ── -->
+        <div id="sec-request" class="view-section active">
+            <div class="form-card">
+                <form id="leave-form" onsubmit="submitForm(event)">
+                    <div class="form-group">
+                        <label class="form-label">ประเภทการลา</label>
+                        <select id="leave_type" class="form-select" required>
+                            <option value="ป่วย">🤒 ลาป่วย</option>
+                            <option value="กิจ">🚗 ลากิจ / ธุระส่วนตัว</option>
+                            <option value="พักผ่อน">🏝️ ลาพักผ่อน</option>
+                            <option value="คลอด">👶 ลาคลอดบุตร</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">สาเหตุการลา</label>
+                        <textarea id="leave_reason" class="form-textarea" placeholder="ระบุเหตุผลการลาโดยละเอียด..."
+                            required></textarea>
+                    </div>
+
+                    <div class="date-row">
+                        <div class="form-group">
+                            <label class="form-label">ตั้งแต่วันที่</label>
+                            <input type="date" id="date_start" class="form-input" required onchange="calcTotalDays()">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">ถึงวันที่</label>
+                            <input type="date" id="date_end" class="form-input" required onchange="calcTotalDays()">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">รวมจำนวนวัน</label>
+                        <input type="number" id="total_days" class="form-input"
+                            style="background:rgba(255,255,255,0.02);color:#94a3b8" readonly>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">ผู้รับมอบหมายงานช่วงลา</label>
+                        <input type="text" id="assignee" class="form-input" placeholder="ระบุชื่อครูผู้รับผิดชอบแทน">
+                    </div>
+
+                    <button type="submit" class="btn-submit" id="submit-btn"
+                        data-auth="write-disable">ยื่นเสนอผู้อำนวยการ</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- ── HISTORY SECTION ── -->
+        <div id="sec-history" class="view-section">
+            <div id="history-container">
+                <!-- Mock Data for Display -->
+                <div class="status-card">
+                    <div class="status-icon sick">🤒</div>
+                    <div class="status-info">
+                        <div class="status-title">
+                            ลาป่วย (ติดโควิด)
+                            <span class="status-badge badge-pending">รอ ผอ. อนุมัติ</span>
+                        </div>
+                        <div class="status-desc">ระยะเวลา 5 วัน</div>
+                        <div class="status-dates">1 ส.ค. 2026 - 5 ส.ค. 2026</div>
+                    </div>
+                </div>
+
+                <div class="status-card">
+                    <div class="status-icon personal">🚗</div>
+                    <div class="status-info">
+                        <div class="status-title">
+                            ลากิจ (ต่อใบประกอบวิชาชีพ)
+                            <span class="status-badge badge-approved">อนุมัติแล้ว</span>
+                        </div>
+                        <div class="status-desc">ระยะเวลา 1 วัน (ผู้รับมอบหมาย: ครูสมร)</div>
+                        <div class="status-dates">12 ก.ค. 2026</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Firebase & Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script src="auth-guard.js"></script>
+
+    <script>
+        // Require login for teacher area
+        AuthGuard.init('require-login');
+        AuthGuard.onChange(user => {
+            if (user) {
+                // Mock load balance data
+                document.getElementById('kpi-sick').textContent = "5";
+                document.getElementById('kpi-personal').textContent = "2";
+            }
+        });
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
+
+            event.currentTarget.classList.add('active');
+            document.getElementById('sec-' + tabId).classList.add('active');
+
+            if (tabId === 'history') {
+                loadHistory();
+            }
+        }
+
+        function calcTotalDays() {
+            const start = document.getElementById('date_start').value;
+            const end = document.getElementById('date_end').value;
+            const totalField = document.getElementById('total_days');
+
+            if (start && end) {
+                const d1 = new Date(start);
+                const d2 = new Date(end);
+                const diffTime = Math.abs(d2 - d1);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+                if (diffDays > 0) {
+                    totalField.value = diffDays;
+                } else {
+                    totalField.value = 0;
+                }
+            }
+        }
+
+        async function submitForm(e) {
+            e.preventDefault();
+
+            if (!AuthGuard.requireLogin('เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่')) return;
+
+            const btn = document.getElementById('submit-btn');
+            btn.disabled = true;
+            btn.textContent = "กำลังส่งข้อมูล...";
+
+            const data = {
+                type: document.getElementById('leave_type').value,
+                reason: document.getElementById('leave_reason').value,
+                startDate: document.getElementById('date_start').value,
+                endDate: document.getElementById('date_end').value,
+                totalDays: document.getElementById('total_days').value,
+                assignee: document.getElementById('assignee').value,
+                status: 'pending',
+                timestamp: firebase.database.ServerValue.TIMESTAMP,
+                userId: window._auth.currentUser.uid,
+                email: window._auth.currentUser.email
+            };
+
+            try {
+                const ref = window._db.ref('teacher_leaves').push();
+                await ref.set(data);
+
+                alert("✅ ยื่นใบลาสำเร็จ กรุณารอผู้อำนวยการอนุมัติ");
+                document.getElementById('leave-form').reset();
+                calcTotalDays();
+                document.querySelectorAll('.tab')[1].click();
+            } catch (err) {
+                alert("❌ เกิดข้อผิดพลาด: " + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = "ยื่นเสนอผู้อำนวยการ";
+            }
+        }
+
+        function loadHistory() {
+            // Logic to fetch from Firebase
+        }
+
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('date_start').value = today;
+        document.getElementById('date_end').value = today;
+        calcTotalDays();
+    </script>
+</body>
+
+</html>

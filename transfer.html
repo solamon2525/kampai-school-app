@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>ระบบแจ้งย้ายสถานที่เรียน/ลาออก • โรงเรียนบ้านคำไผ่</title>
+
+    <link rel="manifest" href="manifest.json" />
+    <meta name="theme-color" content="#8b5cf6" />
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600&display=swap');
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Sarabun', sans-serif;
+            min-height: 100vh;
+            background: #020b18;
+            color: #e0f2fe;
+            overflow-x: hidden;
+        }
+
+        /* ── Bg Effects ── */
+        .bg-layer {
+            position: fixed;
+            inset: 0;
+            z-index: -2;
+            background: linear-gradient(160deg, #020b18 0%, #2e1065 40%, #170535 100%);
+        }
+
+        .glow {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(100px);
+            opacity: 0.15;
+            z-index: -1;
+            animation: gMove 12s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        .g1 {
+            width: 450px;
+            height: 450px;
+            background: #8b5cf6;
+            top: -100px;
+            left: -100px;
+        }
+
+        .g2 {
+            width: 350px;
+            height: 350px;
+            background: #c084fc;
+            bottom: 5%;
+            right: -50px;
+            animation-delay: 4s;
+        }
+
+        @keyframes gMove {
+
+            0%,
+            100% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            50% {
+                transform: translate(40px, -30px) scale(1.1);
+            }
+        }
+
+        /* ── Utility ── */
+        .wrap {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px 16px 80px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .top-nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .back-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #e0f2fe;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            font-size: 18px;
+            transition: 0.2s;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .page-title {
+            font-family: 'Mitr', sans-serif;
+            font-size: 20px;
+            font-weight: 600;
+            background: linear-gradient(135deg, #ddd6fe, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* ── Notice Alert ── */
+        .alert-box {
+            background: rgba(139, 92, 246, 0.1);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 16px;
+            padding: 16px;
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+            margin-bottom: 24px;
+        }
+
+        .alert-icon {
+            font-size: 24px;
+            line-height: 1;
+        }
+
+        .alert-content p {
+            font-size: 13px;
+            color: #e2e8f0;
+            line-height: 1.5;
+            margin-bottom: 6px;
+        }
+
+        .alert-content p:last-child {
+            margin-bottom: 0;
+        }
+
+        .alert-content strong {
+            color: #fbcfe8;
+            font-weight: 600;
+        }
+
+        /* ── Form Card ── */
+        .form-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            padding: 24px;
+            backdrop-filter: blur(8px);
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #a5b4fc;
+            margin-bottom: 6px;
+        }
+
+        .form-input,
+        .form-select,
+        .form-textarea {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 12px 14px;
+            color: #e0f2fe;
+            font-family: 'Sarabun', sans-serif;
+            font-size: 15px;
+            transition: all 0.2s;
+            outline: none;
+        }
+
+        .form-input:focus,
+        .form-select:focus,
+        .form-textarea:focus {
+            border-color: #a78bfa;
+            background: rgba(139, 92, 246, 0.05);
+        }
+
+        .form-select option {
+            background: #0f172a;
+            color: #fff;
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        /* Custom Radio for Intent */
+        .intent-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .intent-label {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 14px;
+            padding: 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .intent-label input {
+            display: none;
+        }
+
+        .intent-label:hover {
+            background: rgba(255, 255, 255, 0.07);
+        }
+
+        .intent-ico {
+            font-size: 28px;
+            margin-bottom: 6px;
+            transition: 0.2s;
+            filter: grayscale(1);
+            opacity: 0.6;
+        }
+
+        .intent-txt {
+            font-size: 14px;
+            font-weight: 600;
+            color: #94a3b8;
+            transition: 0.2s;
+        }
+
+        .intent-label.selected {
+            border-color: #a78bfa;
+            background: rgba(139, 92, 246, 0.1);
+        }
+
+        .intent-label input:checked+.intent-ico {
+            filter: grayscale(0);
+            opacity: 1;
+            transform: scale(1.1);
+        }
+
+        .intent-label input:checked~.intent-txt {
+            color: #e0f2fe;
+        }
+
+        /* Conditionally hidden fields */
+        #transfer-fields {
+            display: none;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 14px;
+            border-radius: 14px;
+            border: none;
+            background: linear-gradient(135deg, #7c3aed, #5b21b6);
+            color: #fff;
+            font-size: 16px;
+            font-family: 'Mitr', sans-serif;
+            cursor: pointer;
+            transition: 0.2s;
+            font-weight: 500;
+            margin-top: 10px;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(124, 58, 237, 0.4);
+        }
+
+        .btn-submit:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* File uploader */
+        .upload-area {
+            border: 2px dashed rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.2s;
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .upload-area:hover {
+            border-color: #a78bfa;
+            background: rgba(139, 92, 246, 0.05);
+        }
+
+        .upload-icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+            color: #a78bfa;
+        }
+
+        .upload-text {
+            font-size: 13px;
+            color: #94a3b8;
+        }
+
+        #file-data {
+            display: none;
+            margin-top: 10px;
+            font-size: 13px;
+            color: #34d399;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="auth-bar"></div>
+
+    <div class="bg-layer"></div>
+    <div class="glow g1"></div>
+    <div class="glow g2"></div>
+
+    <div class="wrap">
+        <div class="top-nav">
+            <div class="nav-left">
+                <a href="index.html" class="back-btn">←</a>
+                <div class="page-title">แจ้งย้าย/ลาออกนักเรียน</div>
+            </div>
+        </div>
+
+        <!-- Notice -->
+        <div class="alert-box">
+            <div class="alert-icon">⚠️</div>
+            <div class="alert-content">
+                <p><strong>โปรดทราบ:</strong> การแจ้งย้ายสถานศึกษาหรือลาออก
+                    จะต้องได้รับการยินยอมจากผู้ปกครองตามกฎหมายเท่านั้น</p>
+                <p>หลังจากส่งคำร้องในระบบแล้ว ผู้ปกครองจะต้องนำ <strong>บัตรประชาชนตัวจริง</strong>
+                    มาติดต่อที่ห้องธุรการเพื่อเซ็นเอกสารยืนยันอีกครั้ง</p>
+            </div>
+        </div>
+
+        <!-- Form -->
+        <div class="form-card">
+            <form id="transfer-form" onsubmit="submitForm(event)">
+
+                <div class="form-group">
+                    <label class="form-label">ชื่อขอนักเรียน</label>
+                    <input type="text" id="student_name" class="form-input" placeholder="ด.ช. / ด.ญ. ชื่อ-นามสกุล"
+                        required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">ชั้นเรียนปัจจุบัน</label>
+                    <select id="student_class" class="form-select" required>
+                        <option value="">-- เลือกชั้นเรียน --</option>
+                        <option value="อนุบาล">อนุบาล</option>
+                        <option value="ป.1">ป.1</option>
+                        <option value="ป.2">ป.2</option>
+                        <option value="ป.3">ป.3</option>
+                        <option value="ป.4">ป.4</option>
+                        <option value="ป.5">ป.5</option>
+                        <option value="ป.6">ป.6</option>
+                    </select>
+                </div>
+
+                <div class="form-label" style="margin-top: 24px; margin-bottom: 12px;">จุดประสงค์ของการยื่นคำร้อง</div>
+                <div class="intent-grid">
+                    <label class="intent-label">
+                        <input type="radio" name="intent" value="ย้ายสถานศึกษา" required onchange="toggleFields(this)">
+                        <div class="intent-ico">🏫</div>
+                        <div class="intent-txt">ย้ายสถานศึกษา</div>
+                    </label>
+                    <label class="intent-label">
+                        <input type="radio" name="intent" value="ลาออก" required onchange="toggleFields(this)">
+                        <div class="intent-ico">🚪</div>
+                        <div class="intent-txt">ลาออก / พักการเรียน</div>
+                    </label>
+                </div>
+
+                <div id="transfer-fields">
+                    <div class="form-group">
+                        <label class="form-label">โรงเรียนที่ต้องการย้ายไป (ถ้ามี)</label>
+                        <input type="text" id="target_school" class="form-input"
+                            placeholder="ระบุชื่อโรงเรียน หรือ จังหวัด">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">เหตุผลประกอบ</label>
+                    <textarea id="reason" class="form-textarea"
+                        placeholder="เช่น ผู้ปกครองย้ายที่ทำงาน, ปัญหาด้านสุขภาพจิต/กาย..." required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">วันที่คาดว่าจะเป็นวันสุดท้ายของการเรียน</label>
+                    <input type="date" id="effective_date" class="form-input" required>
+                </div>
+
+                <div class="form-group" style="margin-top: 24px;">
+                    <label class="form-label">แนบสำเนาบัตรประชาชนผู้ปกครอง (ถ้ามี)</label>
+                    <div class="upload-area" onclick="document.getElementById('id_card_img').click()">
+                        <div class="upload-icon">🪪</div>
+                        <div class="upload-text">คลิกเพื่ออัปโหลดรูปถ่ายบัตร ปชช. ผู้ปกครอง<br>(ช่วยให้ตรวจสอบเร็วขึ้น)
+                        </div>
+                        <input type="file" id="id_card_img" style="display:none" accept="image/*"
+                            onchange="handleFile(this)">
+                    </div>
+                    <div id="file-data"></div>
+                </div>
+
+                <button type="submit" class="btn-submit" id="submit-btn"
+                    data-auth="write-disable">ส่งคำร้องเบื้องต้น</button>
+            </form>
+        </div>
+
+    </div>
+
+    <!-- Firebase & Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script src="auth-guard.js"></script>
+
+    <script>
+        AuthGuard.init('require-login'); // Requires login to verify identity
+
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('effective_date').value = today;
+
+        function toggleFields(radio) {
+            document.querySelectorAll('.intent-label').forEach(lbl => lbl.classList.remove('selected'));
+            radio.parentElement.classList.add('selected');
+
+            const tf = document.getElementById('transfer-fields');
+            const targetInput = document.getElementById('target_school');
+            if (radio.value === 'ย้ายสถานศึกษา') {
+                tf.style.display = 'block';
+                targetInput.required = true;
+            } else {
+                tf.style.display = 'none';
+                targetInput.required = false;
+                targetInput.value = '';
+            }
+        }
+
+        function handleFile(input) {
+            const fd = document.getElementById('file-data');
+            if (input.files && input.files[0]) {
+                fd.style.display = 'block';
+                fd.textContent = `📎 แนบไฟล์แล้ว: ${input.files[0].name}`;
+            } else {
+                fd.style.display = 'none';
+            }
+        }
+
+        async function submitForm(e) {
+            e.preventDefault();
+
+            if (!AuthGuard.requireLogin('กรุณาเข้าสู่ระบบก่อนทำรายการ')) return;
+
+            const intent = document.querySelector('input[name="intent"]:checked');
+            if (!intent) return;
+
+            const confirmMsg = `การ${intent.value}เป็นเรื่องสำคัญ คุณยืนยันที่จะส่งข้อมูลให้ฝ่ายธุรการตรวจสอบหรือไม่?`;
+            if (!confirm(confirmMsg)) return;
+
+            const btn = document.getElementById('submit-btn');
+            btn.disabled = true;
+            btn.textContent = "กำลังส่งข้อมูล...";
+
+            const data = {
+                studentName: document.getElementById('student_name').value,
+                className: document.getElementById('student_class').value,
+                intentType: intent.value,
+                targetSchool: document.getElementById('target_school').value || null,
+                reason: document.getElementById('reason').value,
+                effectiveDate: document.getElementById('effective_date').value,
+                status: 'pending-parent-visit',
+                timestamp: firebase.database.ServerValue.TIMESTAMP,
+                userId: window._auth.currentUser.uid
+            };
+
+            try {
+                const ref = window._db.ref('transfer_requests').push();
+                await ref.set(data);
+
+                alert("✅ ยื่นคำร้องเบื้องต้นเรียบร้อยแล้ว\n\nโปรดนำบัตรประชาชนผู้ปกครองตัวจริง มาติดต่อฝ่ายธุรการภายใน 7 วันทำการ เพื่อดำเนินการขั้นต่อไป");
+                window.location.href = 'index.html'; // redirect to home after sending
+            } catch (err) {
+                alert("❌ เกิดข้อผิดพลาด: " + err.message);
+                btn.disabled = false;
+                btn.textContent = "ส่งคำร้องเบื้องต้น";
+            }
+        }
+    </script>
+</body>
+
+</html>

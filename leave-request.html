@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>แจ้งลากิจ/ลาป่วย • โรงเรียนบ้านคำไผ่</title>
+  
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#0891b2" />
+  
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600&display=swap');
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Sarabun', sans-serif;
+      min-height: 100vh;
+      background: #020b18;
+      color: #e0f2fe;
+      overflow-x: hidden;
+    }
+
+    /* ── Bg Effects ── */
+    .bg-layer {
+      position: fixed; inset: 0; z-index: -2;
+      background: linear-gradient(160deg, #020b18 0%, #031a2e 40%, #0a1628 100%);
+    }
+    .glow {
+      position: fixed; border-radius: 50%; filter: blur(90px); opacity: 0.15; z-index: -1;
+      animation: gMove 10s ease-in-out infinite; pointer-events: none;
+    }
+    .g1 { width: 400px; height: 400px; background: #0891b2; top: -100px; left: -100px; }
+    .g2 { width: 300px; height: 300px; background: #0ea5e9; bottom: 10%; right: -50px; animation-delay: 3s; }
+    @keyframes gMove {
+      0%, 100% { transform: translate(0,0) scale(1); }
+      50% { transform: translate(30px, -20px) scale(1.1); }
+    }
+
+    /* ── Utility ── */
+    .wrap {
+      max-width: 600px; margin: 0 auto; padding: 20px 16px 80px; position: relative; z-index: 1;
+    }
+    .top-nav {
+      display: flex; align-items: center; gap: 12px; margin-bottom: 24px;
+    }
+    .back-btn {
+      width: 40px; height: 40px; border-radius: 12px;
+      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+      color: #e0f2fe; display: flex; align-items: center; justify-content: center;
+      text-decoration: none; font-size: 18px; transition: 0.2s;
+    }
+    .back-btn:hover { background: rgba(255,255,255,0.1); }
+    .page-title {
+      font-family: 'Mitr', sans-serif; font-size: 20px; font-weight: 600;
+      color: #38bdf8;
+    }
+
+    /* ── Form Card ── */
+    .form-card {
+      background: rgba(14, 165, 233, 0.05);
+      border: 1px solid rgba(14, 165, 233, 0.15);
+      border-radius: 20px; padding: 24px;
+      backdrop-filter: blur(10px);
+      margin-bottom: 20px;
+    }
+    
+    .form-group { margin-bottom: 18px; }
+    .form-label {
+      display: block; font-size: 13px; font-weight: 600; color: #94a3b8;
+      margin-bottom: 6px;
+    }
+    .form-input, .form-select, .form-textarea {
+      width: 100%; background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 12px; padding: 12px 14px;
+      color: #e0f2fe; font-family: 'Sarabun', sans-serif; font-size: 15px;
+      transition: all 0.2s; outline: none;
+    }
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+      border-color: #38bdf8; background: rgba(56,189,248,0.05);
+    }
+    .form-textarea { resize: vertical; min-height: 80px; }
+    .form-select option { background: #0f172a; color: #fff; }
+
+    /* ── Date Selector Row ── */
+    .date-row { display: flex; gap: 12px; }
+    .date-row .form-group { flex: 1; }
+
+    /* ── File Upload ── */
+    .upload-area {
+      border: 2px dashed rgba(255,255,255,0.15); border-radius: 12px;
+      padding: 20px; text-align: center; cursor: pointer; transition: 0.2s;
+    }
+    .upload-area:hover { border-color: #38bdf8; background: rgba(56,189,248,0.05); }
+    .upload-icon { font-size: 24px; margin-bottom: 8px; color: #38bdf8; }
+    .upload-text { font-size: 13px; color: #94a3b8; }
+    #file-data { display: none; margin-top: 10px; font-size: 13px; color: #22c55e; }
+
+    /* ── Buttons ── */
+    .btn-submit {
+      width: 100%; padding: 14px; border-radius: 14px; border: none;
+      background: linear-gradient(135deg, #0ea5e9, #0284c7); color: #fff;
+      font-size: 16px; font-family: 'Mitr', sans-serif; cursor: pointer;
+      transition: 0.2s; font-weight: 500;
+    }
+    .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(14,165,233,0.4); }
+    .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    /* ── Status View (My Leaves) ── */
+    .status-card {
+      background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px; padding: 16px; margin-bottom: 12px;
+      display: flex; align-items: flex-start; gap: 14px;
+    }
+    .status-icon {
+      width: 40px; height: 40px; border-radius: 12px; display: flex;
+      align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;
+    }
+    .status-icon.pending { background: rgba(245,158,11,0.15); color: #f59e0b; }
+    .status-icon.approved { background: rgba(34,197,94,0.15); color: #22c55e; }
+    .status-icon.rejected { background: rgba(239,68,68,0.15); color: #ef4444; }
+    
+    .status-info { flex: 1; }
+    .status-title { font-weight: 700; font-size: 15px; margin-bottom: 4px; display: flex; justify-content: space-between;}
+    .status-badge { font-size: 11px; padding: 2px 8px; border-radius: 10px; }
+    .badge-pending { background: #fef3c7; color: #d97706; }
+    .badge-approved { background: #dcfce7; color: #15803d; }
+    .badge-rejected { background: #fee2e2; color: #b91c1c; }
+    .status-desc { font-size: 13px; color: #94a3b8; line-height: 1.4; }
+    .status-dates { font-size: 12px; color: #64748b; margin-top: 6px; }
+
+    /* ── Tabs ── */
+    .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+    .tab {
+      flex: 1; text-align: center; padding: 10px; background: rgba(255,255,255,0.05);
+      border-radius: 12px; font-size: 14px; font-weight: 600; color: #94a3b8;
+      cursor: pointer; transition: 0.2s;
+    }
+    .tab.active { background: rgba(14,165,233,0.15); color: #38bdf8; border: 1px solid rgba(14,165,233,0.3); }
+
+    .view-section { display: none; }
+    .view-section.active { display: block; animation: fadeIn 0.3s ease; }
+    @keyframes fadeIn { from{ opacity: 0; transform: translateY(10px); } to{ opacity: 1; transform: translateY(0); } }
+
+  </style>
+</head>
+<body>
+  <!-- Auth Guard UI injected here -->
+  <div id="auth-bar"></div>
+
+  <div class="bg-layer"></div>
+  <div class="glow g1"></div>
+  <div class="glow g2"></div>
+
+  <div class="wrap">
+    <div class="top-nav">
+      <a href="index.html" class="back-btn">←</a>
+      <div class="page-title">ระบบแจ้งลา นักเรียน</div>
+    </div>
+
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab('request')">📝 ยื่นใบลา</div>
+      <div class="tab" onclick="switchTab('history')">🕒 ประวัติการลา</div>
+    </div>
+
+    <!-- ── FORM SECTION ── -->
+    <div id="sec-request" class="view-section active">
+      <div class="form-card">
+        <form id="leave-form" onsubmit="submitForm(event)">
+          <div class="form-group">
+            <label class="form-label">ชื่อขอนักเรียน</label>
+            <input type="text" id="student_name" class="form-input" placeholder="ด.ช. / ด.ญ. ชื่อ-นามสกุล" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">ชั้นเรียน</label>
+            <select id="student_class" class="form-select" required>
+              <option value="">-- เลือกชั้นเรียน --</option>
+              <option value="อนุบาล">อนุบาล</option>
+              <option value="ป.1">ป.1</option>
+              <option value="ป.2">ป.2</option>
+              <option value="ป.3">ป.3</option>
+              <option value="ป.4">ป.4</option>
+              <option value="ป.5">ป.5</option>
+              <option value="ป.6">ป.6</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">ประเภทการลา</label>
+            <select id="leave_type" class="form-select" required onchange="toggleFileReq()">
+              <option value="ป่วย">🤒 ลาป่วย</option>
+              <option value="กิจ">🏃 ลากิจ</option>
+            </select>
+          </div>
+
+          <div class="date-row">
+            <div class="form-group">
+              <label class="form-label">ตั้งแต่วันที่</label>
+              <input type="date" id="date_start" class="form-input" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">ถึงวันที่</label>
+              <input type="date" id="date_end" class="form-input" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">สาเหตุการลา</label>
+            <textarea id="leave_reason" class="form-textarea" placeholder="ระบุอาการเจ็บป่วย หรือธุระ (โดยย่อ)..." required></textarea>
+          </div>
+
+          <div class="form-group" id="file-upload-box">
+            <label class="form-label">แนบเอกสาร (ถ้ามี / ใบรับรองแพทย์)</label>
+            <div class="upload-area" onclick="document.getElementById('file-input').click()">
+              <div class="upload-icon">📄</div>
+              <div class="upload-text">คลิกเพื่อเลือกไฟล์รูปภาพ</div>
+              <input type="file" id="file-input" style="display:none" accept="image/*" onchange="handleFile(this)">
+            </div>
+            <div id="file-data"></div>
+          </div>
+
+          <button type="submit" class="btn-submit" id="submit-btn" data-auth="write-disable">ส่งคำร้องขอลา</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- ── HISTORY SECTION ── -->
+    <div id="sec-history" class="view-section">
+      <div style="font-size:13px; color:#94a3b8; margin-bottom:16px; text-align:center;">
+        *แสดงประวัติการลาที่เคยยื่นไว้
+      </div>
+      
+      <div id="history-container">
+        <!-- Mock Data for Display -->
+        <div class="status-card">
+          <div class="status-icon pending">⏳</div>
+          <div class="status-info">
+            <div class="status-title">
+              ลาป่วย (ปวดหัว เป็นไข้)
+              <span class="status-badge badge-pending">รอพิจารณา</span>
+            </div>
+            <div class="status-desc">ด.ช. สมชาย ใจดี (ป.4)</div>
+            <div class="status-dates">15 มิ.ย. 2026 - 16 มิ.ย. 2026</div>
+          </div>
+        </div>
+
+        <div class="status-card">
+          <div class="status-icon approved">✅</div>
+          <div class="status-info">
+            <div class="status-title">
+              ลากิจ (ไปต่างจังหวัด)
+              <span class="status-badge badge-approved">อนุมัติแล้ว</span>
+            </div>
+            <div class="status-desc">ด.ช. สมชาย ใจดี (ป.4)</div>
+            <div class="status-dates">2 พ.ค. 2026 - 3 พ.ค. 2026</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Firebase & Scripts -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+  <script src="auth-guard.js"></script>
+
+  <script>
+    // Init Auth
+    AuthGuard.init('read-only');
+
+    // UI Logic
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
+      
+      event.currentTarget.classList.add('active');
+      document.getElementById('sec-' + tabId).classList.add('active');
+      
+      if(tabId === 'history'){
+        loadHistory();
+      }
+    }
+
+    function toggleFileReq(){
+      const type = document.getElementById('leave_type').value;
+      const box = document.getElementById('file-upload-box');
+      if(type === 'ป่วย'){
+        box.querySelector('.upload-text').textContent = "คลิกแนบใบรับรองแพทย์ (ถ้าหยุดเกิน 3 วัน)";
+      } else {
+        box.querySelector('.upload-text').textContent = "คลิกแนบเอกสารอื่นๆ (ถ้ามี)";
+      }
+    }
+
+    function handleFile(input) {
+      const fd = document.getElementById('file-data');
+      if (input.files && input.files[0]) {
+        fd.style.display = 'block';
+        fd.textContent = `📎 เลือกไฟล์แล้ว: ${input.files[0].name}`;
+      } else {
+        fd.style.display = 'none';
+      }
+    }
+
+    async function submitForm(e) {
+      e.preventDefault();
+      
+      // Check Auth first
+      if(!AuthGuard.requireLogin('คุณต้องเข้าสู่ระบบก่อน จึงจะสามารถส่งใบลาได้')) return;
+
+      const btn = document.getElementById('submit-btn');
+      btn.disabled = true;
+      btn.textContent = "กำลังส่งข้อมูล...";
+
+      // Prepare Data
+      const data = {
+        name: document.getElementById('student_name').value,
+        class: document.getElementById('student_class').value,
+        type: document.getElementById('leave_type').value,
+        startDate: document.getElementById('date_start').value,
+        endDate: document.getElementById('date_end').value,
+        reason: document.getElementById('leave_reason').value,
+        status: 'pending',
+        timestamp: firebase.database.ServerValue.TIMESTAMP,
+        userId: window._auth.currentUser.uid
+      };
+
+      try {
+        // Save to Firebase (Mocking real path for structure)
+        const ref = window._db.ref('leave_requests').push();
+        await ref.set(data);
+        
+        alert("✅ ส่งใบลาเรียบร้อยแล้ว กรุณารอคุณครูอนุมัติ");
+        document.getElementById('leave-form').reset();
+        document.getElementById('file-data').style.display = 'none';
+        
+        // Go to history tab
+        document.querySelectorAll('.tab')[1].click();
+      } catch(err) {
+        alert("❌ เกิดข้อผิดพลาด: " + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "ส่งคำร้องขอลา";
+      }
+    }
+
+    function loadHistory() {
+      // In a real scenario, we load from Firebase based on User ID
+      // document.getElementById('history-container').innerHTML = "... fetching ...";
+      // This is simulated by the mock UI already present.
+    }
+    
+    // Set default dates
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('date_start').value = today;
+    document.getElementById('date_end').value = today;
+  </script>
+</body>
+</html>
