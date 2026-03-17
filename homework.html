@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>การบ้าน / งานมอบหมาย • โรงเรียนบ้านคำไผ่</title>
+
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#0891b2" />
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600&display=swap');
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Sarabun', sans-serif;
+      min-height: 100vh;
+      background: #020b18;
+      color: #e0f2fe;
+      overflow-x: hidden;
+    }
+
+    .bg-layer {
+      position: fixed; inset: 0; z-index: -2;
+      background: linear-gradient(160deg, #020b18 0%, #031a2e 40%, #0a1628 100%);
+    }
+    .glow {
+      position: fixed; border-radius: 50%; filter: blur(90px); opacity: 0.15; z-index: -1;
+      animation: gMove 10s ease-in-out infinite; pointer-events: none;
+    }
+    .g1 { width: 400px; height: 400px; background: #0891b2; top: -100px; left: -100px; }
+    .g2 { width: 300px; height: 300px; background: #6366f1; bottom: 10%; right: -50px; animation-delay: 3s; }
+    @keyframes gMove {
+      0%, 100% { transform: translate(0,0) scale(1); }
+      50% { transform: translate(30px, -20px) scale(1.1); }
+    }
+
+    .wrap {
+      max-width: 680px; margin: 0 auto; padding: 20px 16px 80px; position: relative; z-index: 1;
+    }
+    .top-nav {
+      display: flex; align-items: center; gap: 12px; margin-bottom: 24px;
+    }
+    .back-btn {
+      width: 40px; height: 40px; border-radius: 12px;
+      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+      color: #e0f2fe; display: flex; align-items: center; justify-content: center;
+      text-decoration: none; font-size: 18px; transition: 0.2s;
+    }
+    .back-btn:hover { background: rgba(255,255,255,0.1); }
+    .page-title {
+      font-family: 'Mitr', sans-serif; font-size: 20px; font-weight: 600;
+      color: #38bdf8;
+    }
+
+    /* ── Tabs ── */
+    .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+    .tab {
+      flex: 1; text-align: center; padding: 10px; background: rgba(255,255,255,0.05);
+      border-radius: 12px; font-size: 14px; font-weight: 600; color: #94a3b8;
+      cursor: pointer; transition: 0.2s;
+    }
+    .tab.active { background: rgba(14,165,233,0.15); color: #38bdf8; border: 1px solid rgba(14,165,233,0.3); }
+    .view-section { display: none; }
+    .view-section.active { display: block; animation: fadeIn 0.3s ease; }
+    @keyframes fadeIn { from{ opacity: 0; transform: translateY(10px); } to{ opacity: 1; transform: translateY(0); } }
+
+    /* ── Filter Bar ── */
+    .filter-bar {
+      display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap;
+    }
+    .filter-btn {
+      padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600;
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+      color: #94a3b8; cursor: pointer; transition: 0.2s;
+    }
+    .filter-btn.active { background: rgba(14,165,233,0.2); color: #38bdf8; border-color: rgba(14,165,233,0.4); }
+
+    /* ── Homework Card ── */
+    .hw-card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.09);
+      border-radius: 16px; padding: 16px; margin-bottom: 12px;
+      transition: 0.2s;
+    }
+    .hw-card:hover { border-color: rgba(14,165,233,0.25); background: rgba(14,165,233,0.04); }
+    .hw-card.done { opacity: 0.55; }
+
+    .hw-header { display: flex; gap: 12px; align-items: flex-start; }
+    .hw-subject-icon {
+      width: 44px; height: 44px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; flex-shrink: 0;
+    }
+    .hw-body { flex: 1; }
+    .hw-subject { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px; }
+    .hw-title { font-size: 16px; font-weight: 700; color: #f0f9ff; margin-bottom: 4px; }
+    .hw-desc { font-size: 13px; color: #94a3b8; line-height: 1.5; margin-bottom: 8px; }
+    .hw-footer { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+    .hw-due { font-size: 12px; color: #64748b; }
+    .hw-due.urgent { color: #f87171; font-weight: 700; }
+    .hw-due.near { color: #fbbf24; font-weight: 600; }
+
+    .status-badge {
+      font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 10px;
+    }
+    .badge-pending { background: rgba(245,158,11,0.15); color: #fbbf24; }
+    .badge-done { background: rgba(34,197,94,0.15); color: #4ade80; }
+    .badge-late { background: rgba(239,68,68,0.15); color: #f87171; }
+
+    .done-toggle {
+      width: 26px; height: 26px; border-radius: 8px; border: 2px solid rgba(255,255,255,0.15);
+      background: transparent; cursor: pointer; display: flex; align-items: center;
+      justify-content: center; transition: 0.2s; font-size: 13px; flex-shrink: 0;
+    }
+    .done-toggle.checked { background: rgba(34,197,94,0.2); border-color: #4ade80; }
+
+    /* ── Form Card ── */
+    .form-card {
+      background: rgba(14, 165, 233, 0.05);
+      border: 1px solid rgba(14, 165, 233, 0.15);
+      border-radius: 20px; padding: 24px;
+      backdrop-filter: blur(10px);
+      margin-bottom: 20px;
+    }
+    .form-group { margin-bottom: 18px; }
+    .form-label { display: block; font-size: 13px; font-weight: 600; color: #94a3b8; margin-bottom: 6px; }
+    .form-input, .form-select, .form-textarea {
+      width: 100%; background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 12px; padding: 12px 14px;
+      color: #e0f2fe; font-family: 'Sarabun', sans-serif; font-size: 15px;
+      transition: all 0.2s; outline: none;
+    }
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+      border-color: #38bdf8; background: rgba(56,189,248,0.05);
+    }
+    .form-textarea { resize: vertical; min-height: 80px; }
+    .form-select option { background: #0f172a; color: #fff; }
+    .row2 { display: flex; gap: 12px; }
+    .row2 .form-group { flex: 1; }
+
+    .btn-submit {
+      width: 100%; padding: 14px; border-radius: 14px; border: none;
+      background: linear-gradient(135deg, #0ea5e9, #0284c7); color: #fff;
+      font-size: 16px; font-family: 'Mitr', sans-serif; cursor: pointer;
+      transition: 0.2s; font-weight: 500;
+    }
+    .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(14,165,233,0.4); }
+    .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    /* ── Empty State ── */
+    .empty-state {
+      text-align: center; padding: 48px 0; color: #64748b;
+    }
+    .empty-icon { font-size: 48px; margin-bottom: 12px; }
+    .empty-text { font-size: 15px; }
+
+    /* ── Section Label ── */
+    .section-label {
+      font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase;
+      letter-spacing: 1px; margin: 20px 0 10px; padding-left: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div id="auth-bar"></div>
+  <div class="bg-layer"></div>
+  <div class="glow g1"></div>
+  <div class="glow g2"></div>
+
+  <div class="wrap">
+    <div class="top-nav">
+      <a href="index.html" class="back-btn">←</a>
+      <div class="page-title">📋 การบ้าน / งานมอบหมาย</div>
+    </div>
+
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab('list', this)">📚 งานทั้งหมด</div>
+      <div class="tab" onclick="switchTab('assign', this)">➕ มอบหมายงาน</div>
+    </div>
+
+    <!-- ── LIST SECTION ── -->
+    <div id="sec-list" class="view-section active">
+
+      <div class="filter-bar">
+        <div class="filter-btn active" onclick="filterHW('all', this)">ทั้งหมด</div>
+        <div class="filter-btn" onclick="filterHW('pending', this)">รอส่ง</div>
+        <div class="filter-btn" onclick="filterHW('done', this)">ส่งแล้ว</div>
+        <div class="filter-btn" onclick="filterHW('late', this)">เกินกำหนด</div>
+      </div>
+
+      <div id="hw-list-container"></div>
+    </div>
+
+    <!-- ── ASSIGN SECTION ── -->
+    <div id="sec-assign" class="view-section">
+      <div class="form-card">
+        <form id="hw-form" onsubmit="submitHW(event)">
+          <div class="form-group">
+            <label class="form-label">วิชา</label>
+            <select id="hw_subject" class="form-select" required>
+              <option value="">-- เลือกวิชา --</option>
+              <option value="คณิตศาสตร์">📐 คณิตศาสตร์</option>
+              <option value="ภาษาไทย">📖 ภาษาไทย</option>
+              <option value="ภาษาอังกฤษ">🌐 ภาษาอังกฤษ</option>
+              <option value="วิทยาศาสตร์">🔬 วิทยาศาสตร์</option>
+              <option value="สังคมศึกษา">🌍 สังคมศึกษา</option>
+              <option value="ศิลปะ">🎨 ศิลปะ</option>
+              <option value="พลศึกษา">⚽ พลศึกษา</option>
+              <option value="คอมพิวเตอร์">💻 คอมพิวเตอร์</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">ชื่องาน / หัวข้อ</label>
+            <input type="text" id="hw_title" class="form-input" placeholder="เช่น แบบฝึกหัดบทที่ 3 ข้อ 1-20" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">รายละเอียด / คำอธิบาย</label>
+            <textarea id="hw_desc" class="form-textarea" placeholder="อธิบายรายละเอียดงาน หรือแหล่งอ้างอิง..."></textarea>
+          </div>
+
+          <div class="row2">
+            <div class="form-group">
+              <label class="form-label">ชั้นเรียน</label>
+              <select id="hw_class" class="form-select" required>
+                <option value="">-- ชั้น --</option>
+                <option value="อนุบาล">อนุบาล</option>
+                <option value="ป.1">ป.1</option>
+                <option value="ป.2">ป.2</option>
+                <option value="ป.3">ป.3</option>
+                <option value="ป.4">ป.4</option>
+                <option value="ป.5">ป.5</option>
+                <option value="ป.6">ป.6</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">กำหนดส่ง</label>
+              <input type="date" id="hw_due" class="form-input" required>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-submit" id="submit-btn" data-auth="write-disable">
+            ➕ มอบหมายงาน
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+  <script src="auth-guard.js"></script>
+
+  <script>
+    AuthGuard.init('read-only');
+
+    const SUBJECT_META = {
+      'คณิตศาสตร์': { icon: '📐', color: 'rgba(99,102,241,0.15)', text: '#a5b4fc' },
+      'ภาษาไทย':    { icon: '📖', color: 'rgba(236,72,153,0.12)', text: '#f9a8d4' },
+      'ภาษาอังกฤษ': { icon: '🌐', color: 'rgba(14,165,233,0.12)', text: '#7dd3fc' },
+      'วิทยาศาสตร์': { icon: '🔬', color: 'rgba(34,197,94,0.12)',  text: '#86efac' },
+      'สังคมศึกษา': { icon: '🌍', color: 'rgba(245,158,11,0.12)', text: '#fcd34d' },
+      'ศิลปะ':       { icon: '🎨', color: 'rgba(239,68,68,0.12)',  text: '#fca5a5' },
+      'พลศึกษา':    { icon: '⚽', color: 'rgba(20,184,166,0.12)', text: '#5eead4' },
+      'คอมพิวเตอร์': { icon: '💻', color: 'rgba(168,85,247,0.12)', text: '#d8b4fe' },
+    };
+
+    // ── Sample data (replace with Firebase in production) ──
+    let allHW = [
+      { id: '1', subject: 'คณิตศาสตร์', title: 'แบบฝึกหัดบทที่ 5 ข้อ 1-20', desc: 'ทำในสมุดแบบฝึกหัด หน้า 45-46', class: 'ป.4', due: '2026-03-19', status: 'pending' },
+      { id: '2', subject: 'ภาษาไทย',    title: 'แต่งบทกลอนสี่สุภาพ', desc: 'หัวข้อ "ฤดูกาล" ความยาวไม่ต่ำกว่า 3 บท', class: 'ป.5', due: '2026-03-18', status: 'pending' },
+      { id: '3', subject: 'วิทยาศาสตร์', title: 'รายงานระบบสุริยะ', desc: 'นำเสนอหน้าชั้นเรียน พร้อม Poster A3', class: 'ป.6', due: '2026-03-25', status: 'done' },
+      { id: '4', subject: 'ภาษาอังกฤษ', title: 'Vocabulary Unit 7', desc: 'จำคำศัพท์ 20 คำ พร้อมความหมาย มีสอบคำศัพท์', class: 'ป.4', due: '2026-03-15', status: 'late' },
+      { id: '5', subject: 'สังคมศึกษา', title: 'ใบงาน "ภูมิศาสตร์ไทย"', desc: 'ตอบคำถามในใบงาน 10 ข้อ ส่งพรุ่งนี้', class: 'ป.3', due: '2026-03-20', status: 'pending' },
+    ];
+
+    let currentFilter = 'all';
+    let doneSet = new Set(allHW.filter(h => h.status === 'done').map(h => h.id));
+
+    function getDaysLeft(due) {
+      const today = new Date(); today.setHours(0,0,0,0);
+      const d = new Date(due); d.setHours(0,0,0,0);
+      return Math.round((d - today) / 86400000);
+    }
+
+    function formatDate(dateStr) {
+      const d = new Date(dateStr);
+      return d.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' });
+    }
+
+    function renderList() {
+      const container = document.getElementById('hw-list-container');
+      let list = allHW.map(h => ({ ...h, status: doneSet.has(h.id) ? 'done' : h.status }));
+
+      if (currentFilter !== 'all') list = list.filter(h => h.status === currentFilter);
+
+      if (!list.length) {
+        container.innerHTML = `<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">ไม่มีงานในหมวดนี้</div></div>`;
+        return;
+      }
+
+      // Group by subject for "all" filter
+      let html = '';
+      if (currentFilter === 'all') {
+        const groups = {};
+        list.forEach(h => { if (!groups[h.subject]) groups[h.subject] = []; groups[h.subject].push(h); });
+        for (const [subj, items] of Object.entries(groups)) {
+          html += `<div class="section-label">${SUBJECT_META[subj]?.icon || '📚'} ${subj}</div>`;
+          items.forEach(h => { html += hwCardHTML(h); });
+        }
+      } else {
+        list.forEach(h => { html += hwCardHTML(h); });
+      }
+
+      container.innerHTML = html;
+    }
+
+    function hwCardHTML(h) {
+      const meta = SUBJECT_META[h.subject] || { icon: '📚', color: 'rgba(255,255,255,0.05)', text: '#94a3b8' };
+      const days = getDaysLeft(h.due);
+      const isDone = doneSet.has(h.id) || h.status === 'done';
+
+      let dueClass = '', dueLabel = '';
+      if (isDone) {
+        dueLabel = `ส่งแล้ว • ${formatDate(h.due)}`;
+      } else if (days < 0) {
+        dueClass = 'urgent'; dueLabel = `เกินกำหนด ${Math.abs(days)} วัน`;
+      } else if (days === 0) {
+        dueClass = 'urgent'; dueLabel = `ส่งวันนี้!`;
+      } else if (days <= 2) {
+        dueClass = 'near'; dueLabel = `อีก ${days} วัน (${formatDate(h.due)})`;
+      } else {
+        dueLabel = `กำหนดส่ง ${formatDate(h.due)}`;
+      }
+
+      const badgeClass = isDone ? 'badge-done' : (h.status === 'late' ? 'badge-late' : 'badge-pending');
+      const badgeText  = isDone ? '✅ ส่งแล้ว' : (h.status === 'late' ? '⚠️ เกินกำหนด' : '⏳ รอส่ง');
+
+      return `
+        <div class="hw-card ${isDone ? 'done' : ''}" id="card-${h.id}">
+          <div class="hw-header">
+            <div class="hw-subject-icon" style="background:${meta.color}; color:${meta.text}">${meta.icon}</div>
+            <div class="hw-body">
+              <div class="hw-subject" style="color:${meta.text}">${h.subject} • ${h.class}</div>
+              <div class="hw-title">${h.title}</div>
+              ${h.desc ? `<div class="hw-desc">${h.desc}</div>` : ''}
+              <div class="hw-footer">
+                <span class="hw-due ${dueClass}">📅 ${dueLabel}</span>
+                <span class="status-badge ${badgeClass}">${badgeText}</span>
+              </div>
+            </div>
+            <button class="done-toggle ${isDone ? 'checked' : ''}" onclick="toggleDone('${h.id}')" title="${isDone ? 'ยกเลิก' : 'ทำเสร็จแล้ว'}">
+              ${isDone ? '✓' : ''}
+            </button>
+          </div>
+        </div>`;
+    }
+
+    function toggleDone(id) {
+      if (doneSet.has(id)) { doneSet.delete(id); }
+      else { doneSet.add(id); }
+      renderList();
+    }
+
+    function filterHW(filter, btn) {
+      currentFilter = filter;
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderList();
+    }
+
+    function switchTab(tabId, btn) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('sec-' + tabId).classList.add('active');
+    }
+
+    async function submitHW(e) {
+      e.preventDefault();
+      if (!AuthGuard.requireLogin('คุณต้องเข้าสู่ระบบก่อนจึงจะมอบหมายงานได้')) return;
+
+      const btn = document.getElementById('submit-btn');
+      btn.disabled = true;
+      btn.textContent = 'กำลังบันทึก...';
+
+      const data = {
+        subject:   document.getElementById('hw_subject').value,
+        title:     document.getElementById('hw_title').value,
+        desc:      document.getElementById('hw_desc').value,
+        class:     document.getElementById('hw_class').value,
+        due:       document.getElementById('hw_due').value,
+        status:    'pending',
+        createdAt: firebase.database.ServerValue.TIMESTAMP,
+        createdBy: window._auth?.currentUser?.uid || 'unknown',
+      };
+
+      try {
+        await window._db.ref('homeworks').push(data);
+        alert('✅ มอบหมายงานเรียบร้อยแล้ว');
+        document.getElementById('hw-form').reset();
+        document.getElementById('hw_due').value = new Date().toISOString().split('T')[0];
+        // Add to local list for instant feedback
+        allHW.unshift({ ...data, id: Date.now().toString() });
+        document.querySelectorAll('.tab')[0].click();
+      } catch (err) {
+        alert('❌ เกิดข้อผิดพลาด: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '➕ มอบหมายงาน';
+      }
+    }
+
+    // Init
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('hw_due').value = today;
+    renderList();
+  </script>
+</body>
+</html>
