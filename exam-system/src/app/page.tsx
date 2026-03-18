@@ -1,10 +1,23 @@
 import Link from 'next/link';
-import { BookOpen, Users, GraduationCap } from 'lucide-react';
+import { BookOpen, Users, GraduationCap, ArrowLeft } from 'lucide-react';
+
+const HOME_URL = process.env.NEXT_PUBLIC_HOME_URL || '/';
 
 export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-100 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-xl p-8 max-w-2xl w-full text-center">
+        {/* Back to main app */}
+        <div className="mb-4 flex justify-start">
+          <a
+            href={HOME_URL}
+            className="inline-flex items-center gap-2 text-sm text-gray-400 hover:text-indigo-600 transition-colors font-medium"
+          >
+            <ArrowLeft size={16} />
+            กลับ Super App บ้านคำไผ่
+          </a>
+        </div>
+
         <div className="mb-8 flex justify-center">
           <div className="bg-blue-600 p-4 rounded-full text-white">
             <GraduationCap size={48} />

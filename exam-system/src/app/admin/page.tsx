@@ -2,6 +2,8 @@
 
 import { useEffect, useState, useRef, useCallback } from 'react';
 import Link from 'next/link';
+
+const HOME_URL = process.env.NEXT_PUBLIC_HOME_URL || '/';
 import {
     Home, Trash2, Plus, Save, BookOpen, Users, Upload,
     Download, CheckCircle2, AlertCircle, X, RefreshCw, ChevronDown, ChevronUp, FileText
@@ -402,9 +404,9 @@ export default function AdminDashboard() {
                 <header className="bg-white shadow-sm border-b sticky top-0 z-30">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex justify-between items-center">
                         <div className="flex items-center space-x-3">
-                            <Link href="/" className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors" title="หน้าหลัก">
+                            <a href={HOME_URL} className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors" title="กลับ Super App บ้านคำไผ่">
                                 <Home size={20} />
-                            </Link>
+                            </a>
                             <div className="h-5 w-px bg-gray-200" />
                             <h1 className="text-lg font-bold text-gray-800">ระบบจัดการข้อสอบ</h1>
                         </div>
