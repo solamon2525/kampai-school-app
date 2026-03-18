@@ -1,0 +1,1104 @@
+{
+    "subj8": [
+        {
+            "id": "p4-s8-001",
+            "text": "Which word starts with 'A'?",
+            "choices": [
+                "Banana",
+                "Apple",
+                "Cat",
+                "Dog"
+            ],
+            "correctAnswer": 1
+        },
+        {
+            "id": "p4-s8-002",
+            "text": "Which word starts with 'B'?",
+            "choices": [
+                "Ant",
+                "Bird",
+                "Elephant",
+                "Fish"
+            ],
+            "correctAnswer": 1
+        },
+        {
+            "id": "p4-s8-003",
+            "text": "Choose the correct capital letter: 'elephant'",
+            "choices": [
+                "Elephant",
+                "eLephant",
+                "elePhant",
+                "elephanT"
+            ],
+            "correctAnswer": 0
+        },
+        {
+            "id": "p4-s8-004",
+            "text": "Choose the correct small letter: 'HELLO'",
+            "choices": [
+                "hello",
+                "hEllo",
+                "hellO",
+                "Hello"
+            ],
+            "correctAnswer": 0
+        },
+        {
+            "id": "p4-s8-005",
+            "text": "Which one is a 'vowel'?",
+            "choices": [
+                "B",
+                "C",
+                "E",
+                "D"
+            ],
+            "correctAnswer": 2
+        },
+        {
+            "id": "p4-s8-006",
+            "text": "Which one is NOT a 'vowel'?",
+            "choices": [
+                "A",
+                "E",
+                "I",
+                "F"
+            ],
+            "correctAnswer": 3
+        },
+        {
+            "id": "p4-s8-007",
+            "text": "One cat, two ________.",
+            "choices": [
+                "cat",
+                "cats",
+                "cates",
+                "caties"
+            ],
+            "correctAnswer": 1
+        },
+        {
+            "id": "p4-s8-008",
+            "text": "One bus, two ________.",
+            "choices": [
+                "bus",
+                "buss",
+                "buses",
+                "busies"
+            ],
+            "correctAnswer": 2
+        },
+        {
+            "id": "p4-s8-009",
+            "text": "I ________ a boy.",
+            "choices": [
+                "am",
+                "is",
+                "are",
+                "be"
+            ],
+            "correctAnswer": 0
+        },
+        {
+            "id": "p4-s8-010",
+            "text": "She ________ a girl.",
+            "choices": [
+                "am",
+                "is",
+                "are",
+                "be"
+            ],
+            "correctAnswer": 1
+        },
+        {
+            "id": "p4-s8-011",
+            "text": "They ________ students.",
+            "choices": [
+                "am",
+                "is",
+                "are",
+                "was"
+            ],
+            "correctAnswer": 2
+        },
+        {
+            "id": "p4-s8-012",
+            "text": "This ________ my book.",
+            "choices": [
+                "am",
+                "is",
+                "are",
+                "be"
+            ],
+            "correctAnswer": 1
+        },
+        {
+            "id": "p4-s8-013",
+            "text": "Those ________ your chairs.",
+            "choices": [
+                "am",
+                "is",
+                "are",
+                "was"
+            ],
+            "correctAnswer": 2
+        },
+        {
+            "id": "p4-s8-014",
+            "text": "What is this? ________ is an apple.",
+            "choices": [
+                "He",
+                "She",
+                "It",
+                "They"
+            ],
+            "correctAnswer": 2
+        },
+        {
+            "id": "p4-s8-015",
+            "text": "Where is John? ________ is in the classroom.",
+            "choices": [
+                "He",
+                "She",
+                "It",
+                "They"
+            ],
+            "correctAnswer": 0
+        },
+        {
+            "id": "p4-s8-016",
+            "text": "Who is Mary? ________ is my friend.",
+            "choices": [
+                "He",
+                "She",
+                "It",
+                "They"
+            ],
+            "correctAnswer": 1
+        },
+        {
+            "id": "p4-s8-017",
+            "text": "I have ________ apple.",
+            "choices": [
+                "a",
+                "an",
+                "the",
+                "some"
+            ],
+            "correctAnswer": 1
+        },
+        {
+            "id": "p4-s8-018",
+            "text": "I have ________ dog.",
+            "choices": [
+                "a",
+                "an",
+                "the",
+                "any"
+            ],
+            "correctAnswer": 0
+        },
+        {
+            "id": "p4-s8-019",
+            "text": "There is ________ ink in the bottle.",
+            "choices": [
+                "a",
+                "an",
+                "the",
+                "some"
+            ],
+            "correctAnswer": 3
+        },
+        {
+            "id": "p4-s8-020",
+            "text": "I like ________ oranges.",
+            "choices": [
+                "a",
+                "an",
+                "the",
+                "- no article"
+            ],
+            "correctAnswer": 3
+        },
+        {
+            "id": "p4-s8-021",
+            "text": "He ________ to school every day.",
+            "choices": [
+                "go",
+                "goes",
+                "going",
+                "gone"
+            ],
+            "correctAnswer": 1
+        },
+        {
+            "id": "p4-s8-022",
+            "text": "I ________ football on Saturdays.",
+            "choices": [
+                "play",
+                "plays",
+                "playing",
+                "played"
+            ],
+            "correctAnswer": 0
+        },
+        {
+            "id": "p4-s8-023",
+            "text": "She ________ apples.",
+            "choices": [
+                "like",
+                "likes",
+                "liking",
+                "to like"
+            ],
+            "correctAnswer": 1
+        },
+        {
+            "id": "p4-s8-024",
+            "text": "Birds ________ in the sky.",
+            "choices": [
+                "fly",
+                "flies",
+                "flying",
+                "flew"
+            ],
+            "correctAnswer": 0
+        },
+        {
+            "id": "p4-s8-025",
+            "text": "Do you ________ English?",
+            "choices": [
+                "speak",
+                "speaks",
+                "speaking",
+                "spoke"
+            ],
+            "correctAnswer": 0
+        },
+        {
+            "id": "p4-s8-026",
+            "text": "He ________ not like coffee.",
+            "choices": [
+                "do",
+                "does",
+                "is",
+                "are"
+            ],
+            "correctAnswer": 1
+        },
+        {
+            "id": "p4-s8-027",
+            "text": "I ________ not have a pen.",
+            "choices": [
+                "do",
+                "does",
+                "am",
+                "is"
+            ],
+            "correctAnswer": 0
+        },
+        {
+            "id": "p4-s8-028",
+            "text": "Are you a student? Yes, I ________.",
+            "choices": [
+                "am",
+                "do",
+                "is",
+                "can"
+            ],
+            "correctAnswer": 0
+        },
+        {
+            "id": "p4-s8-029",
+            "text": "Is it a cat? No, it ________.",
+            "choices": [
+                "is",
+                "isn't",
+                "does",
+                "doesn't"
+            ],
+            "correctAnswer": 1
+        },
+        {
+            "id": "p4-s8-030",
+            "text": "Can you swim? Yes, I ________.",
+            "choices": [
+                "am",
+                "do",
+                "can",
+                "could"
+            ],
+            "correctAnswer": 2
+        },
+        {
+            "id": "p4-s8-031",
+            "text": "What are you doing? I am ________.",
+            "choices": [
+                "swim",
+                "swims",
+                "swimming",
+                "swam"
+            ],
+            "correctAnswer": 2
+        },
+        {
+            "id": "p4-s8-032",
+            "text": "She is ________ a book.",
+            "choices": [
+                "read",
+                "reads",
+                "reading",
+                "reader"
+            ],
+            "correctAnswer": 2
+        },
+        {
+            "id": "p4-s8-033",
+            "text": "They are ________ TV.",
+            "choices": [
+                "watch",
+                "watches",
+                "watching",
+                "watched"
+            ],
+            "correctAnswer": 2
+        },
+        {
+            "id": "p4-s8-034",
+            "text": "It is ________ hot today.",
+            "choices": [
+                "very",
+                "many",
+                "much",
+                "well"
+            ],
+            "correctAnswer": 0
+        },
+        {
+            "id": "p4-s8-035",
+            "text": "The book is ________ the table.",
+            "choices": [
+                "on",
+                "in",
+                "at",
+                "under"
+            ],
+            "correctAnswer": 0
+        },
+        {
+            "id": "p4-s8-036",
+            "text": "The fish is ________ the water.",
+            "choices": [
+                "on",
+                "in",
+                "at",
+                "under"
+            ],
+            "correctAnswer": 1
+        },
+        {
+            "id": "p4-s8-037",
+            "text": "The dog is ________ the chair.",
+            "choices": [
+                "on",
+                "in",
+                "at",
+                "under"
+            ],
+            "correctAnswer": 3
+        },
+        {
+            "id": "p4-s8-038",
+            "text": "Walk ________ the classroom.",
+            "choices": [
+                "to",
+                "at",
+                "into",
+                "with"
+            ],
+            "correctAnswer": 2
+        },
+        {
+            "id": "p4-s8-039",
+            "text": "Sit ________, please.",
+            "choices": [
+                "up",
+                "down",
+                "on",
+                "at"
+            ],
+            "correctAnswer": 1
+        },
+        {
+            "id": "p4-s8-040",
+            "text": "Stand ________, please.",
+            "choices": [
+                "up",
+                "down",
+                "on",
+                "at"
+            ],
+            "correctAnswer": 0
+        },
+        {
+            "id": "p4-s8-041",
+            "text": "How many days are in a week?",
+            "choices": [
+                "Five",
+                "Six",
+                "Seven",
+                "Eight"
+            ],
+            "correctAnswer": 2
+        },
+        {
+            "id": "p4-s8-042",
+            "text": "Monday is the ________ day of the week.",
+            "choices": [
+                "first",
+                "second",
+                "third",
+                "fourth"
+            ],
+            "correctAnswer": 0
+        },
+        {
+            "id": "p4-s8-043",
+            "text": "Sunday is the ________ day of the week.",
+            "choices": [
+                "last",
+                "first",
+                "middle",
+                "next"
+            ],
+            "correctAnswer": 0
+        },
+        {
+            "id": "p4-s8-044",
+            "text": "How many months are in a year?",
+            "choices": [
+                "Ten",
+                "Eleven",
+                "Twelve",
+                "Thirteen"
+            ],
+            "correctAnswer": 2
+        },
+        {
+            "id": "p4-s8-045",
+            "text": "January is the ________ month.",
+            "choices": [
+                "first",
+                "second",
+                "third",
+                "fourth"
+            ],
+            "correctAnswer": 0
+        },
+        {
+            "id": "p4-s8-046",
+            "text": "December is the ________ month.",
+            "choices": [
+                "next",
+                "last",
+                "first",
+                "middle"
+            ],
+            "correctAnswer": 1
+        },
+        {
+            "id": "p4-s8-047",
+            "text": "What is the first letter of the alphabet?",
+            "choices": [
+                "A",
+                "B",
+                "C",
+                "Z"
+            ],
+            "correctAnswer": 0
+        },
+        {
+            "id": "p4-s8-048",
+            "text": "What is the last letter of the alphabet?",
+            "choices": [
+                "A",
+                "B",
+                "C",
+                "Z"
+            ],
+            "correctAnswer": 3
+        },
+        {
+            "id": "p4-s8-049",
+            "text": "Which word is a color?",
+            "choices": [
+                "Apple",
+                "Red",
+                "Table",
+                "Good"
+            ],
+            "correctAnswer": 1
+        },
+        {
+            "id": "p4-s8-050",
+            "text": "Which word is a fruit?",
+            "choices": [
+                "Pen",
+                "Cat",
+                "Banana",
+                "Blue"
+            ],
+            "correctAnswer": 2
+        },
+        {
+            "id": "p4-s8-051",
+            "text": "Which word is an animal?",
+            "choices": [
+                "Car",
+                "Tiger",
+                "Hat",
+                "Sun"
+            ],
+            "correctAnswer": 1
+        },
+        {
+            "id": "p4-s8-052",
+            "text": "Which word is a school item?",
+            "choices": [
+                "Pizza",
+                "Pencil",
+                "Tree",
+                "Cloud"
+            ],
+            "correctAnswer": 1
+        },
+        {
+            "id": "p4-s8-053",
+            "text": "Which word is a family member?",
+            "choices": [
+                "Friend",
+                "Teacher",
+                "Mother",
+                "Doctor"
+            ],
+            "correctAnswer": 2
+        },
+        {
+            "id": "p4-s8-054",
+            "text": "'Tall' is the opposite of ________.",
+            "choices": [
+                "Short",
+                "Big",
+                "Long",
+                "High"
+            ],
+            "correctAnswer": 0
+        },
+        {
+            "id": "p4-s8-055",
+            "text": "'Big' is the opposite of ________.",
+            "choices": [
+                "Small",
+                "Heavy",
+                "Old",
+                "New"
+            ],
+            "correctAnswer": 0
+        },
+        {
+            "id": "p4-s8-056",
+            "text": "'Hot' is the opposite of ________.",
+            "choices": [
+                "Warm",
+                "Cold",
+                "Cool",
+                "Wet"
+            ],
+            "correctAnswer": 1
+        },
+        {
+            "id": "p4-s8-057",
+            "text": "'Happy' is the opposite of ________.",
+            "choices": [
+                "Glad",
+                "Sad",
+                "Funny",
+                "Good"
+            ],
+            "correctAnswer": 1
+        },
+        {
+            "id": "p4-s8-058",
+            "text": "'Fast' is the opposite of ________.",
+            "choices": [
+                "Quick",
+                "Slow",
+                "Late",
+                "Soon"
+            ],
+            "correctAnswer": 1
+        },
+        {
+            "id": "p4-s8-059",
+            "text": "Which one is a question?",
+            "choices": [
+                "I am happy.",
+                "Are you happy?",
+                "Happy day.",
+                "Go home."
+            ],
+            "correctAnswer": 1
+        },
+        {
+            "id": "p4-s8-060",
+            "text": "Which one has a spelling error?",
+            "choices": [
+                "School",
+                "Skool",
+                "Book",
+                "Desk"
+            ],
+            "correctAnswer": 1
+        },
+        {
+            "id": "p4-s8-061",
+            "text": "Where ________ you go?",
+            "choices": [
+                "do",
+                "does",
+                "is",
+                "are"
+            ],
+            "correctAnswer": 0
+        },
+        {
+            "id": "p4-s8-062",
+            "text": "What ________ she name?",
+            "choices": [
+                "is",
+                "am",
+                "are",
+                "do"
+            ],
+            "correctAnswer": 0
+        },
+        {
+            "id": "p4-s8-063",
+            "text": "________ you like pizza?",
+            "choices": [
+                "Do",
+                "Does",
+                "Is",
+                "Are"
+            ],
+            "correctAnswer": 0
+        },
+        {
+            "id": "p4-s8-064",
+            "text": "________ he play soccer?",
+            "choices": [
+                "Do",
+                "Does",
+                "Is",
+                "Are"
+            ],
+            "correctAnswer": 1
+        },
+        {
+            "id": "p4-s8-065",
+            "text": "I ________ breakfast at 7 AM.",
+            "choices": [
+                "have",
+                "has",
+                "having",
+                "had"
+            ],
+            "correctAnswer": 0
+        },
+        {
+            "id": "p4-s8-066",
+            "text": "She ________ a beautiful dress.",
+            "choices": [
+                "have",
+                "has",
+                "having",
+                "is"
+            ],
+            "correctAnswer": 1
+        },
+        {
+            "id": "p4-s8-067",
+            "text": "We ________ Thai.",
+            "choices": [
+                "am",
+                "is",
+                "are",
+                "be"
+            ],
+            "correctAnswer": 2
+        },
+        {
+            "id": "p4-s8-068",
+            "text": "A cat ________ two ears.",
+            "choices": [
+                "have",
+                "has",
+                "having",
+                "is"
+            ],
+            "correctAnswer": 1
+        },
+        {
+            "id": "p4-s8-069",
+            "text": "Elephants ________ large.",
+            "choices": [
+                "is",
+                "am",
+                "are",
+                "was"
+            ],
+            "correctAnswer": 2
+        },
+        {
+            "id": "p4-s8-070",
+            "text": "What ________ the time?",
+            "choices": [
+                "is",
+                "am",
+                "are",
+                "do"
+            ],
+            "correctAnswer": 0
+        },
+        {
+            "id": "p4-s8-071",
+            "text": "It ________ raining.",
+            "choices": [
+                "is",
+                "am",
+                "are",
+                "be"
+            ],
+            "correctAnswer": 0
+        },
+        {
+            "id": "p4-s8-072",
+            "text": "I ________ not home.",
+            "choices": [
+                "am",
+                "is",
+                "are",
+                "do"
+            ],
+            "correctAnswer": 0
+        },
+        {
+            "id": "p4-s8-073",
+            "text": "They ________ not friends.",
+            "choices": [
+                "am",
+                "is",
+                "are",
+                "was"
+            ],
+            "correctAnswer": 2
+        },
+        {
+            "id": "p4-s8-074",
+            "text": "________ is my teacher.",
+            "choices": [
+                "Mrs. Malee",
+                "Table",
+                "Dog",
+                "Apple"
+            ],
+            "correctAnswer": 0
+        },
+        {
+            "id": "p4-s8-075",
+            "text": "________ are you? I'm fine.",
+            "choices": [
+                "Who",
+                "How",
+                "What",
+                "Where"
+            ],
+            "correctAnswer": 1
+        },
+        {
+            "id": "p4-s8-076",
+            "text": "________ is your school? It's near here.",
+            "choices": [
+                "Who",
+                "How",
+                "What",
+                "Where"
+            ],
+            "correctAnswer": 3
+        },
+        {
+            "id": "p4-s8-077",
+            "text": "________ is this? It's a pencil.",
+            "choices": [
+                "Who",
+                "How",
+                "What",
+                "Where"
+            ],
+            "correctAnswer": 2
+        },
+        {
+            "id": "p4-s8-078",
+            "text": "________ is that man? He's my uncle.",
+            "choices": [
+                "Who",
+                "How",
+                "What",
+                "Where"
+            ],
+            "correctAnswer": 0
+        },
+        {
+            "id": "p4-s8-079",
+            "text": "I brush ________ teeth.",
+            "choices": [
+                "my",
+                "your",
+                "his",
+                "her"
+            ],
+            "correctAnswer": 0
+        },
+        {
+            "id": "p4-s8-080",
+            "text": "He washes ________ face.",
+            "choices": [
+                "my",
+                "your",
+                "his",
+                "her"
+            ],
+            "correctAnswer": 2
+        },
+        {
+            "id": "p4-s8-081",
+            "text": "She combs ________ hair.",
+            "choices": [
+                "my",
+                "your",
+                "his",
+                "her"
+            ],
+            "correctAnswer": 3
+        },
+        {
+            "id": "p4-s8-082",
+            "text": "We love ________ parents.",
+            "choices": [
+                "my",
+                "our",
+                "their",
+                "your"
+            ],
+            "correctAnswer": 1
+        },
+        {
+            "id": "p4-s8-083",
+            "text": "The dog wags ________ tail.",
+            "choices": [
+                "his",
+                "her",
+                "its",
+                "it's"
+            ],
+            "correctAnswer": 2
+        },
+        {
+            "id": "p4-s8-084",
+            "text": "Choose the correct spelling:",
+            "choices": [
+                "Pencli",
+                "Pencil",
+                "Pencel",
+                "Pinsil"
+            ],
+            "correctAnswer": 1
+        },
+        {
+            "id": "p4-s8-085",
+            "text": "Choose the correct spelling:",
+            "choices": [
+                "Wenesday",
+                "Wednesday",
+                "Wensday",
+                "Wenesdab"
+            ],
+            "correctAnswer": 1
+        },
+        {
+            "id": "p4-s8-086",
+            "text": "Choose the correct spelling:",
+            "choices": [
+                "Techer",
+                "Teacher",
+                "Theacher",
+                "Teecher"
+            ],
+            "correctAnswer": 1
+        },
+        {
+            "id": "p4-s8-087",
+            "text": "I see with my ________.",
+            "choices": [
+                "ears",
+                "eyes",
+                "nose",
+                "mouth"
+            ],
+            "correctAnswer": 1
+        },
+        {
+            "id": "p4-s8-088",
+            "text": "I hear with my ________.",
+            "choices": [
+                "ears",
+                "eyes",
+                "nose",
+                "mouth"
+            ],
+            "correctAnswer": 0
+        },
+        {
+            "id": "p4-s8-089",
+            "text": "I smell with my ________.",
+            "choices": [
+                "ears",
+                "eyes",
+                "nose",
+                "mouth"
+            ],
+            "correctAnswer": 2
+        },
+        {
+            "id": "p4-s8-090",
+            "text": "I eat with my ________.",
+            "choices": [
+                "ears",
+                "eyes",
+                "nose",
+                "mouth"
+            ],
+            "correctAnswer": 3
+        },
+        {
+            "id": "p4-s8-091",
+            "text": "I walk with my ________.",
+            "choices": [
+                "hands",
+                "feet",
+                "arms",
+                "shoulders"
+            ],
+            "correctAnswer": 1
+        },
+        {
+            "id": "p4-s8-092",
+            "text": "Which one is a verb?",
+            "choices": [
+                "Happy",
+                "Run",
+                "Table",
+                "Blue"
+            ],
+            "correctAnswer": 1
+        },
+        {
+            "id": "p4-s8-093",
+            "text": "Which one is a noun?",
+            "choices": [
+                "Eat",
+                "Sleep",
+                "Car",
+                "Fast"
+            ],
+            "correctAnswer": 2
+        },
+        {
+            "id": "p4-s8-094",
+            "text": "Which one is an adjective?",
+            "choices": [
+                "Book",
+                "Jump",
+                "Beautiful",
+                "Speak"
+            ],
+            "correctAnswer": 2
+        },
+        {
+            "id": "p4-s8-095",
+            "text": "Good ________! (8 PM)",
+            "choices": [
+                "morning",
+                "afternoon",
+                "evening",
+                "night"
+            ],
+            "correctAnswer": 2
+        },
+        {
+            "id": "p4-s8-096",
+            "text": "See ________ tomorrow.",
+            "choices": [
+                "you",
+                "your",
+                "my",
+                "me"
+            ],
+            "correctAnswer": 0
+        },
+        {
+            "id": "p4-s8-097",
+            "text": "________ me. Can you help?",
+            "choices": [
+                "Sorry",
+                "Excuse",
+                "Please",
+                "Hello"
+            ],
+            "correctAnswer": 1
+        },
+        {
+            "id": "p4-s8-098",
+            "text": "Wait ________ minute.",
+            "choices": [
+                "a",
+                "an",
+                "the",
+                "some"
+            ],
+            "correctAnswer": 0
+        },
+        {
+            "id": "p4-s8-099",
+            "text": "Have ________ nice day.",
+            "choices": [
+                "a",
+                "an",
+                "the",
+                "some"
+            ],
+            "correctAnswer": 0
+        },
+        {
+            "id": "p4-s8-100",
+            "text": "Goodbye! ________ you later.",
+            "choices": [
+                "See",
+                "Hear",
+                "Speak",
+                "Meet"
+            ],
+            "correctAnswer": 0
+        }
+    ]
+}
