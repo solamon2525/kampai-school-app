@@ -495,7 +495,9 @@
     function showLoading(v) { document.getElementById('loading').style.display = v ? 'flex' : 'none'; }
     function showToast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000); }
 
+    let isDbLoaded = false;
     db.ref('superapp_config').on('value', snap => {
+      isDbLoaded = true;
       const v = snap.val();
       if (v) {
         cfg = { ...cfg, ...v };
@@ -504,6 +506,15 @@
       applyConfig();
       showLoading(false);
     });
+
+    // Fallback: If Firebase takes too long, hide loading and show default apps
+    setTimeout(() => {
+      if (!isDbLoaded) {
+        console.warn("Firebase timeout, loading default config...");
+        applyConfig();
+        showLoading(false);
+      }
+    }, 5000);
 
     function applyConfig() {
       document.getElementById('main-school-name').textContent = cfg.schoolName;
