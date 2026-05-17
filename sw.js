@@ -31,8 +31,8 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
     const url = new URL(event.request.url);
 
-    // ข้ามคำขอที่ไม่ใช่ GET
-    if (event.request.method !== 'GET') return;
+    // ข้ามคำขอที่ไม่ใช่ GET หรือ Scheme ที่ไม่รองรับ (เช่น chrome-extension)
+    if (event.request.method !== 'GET' || !url.protocol.startsWith('http')) return;
 
     // Firebase / googleapis → network only (ข้ามไปใช้ network ตรงๆ)
     if (
