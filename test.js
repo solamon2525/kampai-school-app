@@ -1,0 +1,1 @@
+const fs = require('fs'); const content = fs.readFileSync('index.html', 'utf8'); const matches = [...content.matchAll(/url:\s*'([^']+)'/g)]; const urls = [...new Set(matches.map(m => m[1]))]; urls.forEach(u => { if (u !== '#' && !fs.existsSync(u)) { console.log(u); } });

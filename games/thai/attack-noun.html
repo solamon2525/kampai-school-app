@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Attack on คำนาม — บ้านคำไผ่</title>
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Kanit',sans-serif;background:#0d1117;color:#e6edf3;
+      min-height:100vh;display:flex;flex-direction:column;overflow:hidden}
+    .nav{background:rgba(13,17,23,.9);backdrop-filter:blur(10px);
+      border-bottom:1px solid #30363d;display:flex;align-items:center;
+      justify-content:space-between;padding:0 16px;height:50px;flex-shrink:0;z-index:10}
+    .back{text-decoration:none;color:#8b949e;font-size:13px;padding:4px 12px;
+      border:1px solid #30363d;border-radius:8px;transition:.2s}
+    .back:hover{color:#e6edf3;border-color:#e53935}
+    .nav-title{font-weight:700;font-size:15px}
+
+    /* GAME LAYOUT */
+    #game-area{flex:1;position:relative;overflow:hidden;
+      background:linear-gradient(180deg,#0a0f1a 0%,#111827 60%,#1a1000 100%)}
+
+    /* HUD */
+    .hud{position:absolute;top:10px;left:0;right:0;display:flex;
+      justify-content:center;gap:16px;z-index:10;padding:0 10px;flex-wrap:wrap}
+    .hud-box{background:rgba(0,0,0,.5);backdrop-filter:blur(8px);
+      border:1px solid rgba(255,255,255,.12);border-radius:10px;
+      padding:6px 18px;font-size:14px;font-weight:600;text-align:center}
+    .hud-label{font-size:10px;color:rgba(255,255,255,.55);display:block}
+
+    /* INSTRUCTION */
+    .instr{position:absolute;top:70px;left:50%;transform:translateX(-50%);
+      background:rgba(229,57,53,.15);border:1px solid rgba(229,57,53,.4);
+      border-radius:12px;padding:8px 20px;font-size:14px;font-weight:600;
+      color:#ef9a9a;white-space:nowrap;z-index:10}
+
+    /* GROUND */
+    .ground{position:absolute;bottom:0;left:0;right:0;height:60px;
+      background:linear-gradient(180deg,#2d1800,#1a0f00);
+      border-top:2px solid #5a2e00;z-index:5}
+
+    /* DEFENDERS */
+    .defenders{position:absolute;bottom:60px;left:0;right:0;
+      display:flex;justify-content:space-around;z-index:5;padding:0 20px}
+    .defender{font-size:2rem}
+
+    /* WORD ENEMIES */
+    .enemy{position:absolute;cursor:pointer;z-index:6;
+      display:flex;flex-direction:column;align-items:center;gap:4px;
+      transition:opacity .2s;user-select:none}
+    .enemy-icon{font-size:1.6rem}
+    .enemy-word{background:rgba(0,0,0,.75);border-radius:8px;
+      padding:3px 12px;font-size:14px;font-weight:600;border:1px solid rgba(255,255,255,.2)}
+    .enemy.noun .enemy-word{border-color:rgba(229,57,53,.6);color:#ef9a9a}
+    .enemy.other .enemy-word{border-color:rgba(47,134,247,.5);color:#90caf9}
+    .enemy:hover{transform:scale(1.1)}
+    .enemy.hit{animation:explode .4s ease forwards}
+    .enemy.miss{animation:shake .3s ease}
+    @keyframes explode{0%{transform:scale(1)}40%{transform:scale(1.5)}100%{opacity:0;transform:scale(0)}}
+    @keyframes shake{0%,100%{transform:translateX(0)}30%{transform:translateX(-10px)}70%{transform:translateX(10px)}}
+
+    /* COMBO FX */
+    .fx{position:absolute;font-size:1.3rem;font-weight:700;pointer-events:none;
+      animation:fxUp .7s ease forwards;z-index:20}
+    @keyframes fxUp{0%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(-70px)}}
+
+    /* PROGRESS BAR */
+    .prog{position:absolute;bottom:60px;left:0;right:0;height:4px;
+      background:rgba(255,255,255,.1);z-index:8}
+    .prog-fill{height:100%;background:linear-gradient(90deg,#e53935,#ff7043);
+      transition:width .4s}
+
+    /* OVERLAY */
+    .overlay{position:fixed;inset:0;top:50px;background:rgba(0,0,0,.72);z-index:100;
+      display:flex;align-items:center;justify-content:center}
+    .panel{background:#1c2128;border:1px solid #30363d;border-radius:20px;
+      padding:28px 36px;text-align:center;max-width:380px;width:90%}
+    .panel h2{font-size:1.8rem;margin-bottom:8px}
+    .score-big{font-size:3rem;font-weight:700;color:#ffd700;margin:10px 0}
+    .btn{background:#e53935;color:#fff;border:none;border-radius:10px;
+      padding:11px 24px;font-family:inherit;font-size:14px;font-weight:600;
+      cursor:pointer;transition:.2s;margin:4px}
+    .btn:hover{background:#b71c1c;transform:translateY(-2px)}
+    .btn-outline{background:transparent;border:2px solid #30363d;color:#e6edf3}
+    .btn-outline:hover{background:#30363d}
+    #start-ov{display:flex} #end-ov{display:none}
+  </style>
+</head>
+<body>
+
+<nav class="nav">
+  <a class="back" href="../index.html">← กลับ</a>
+  <span class="nav-title">⚔️ Attack on คำนาม</span>
+  <span style="width:60px"></span>
+</nav>
+
+<div id="game-area">
+  <!-- HUD -->
+  <div class="hud">
+    <div class="hud-box"><span class="hud-label">คะแนน</span><span id="score">0</span></div>
+    <div class="hud-box"><span class="hud-label">ชีวิต</span><span id="lives">❤️❤️❤️</span></div>
+    <div class="hud-box"><span class="hud-label">ด่าน</span><span id="wave">1</span></div>
+    <div class="hud-box"><span class="hud-label">Combo</span><span id="combo">x1</span></div>
+  </div>
+
+  <div class="instr">คลิก🔴<strong>คำนาม</strong>เท่านั้น! อย่าคลิก🔵 คำอื่น</div>
+
+  <div id="enemy-container"></div>
+
+  <div class="prog"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+  <div class="ground"></div>
+  <div class="defenders">
+    <span class="defender">🏹</span><span class="defender">⚔️</span>
+    <span class="defender">🛡️</span><span class="defender">🗡️</span>
+  </div>
+</div>
+
+<!-- START -->
+<div class="overlay" id="start-ov">
+  <div class="panel">
+    <h2>⚔️ Attack on คำนาม</h2>
+    <p style="color:#8b949e;margin-bottom:12px">คลิก <span style="color:#ef9a9a">คำนาม</span> (สิ่งของ คน สัตว์ สถานที่)<br/>อย่าคลิก <span style="color:#90caf9">คำอื่น</span> (กริยา คำคุณศัพท์)</p>
+    <p style="font-size:13px;color:#6e7681;margin-bottom:16px">ตัวอย่างคำนาม: ครู หนังสือ โรงเรียน แมว<br/>ตัวอย่างคำอื่น: วิ่ง สวย กิน ดี เร็ว</p>
+    <button class="btn" onclick="startGame()">▶ เริ่มเล่น</button>
+    <button class="btn btn-outline" onclick="window.location.href='../index.html'">🏠 กลับ</button>
+  </div>
+</div>
+
+<!-- END -->
+<div class="overlay" id="end-ov">
+  <div class="panel">
+    <h2 id="end-emoji">🏆</h2>
+    <h3 id="end-title" style="margin-bottom:8px"></h3>
+    <div class="score-big" id="final-score">0</div>
+    <p style="color:#8b949e;margin-bottom:16px">คะแนนสุดท้าย</p>
+    <button class="btn" onclick="restartGame()">🔄 เล่นใหม่</button>
+    <button class="btn btn-outline" onclick="window.location.href='../index.html'">🏠 กลับ</button>
+  </div>
+</div>
+
+<script>
+const NOUNS=["ครู","นักเรียน","หนังสือ","โรงเรียน","แมว","สุนัข","ต้นไม้","ดอกไม้","บ้าน","รถ",
+             "ปลา","นก","คน","เมือง","แม่น้ำ","ภูเขา","ท้องฟ้า","ดาว","บึง","วัด","ห้อง","ถนน",
+             "กระเป๋า","ด้ามปากกา","สมุด","ดินสอ","ไม้บรรทัด","กระดาน","โต๊ะ","เก้าอี้"];
+const OTHERS=["วิ่ง","กิน","นอน","เดิน","สวย","ดี","เร็ว","ช้า","ร้อง","เล่น",
+              "ขาว","แดง","อ่าน","เขียน","คิด","พูด","ยิ้ม","หัวเราะ","ร้องไห้","กระโดด",
+              "ฉลาด","สูง","ต่ำ","ใหญ่","เล็ก","หนัก","เบา","แข็ง","อ่อน","นุ่ม"];
+
+let score=0,lives=3,waveN=1,combo=1,maxScore=50,spawnInterval=null,enemies=[];
+
+function startGame(){
+  document.getElementById("start-ov").style.display="none";
+  spawnEnemies();
+}
+
+function spawnEnemies(){
+  clearInterval(spawnInterval);
+  const delay=Math.max(800,2000-waveN*100);
+  spawnInterval=setInterval(()=>{
+    if(enemies.length<7) createEnemy();
+  },delay);
+}
+
+function createEnemy(){
+  const isNoun=Math.random()<0.5;
+  const pool=isNoun?NOUNS:OTHERS;
+  const word=pool[Math.floor(Math.random()*pool.length)];
+  const area=document.getElementById("game-area");
+  const W=area.offsetWidth, H=area.offsetHeight;
+
+  const el=document.createElement("div");
+  el.className=`enemy ${isNoun?"noun":"other"}`;
+  const icon=isNoun?["👹","👺","🤖","👾"][Math.floor(Math.random()*4)]:"💨";
+  el.innerHTML=`<span class="enemy-icon">${icon}</span><span class="enemy-word">${word}</span>`;
+
+  const x=Math.random()*(W-100)+10;
+  el.style.left=x+"px";
+  el.style.top="-80px";
+  el.style.position="absolute";
+  el.dataset.isNoun=isNoun;
+  el.addEventListener("click",()=>clickEnemy(el,isNoun,word));
+  document.getElementById("enemy-container").appendChild(el);
+  enemies.push(el);
+
+  // Animate down
+  const speed=0.3+Math.random()*0.4+(waveN-1)*0.08;
+  let y=-80;
+  const moveDown=setInterval(()=>{
+    if(!el.parentNode){clearInterval(moveDown);return}
+    y+=speed;
+    el.style.top=y+"px";
+    if(y>H-80){ // reached bottom
+      clearInterval(moveDown);
+      if(!el.dataset.clicked){
+        // missed a noun without clicking (no penalty for others)
+        if(isNoun){ lives--; updateHUD(); if(lives<=0) endGame(); showFX("❌",x,H-100,"#ef9a9a"); }
+        combo=1; updateHUD();
+      }
+      el.remove(); enemies=enemies.filter(e=>e!==el);
+    }
+  },10);
+  el.dataset.interval=moveDown;
+}
+
+function clickEnemy(el,isNoun,word){
+  if(el.dataset.clicked) return;
+  el.dataset.clicked="1";
+  clearInterval(Number(el.dataset.interval));
+  const rect=el.getBoundingClientRect();
+  const area=document.getElementById("game-area").getBoundingClientRect();
+  const fx_x=rect.left-area.left;
+  const fx_y=rect.top-area.top;
+
+  if(isNoun){
+    el.classList.add("hit");
+    score+=5*combo; combo=Math.min(combo+1,5);
+    showFX(`+${5*(combo-1)} 🎯`,fx_x,fx_y,"#ffd700");
+    maxScore=score+(waveN*20);
+    if(score>=waveN*40){ waveN++; document.getElementById("wave").textContent=waveN; }
+  } else {
+    el.classList.add("miss");
+    lives--; combo=1; score=Math.max(0,score-3);
+    showFX("❌ ผิด!",fx_x,fx_y,"#ef5350");
+    if(lives<=0) endGame();
+  }
+  updateHUD();
+  setTimeout(()=>{el.remove();enemies=enemies.filter(e=>e!==el)},400);
+}
+
+function showFX(txt,x,y,color){
+  const d=document.createElement("div");
+  d.className="fx"; d.textContent=txt; d.style.left=x+"px"; d.style.top=y+"px";
+  d.style.color=color;
+  document.getElementById("game-area").appendChild(d);
+  setTimeout(()=>d.remove(),700);
+}
+
+function updateHUD(){
+  document.getElementById("score").textContent=score;
+  document.getElementById("lives").textContent="❤️".repeat(Math.max(0,lives));
+  document.getElementById("combo").textContent=`x${combo}`;
+  document.getElementById("prog-fill").style.width=Math.min(100,(score%(waveN*40))/(waveN*40)*100)+"%";
+}
+
+function endGame(){
+  clearInterval(spawnInterval);
+  document.getElementById("final-score").textContent=score;
+  document.getElementById("end-emoji").textContent=score>100?"🏆":"💔";
+  document.getElementById("end-title").textContent=score>100?"ยอดเยี่ยม! ป้องกันหมู่บ้านสำเร็จ!":"ถูกคำนามโจมตี!";
+  document.getElementById("end-ov").style.display="flex";
+}
+
+function restartGame(){
+  score=0; lives=3; waveN=1; combo=1; enemies=[];
+  document.getElementById("enemy-container").innerHTML="";
+  document.getElementById("end-ov").style.display="none";
+  updateHUD(); spawnEnemies();
+}
+
+updateHUD();
+</script>
+</body>
+</html>

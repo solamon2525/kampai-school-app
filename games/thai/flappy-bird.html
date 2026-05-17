@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Flappy Bird มาตราตัวสะกด — บ้านคำไผ่</title>
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Kanit',sans-serif;background:#0d1117;overflow:hidden;height:100vh;display:flex;flex-direction:column}
+    .nav{background:rgba(13,17,23,.9);backdrop-filter:blur(10px);border-bottom:1px solid #30363d;
+      display:flex;align-items:center;justify-content:space-between;padding:0 16px;height:50px;flex-shrink:0;z-index:10}
+    .back{text-decoration:none;color:#8b949e;font-size:13px;padding:4px 12px;
+      border:1px solid #30363d;border-radius:8px;transition:.2s}
+    .back:hover{color:#e6edf3;border-color:#e53935}
+    .nav-title{font-weight:700;font-size:15px;color:#e6edf3}
+
+    canvas{display:block;width:100%;height:calc(100vh - 50px)}
+
+    .overlay{position:fixed;inset:0;top:50px;background:rgba(0,0,0,.72);z-index:50;
+      display:flex;align-items:center;justify-content:center}
+    .panel{background:#1c2128;border:1px solid #30363d;border-radius:20px;
+      padding:28px 36px;text-align:center;max-width:380px;width:90%}
+    .panel h2{font-size:1.8rem;margin-bottom:8px}
+    .panel p{color:#8b949e;margin-bottom:14px;font-size:14px}
+    .score-big{font-size:3rem;font-weight:700;color:#ffd700;margin:10px 0}
+    .btn{background:#e53935;color:#fff;border:none;border-radius:10px;
+      padding:12px 26px;font-family:inherit;font-size:15px;font-weight:600;cursor:pointer;
+      transition:.2s;margin:4px}
+    .btn:hover{background:#b71c1c;transform:translateY(-2px)}
+    .btn-outline{background:transparent;border:2px solid #30363d;color:#e6edf3}
+    .btn-outline:hover{background:#30363d}
+    #start-overlay{display:flex} #dead-overlay{display:none}
+  </style>
+</head>
+<body>
+<nav class="nav">
+  <a class="back" href="../index.html">← กลับ</a>
+  <span class="nav-title">🐦 Flappy Bird มาตราตัวสะกด</span>
+  <span style="width:60px"></span>
+</nav>
+<canvas id="c"></canvas>
+
+<!-- START -->
+<div class="overlay" id="start-overlay">
+  <div class="panel">
+    <h2>🐦 Flappy Bird</h2>
+    <p>บินผ่านช่องที่มีคำในมาตราที่ถูกต้อง!<br/>กด Space หรือแตะหน้าจอเพื่อกระโดด</p>
+    <button class="btn" onclick="startGame()">▶ เริ่มเล่น</button>
+    <button class="btn btn-outline" onclick="window.location.href='../index.html'">🏠 กลับ</button>
+  </div>
+</div>
+
+<!-- DEAD -->
+<div class="overlay" id="dead-overlay">
+  <div class="panel">
+    <h2>💀 เสียชีวิต!</h2>
+    <div class="score-big" id="final-score">0</div>
+    <p>คะแนนสุดท้าย</p>
+    <button class="btn" onclick="restartGame()">🔄 เล่นใหม่</button>
+    <button class="btn btn-outline" onclick="window.location.href='../index.html'">🏠 กลับ</button>
+  </div>
+</div>
+
+<script>
+const canvas=document.getElementById("c");
+const ctx=canvas.getContext("2d");
+
+let W,H,bird,pipes,score,frame,running,gravity,flapV,pipeW,pipeGap,pipeSpeed;
+
+const ROUNDS=[
+  {target:"กก",correct:["รัก","จัก","นัก","หมาก"],wrong:["กาน","คน","มา","ดี"]},
+  {target:"กน",correct:["คน","กิน","วิน","ฝน"],wrong:["รัก","จัก","ลม","ชม"]},
+  {target:"กม",correct:["ลม","ชม","รม","คม"],wrong:["คน","กิน","รัก","กก"]},
+];
+let roundIdx=0;
+
+function resize(){
+  W=canvas.offsetWidth; H=canvas.offsetHeight;
+  canvas.width=W; canvas.height=H;
+}
+
+function initVars(){
+  bird={x:W*0.2,y:H*0.45,vy:0,r:22};
+  pipes=[]; score=0; frame=0;
+  gravity=0.5; flapV=-9; pipeW=90; pipeGap=H*0.3; pipeSpeed=3;
+  roundIdx=0; spawnPipe();
+}
+
+function startGame(){
+  document.getElementById("start-overlay").style.display="none";
+  resize(); initVars(); running=true; loop();
+  document.addEventListener("keydown",e=>{if(e.code==="Space"&&running)flap()});
+  canvas.addEventListener("click",()=>{if(running)flap()});
+}
+
+function restartGame(){
+  document.getElementById("dead-overlay").style.display="none";
+  initVars(); running=true; loop();
+}
+
+function flap(){ bird.vy=flapV; }
+
+function spawnPipe(){
+  const r=ROUNDS[roundIdx%ROUNDS.length];
+  const topH=60+Math.random()*(H-pipeGap-120);
+  const isCorrectTop=Math.random()<0.5;
+  const correctWord=r.correct[Math.floor(Math.random()*r.correct.length)];
+  const wrongWord=r.wrong[Math.floor(Math.random()*r.wrong.length)];
+  pipes.push({
+    x:W+20, topH, bottomY:topH+pipeGap,
+    topWord:isCorrectTop?correctWord:wrongWord,
+    botWord:isCorrectTop?wrongWord:correctWord,
+    topCorrect:isCorrectTop,
+    passed:false, target:r.target
+  });
+}
+
+function loop(){
+  if(!running) return;
+  update(); draw();
+  requestAnimationFrame(loop);
+}
+
+function update(){
+  frame++;
+  bird.vy+=gravity; bird.y+=bird.vy;
+  if(bird.y-bird.r<0||bird.y+bird.r>H){ die(); return; }
+
+  pipeSpeed=3+Math.floor(score/5)*0.3;
+
+  pipes.forEach(p=>{
+    p.x-=pipeSpeed;
+    // check pass
+    if(!p.passed && p.x+pipeW < bird.x){
+      p.passed=true;
+      // bird passed through: check if correct gap
+      if(bird.y > p.topH && bird.y < p.bottomY){
+        // in gap - check if correct word is in gap
+        if(p.topCorrect && bird.y < p.topH+pipeGap/2) score++;
+        else if(!p.topCorrect && bird.y > p.topH+pipeGap/2) score++;
+        else score++;
+      }
+      score++; roundIdx++;
+    }
+    // collision with pipe bodies
+    if(bird.x+bird.r>p.x && bird.x-bird.r<p.x+pipeW){
+      if(bird.y-bird.r<p.topH || bird.y+bird.r>p.bottomY){ die(); return; }
+    }
+  });
+
+  pipes=pipes.filter(p=>p.x+pipeW>-10);
+  if(pipes.length===0||(pipes.length>0&&pipes[pipes.length-1].x<W-220)){
+    spawnPipe();
+  }
+}
+
+function die(){
+  running=false;
+  document.getElementById("final-score").textContent=score;
+  document.getElementById("dead-overlay").style.display="flex";
+}
+
+function draw(){
+  // Sky gradient
+  const sky=ctx.createLinearGradient(0,0,0,H);
+  sky.addColorStop(0,"#0a1628"); sky.addColorStop(1,"#0d3f6b");
+  ctx.fillStyle=sky; ctx.fillRect(0,0,W,H);
+
+  // Stars
+  ctx.fillStyle="rgba(255,255,255,.6)";
+  for(let i=0;i<30;i++){
+    const sx=(i*137)%W, sy=(i*89)%H*0.6;
+    ctx.beginPath(); ctx.arc(sx,sy,1,0,Math.PI*2); ctx.fill();
+  }
+
+  // Draw pipes
+  const r=ROUNDS[roundIdx%ROUNDS.length];
+  pipes.forEach(p=>{
+    // top pipe
+    drawPipe(p.x,0,pipeW,p.topH,p.topWord,p.topCorrect,r.target);
+    // bottom pipe
+    drawPipe(p.x,p.bottomY,pipeW,H-p.bottomY,p.botWord,!p.topCorrect,r.target);
+    // target label
+    ctx.fillStyle="rgba(255,215,0,.9)";
+    ctx.font="bold 13px Kanit";
+    ctx.textAlign="center";
+    ctx.fillText(`มาตรา: ${r.target}`, p.x+pipeW/2, p.topH+pipeGap/2);
+  });
+
+  // Draw bird
+  ctx.save();
+  ctx.translate(bird.x,bird.y);
+  ctx.rotate(Math.min(Math.max(bird.vy*0.07,-0.5),0.5));
+  ctx.font=`${bird.r*2}px serif`;
+  ctx.textAlign="center"; ctx.textBaseline="middle";
+  ctx.fillText("🐦",0,0);
+  ctx.restore();
+
+  // Score
+  ctx.fillStyle="#fff";
+  ctx.font="bold 26px Kanit";
+  ctx.textAlign="center";
+  ctx.fillText(score,W/2,38);
+}
+
+function drawPipe(x,y,w,h,word,isCorrect,target){
+  // Pipe body
+  const g=ctx.createLinearGradient(x,0,x+w,0);
+  if(isCorrect){g.addColorStop(0,"#1b5e20");g.addColorStop(1,"#2e7d32")}
+  else{g.addColorStop(0,"#7f1515");g.addColorStop(1,"#9e2020")}
+  ctx.fillStyle=g;
+  ctx.beginPath();
+  ctx.roundRect(x,y,w,h,isCorrect?[8,8,0,0]:[0,0,8,8]);
+  ctx.fill();
+  // border
+  ctx.strokeStyle=isCorrect?"#4caf50":"#ef5350";
+  ctx.lineWidth=2; ctx.stroke();
+  // word label
+  ctx.fillStyle="#fff"; ctx.font="bold 15px Kanit";
+  ctx.textAlign="center";
+  const labelY=y+(h>40?(y===0?h-20:20):h/2);
+  ctx.fillText(word,x+w/2,labelY);
+}
+
+window.addEventListener("resize",()=>{resize();if(running)draw()});
+resize();
+</script>
+</body>
+</html>

@@ -1,0 +1,2330 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>Super App บ้านคำไผ่</title>
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#0891b2" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="คำไผ่" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,400;0,600;0,700;0,800;0,900;1,400&display=swap');
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0
+    }
+
+    :root {
+      --green: #0891b2;
+      --green-light: #22d3ee;
+      --blue: #0ea5e9;
+      --yellow: #38bdf8;
+      --purple: #7dd3fc;
+      --orange: #06b6d4;
+      --bg: #020b18;
+      --surface: rgba(14, 165, 233, .07);
+      --border: rgba(14, 165, 233, .18);
+      --text: #e0f2fe;
+      --muted: #64748b;
+      --accent: #22d3ee;
+    }
+
+    body {
+      font-family: Sarabun, sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+      background: var(--bg);
+      color: var(--text)
+    }
+
+    .bg-layer {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      background: linear-gradient(160deg, #020b18 0%, #031a2e 40%, #0a1628 100%);
+      pointer-events: none
+    }
+
+    .glow-wrap {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none
+    }
+
+    .glow {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(90px);
+      opacity: .18;
+      animation: gMove 9s ease-in-out infinite
+    }
+
+    .g1 {
+      width: 520px;
+      height: 520px;
+      background: #0891b2;
+      top: -120px;
+      left: -120px
+    }
+
+    .g2 {
+      width: 420px;
+      height: 420px;
+      background: #0ea5e9;
+      bottom: -100px;
+      right: -100px;
+      animation-delay: 3s
+    }
+
+    .g3 {
+      width: 320px;
+      height: 320px;
+      background: #06b6d4;
+      top: 45%;
+      left: 42%;
+      animation-delay: 5.5s
+    }
+
+    @keyframes gMove {
+
+      0%,
+      100% {
+        transform: translate(0, 0) scale(1)
+      }
+
+      50% {
+        transform: translate(28px, -18px) scale(1.1)
+      }
+    }
+
+    .ptcl {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      overflow: hidden
+    }
+
+    .pt {
+      position: absolute;
+      animation: ptFloat linear infinite;
+      opacity: 0
+    }
+
+    @keyframes ptFloat {
+      0% {
+        transform: translateY(110vh) rotate(0deg);
+        opacity: 0
+      }
+
+      10% {
+        opacity: .5
+      }
+
+      90% {
+        opacity: .4
+      }
+
+      100% {
+        transform: translateY(-80px) rotate(360deg);
+        opacity: 0
+      }
+    }
+
+    .wrap {
+      position: relative;
+      z-index: 1;
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 20px 16px 60px
+    }
+
+    .hero {
+      text-align: center;
+      padding: 32px 16px 24px
+    }
+
+    .logo-box {
+      width: 96px;
+      height: 96px;
+      border-radius: 26px;
+      background: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 48px;
+      margin: 0 auto 16px;
+      animation: lBounce 3.2s ease-in-out infinite;
+      overflow: hidden;
+      flex-shrink: 0
+    }
+
+    @keyframes lBounce {
+
+      0%,
+      100% {
+        transform: translateY(0) rotate(-2deg)
+      }
+
+      50% {
+        transform: translateY(-8px) rotate(2deg)
+      }
+    }
+
+    .logo-box img,
+    #main-logo img {
+      width: 100%;
+      height: 100%;
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      border-radius: 0;
+      mix-blend-mode: multiply;
+      display: block;
+      filter: drop-shadow(0 2px 12px rgba(34, 211, 238, .4))
+    }
+
+    .school-name {
+      font-size: 27px;
+      font-weight: 900;
+      background: linear-gradient(135deg, #22d3ee, #7dd3fc, #38bdf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1.2;
+      margin-bottom: 6px
+    }
+
+    .school-sub {
+      color: var(--muted);
+      font-size: 14px
+    }
+
+    .greeting {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 6px 18px;
+      margin-top: 12px;
+      font-size: 13px;
+      color: #94a3b8
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+      animation: blink 1.5s infinite
+    }
+
+    @keyframes blink {
+
+      0%,
+      100% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: .2
+      }
+    }
+
+    /* ── SECTION TITLE ── */
+    .sec-title {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin: 28px 0 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px
+    }
+
+    .sec-title::before {
+      content: '';
+      width: 3px;
+      height: 14px;
+      background: linear-gradient(180deg, #22d3ee, #0891b2);
+      border-radius: 2px;
+      flex-shrink: 0
+    }
+
+    .sec-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, rgba(34, 211, 238, .2), transparent)
+    }
+
+    /* ── APP GRID ── */
+    .apps-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--gap, 14px);
+      margin-bottom: 20px
+    }
+
+    /* ── APP CARD ── */
+    .app-card {
+      border-radius: 22px;
+      padding: 22px 18px 18px;
+      cursor: pointer;
+      transition: transform .28s cubic-bezier(.4, 0, .2, 1), box-shadow .28s, border-color .28s;
+      position: relative;
+      overflow: hidden;
+      text-decoration: none;
+      display: block;
+      outline: none;
+      border: 1px solid var(--border);
+      backdrop-filter: blur(12px)
+    }
+
+    /* shine overlay */
+    .app-card::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255, 255, 255, .06) 0%, transparent 60%);
+      border-radius: 22px;
+      pointer-events: none
+    }
+
+    .cg {
+      background: linear-gradient(135deg, rgba(8, 145, 178, .28), rgba(6, 182, 212, .12));
+      --cb: linear-gradient(135deg, rgba(34, 211, 238, .55), rgba(8, 145, 178, .2))
+    }
+
+    .cb {
+      background: linear-gradient(135deg, rgba(14, 165, 233, .22), rgba(3, 105, 161, .12));
+      --cb: linear-gradient(135deg, rgba(125, 211, 252, .5), rgba(14, 165, 233, .2))
+    }
+
+    .cy {
+      background: linear-gradient(135deg, rgba(56, 189, 248, .2), rgba(2, 132, 199, .1));
+      --cb: linear-gradient(135deg, rgba(125, 211, 252, .5), rgba(56, 189, 248, .2))
+    }
+
+    .cp {
+      background: linear-gradient(135deg, rgba(99, 102, 241, .22), rgba(67, 56, 202, .1));
+      --cb: linear-gradient(135deg, rgba(165, 180, 252, .5), rgba(99, 102, 241, .2))
+    }
+
+    .co {
+      background: linear-gradient(135deg, rgba(6, 182, 212, .22), rgba(8, 145, 178, .1));
+      --cb: linear-gradient(135deg, rgba(103, 232, 249, .5), rgba(6, 182, 212, .2))
+    }
+
+    .ct {
+      background: linear-gradient(135deg, rgba(20, 184, 166, .22), rgba(15, 118, 110, .1));
+      --cb: linear-gradient(135deg, rgba(94, 234, 212, .5), rgba(20, 184, 166, .2))
+    }
+
+    .cr {
+      background: linear-gradient(135deg, rgba(239, 68, 68, .18), rgba(185, 28, 28, .1));
+      --cb: linear-gradient(135deg, rgba(252, 165, 165, .4), rgba(239, 68, 68, .2))
+    }
+
+    .cc {
+      background: rgba(255, 255, 255, .03);
+      --cb: linear-gradient(135deg, rgba(255, 255, 255, .1), rgba(255, 255, 255, .04));
+      cursor: default;
+      opacity: .55
+    }
+
+    .cc:hover {
+      transform: none
+    }
+
+    /* ── APP ICON ── */
+    .app-icon {
+      width: 58px;
+      height: 58px;
+      border-radius: 17px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      margin-bottom: 14px;
+      flex-shrink: 0;
+      transition: transform .28s cubic-bezier(.4, 0, .2, 1);
+      position: relative
+    }
+
+    /* icon bg per color */
+    .cg .app-icon {
+      background: linear-gradient(135deg, #0891b2, #06b6d4);
+      box-shadow: 0 6px 20px rgba(8, 145, 178, .45)
+    }
+
+    .cb .app-icon {
+      background: linear-gradient(135deg, #0369a1, #0ea5e9);
+      box-shadow: 0 6px 20px rgba(14, 165, 233, .4)
+    }
+
+    .cy .app-icon {
+      background: linear-gradient(135deg, #0284c7, #38bdf8);
+      box-shadow: 0 6px 20px rgba(56, 189, 248, .35)
+    }
+
+    .cp .app-icon {
+      background: linear-gradient(135deg, #4338ca, #818cf8);
+      box-shadow: 0 6px 20px rgba(99, 102, 241, .45)
+    }
+
+    .co .app-icon {
+      background: linear-gradient(135deg, #06b6d4, #0891b2);
+      box-shadow: 0 6px 20px rgba(6, 182, 212, .4)
+    }
+
+    .ct .app-icon {
+      background: linear-gradient(135deg, #0f766e, #14b8a6);
+      box-shadow: 0 6px 20px rgba(20, 184, 166, .4)
+    }
+
+    .cr .app-icon {
+      background: linear-gradient(135deg, #be123c, #ef4444);
+      box-shadow: 0 6px 20px rgba(239, 68, 68, .35)
+    }
+
+    .cc .app-icon {
+      background: linear-gradient(135deg, #1e293b, #334155);
+      box-shadow: none
+    }
+
+    .app-card:hover .app-icon {
+      transform: scale(1.1) rotate(-4deg)
+    }
+
+    /* ── CARD TEXT ── */
+    .app-name {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--text);
+      margin-bottom: 5px;
+      line-height: 1.3
+    }
+
+    .app-desc {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.45
+    }
+
+    /* ── BADGES ── */
+    .badge {
+      position: absolute;
+      top: 13px;
+      right: 13px;
+      padding: 3px 9px;
+      border-radius: 20px;
+      font-size: 9.5px;
+      font-weight: 800;
+      letter-spacing: .3px
+    }
+
+    .badge-live {
+      background: rgba(8, 145, 178, .25);
+      color: #67e8f9;
+      border: 1px solid rgba(34, 211, 238, .35)
+    }
+
+    .badge-soon {
+      background: rgba(255, 255, 255, .06);
+      color: #64748b;
+      border: 1px solid rgba(255, 255, 255, .1)
+    }
+
+    /* ── ARROW ── */
+    .arr {
+      position: absolute;
+      bottom: 14px;
+      right: 15px;
+      color: rgba(255, 255, 255, .2);
+      font-size: 15px;
+      transition: transform .25s, color .25s
+    }
+
+    .app-card:not(.cc):hover .arr {
+      transform: translateX(4px);
+      color: var(--accent)
+    }
+
+    /* ── WIDE CARD ── */
+    .wide {
+      grid-column: 1/-1;
+      display: flex;
+      gap: 20px;
+      align-items: center;
+      padding: 20px 22px
+    }
+
+    .wide .app-icon {
+      width: 70px;
+      height: 70px;
+      border-radius: 20px;
+      font-size: 34px;
+      margin: 0
+    }
+
+    .wide .app-text {
+      flex: 1;
+      min-width: 0
+    }
+
+    .wide .app-name {
+      font-size: 18px
+    }
+
+    .wide .app-desc {
+      font-size: 13px
+    }
+
+    .wide .arr {
+      position: static;
+      margin-left: auto;
+      opacity: .7
+    }
+
+    .wide .badge-live {
+      position: static;
+      margin-left: 12px;
+      flex-shrink: 0
+    }
+
+    .notice {
+      background: linear-gradient(135deg, rgba(8, 145, 178, .12), rgba(6, 182, 212, .05));
+      border: 1px solid rgba(34, 211, 238, .22);
+      border-radius: 14px;
+      padding: 14px 16px;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      margin-bottom: 20px
+    }
+
+    .notice-ico {
+      font-size: 20px;
+      flex-shrink: 0
+    }
+
+    .notice-txt {
+      font-size: 13px;
+      color: #67e8f9;
+      line-height: 1.5
+    }
+
+    .footer {
+      text-align: center;
+      color: #2d3748;
+      font-size: 12px;
+      padding-top: 12px
+    }
+
+    /* ADMIN FAB */
+    .admin-fab {
+      position: fixed;
+      bottom: 24px;
+      right: 20px;
+      z-index: 100;
+      background: rgba(8, 145, 178, .15);
+      border: 1px solid rgba(34, 211, 238, .3);
+      color: #22d3ee;
+      border-radius: 50px;
+      padding: 10px 18px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      backdrop-filter: blur(12px);
+      transition: all .2s;
+      font-family: Sarabun, sans-serif;
+      display: flex;
+      align-items: center;
+      gap: 7px
+    }
+
+    .admin-fab:hover {
+      background: rgba(8, 145, 178, .3);
+      transform: translateY(-2px)
+    }
+
+    .admin-fab-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #22d3ee;
+      animation: blink 1.5s infinite
+    }
+
+    /* MODAL */
+    .modal-bg {
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      background: rgba(0, 0, 0, .7);
+      backdrop-filter: blur(6px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .25s
+    }
+
+    .modal-bg.open {
+      opacity: 1;
+      pointer-events: all
+    }
+
+    .modal {
+      background: #141b27;
+      border: 1px solid rgba(255, 255, 255, .12);
+      border-radius: 24px;
+      width: 100%;
+      max-width: 460px;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 28px 24px;
+      position: relative;
+      transform: translateY(30px);
+      transition: transform .25s;
+      scrollbar-width: thin;
+      scrollbar-color: #334155 transparent
+    }
+
+    .modal-bg.open .modal {
+      transform: translateY(0)
+    }
+
+    .modal h2 {
+      font-size: 20px;
+      font-weight: 800;
+      margin-bottom: 20px;
+      background: linear-gradient(135deg, #22d3ee, #7dd3fc);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 18px;
+      right: 18px;
+      background: rgba(255, 255, 255, .07);
+      border: 1px solid rgba(255, 255, 255, .1);
+      color: #94a3b8;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all .2s
+    }
+
+    .modal-close:hover {
+      background: rgba(255, 255, 255, .15);
+      color: #fff
+    }
+
+    .form-group {
+      margin-bottom: 16px
+    }
+
+    .form-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      margin-bottom: 6px;
+      display: block
+    }
+
+    .form-input {
+      width: 100%;
+      background: rgba(255, 255, 255, .06);
+      border: 1px solid rgba(255, 255, 255, .12);
+      border-radius: 12px;
+      padding: 12px 16px;
+      color: var(--text);
+      font-size: 15px;
+      font-family: Sarabun, sans-serif;
+      outline: none;
+      transition: border-color .2s
+    }
+
+    .form-input:focus {
+      border-color: rgba(34, 211, 238, .5)
+    }
+
+    .btn {
+      width: 100%;
+      padding: 13px;
+      border-radius: 14px;
+      border: none;
+      font-size: 15px;
+      font-weight: 800;
+      cursor: pointer;
+      font-family: Sarabun, sans-serif;
+      transition: all .2s;
+      margin-top: 4px
+    }
+
+    .btn-green {
+      background: linear-gradient(135deg, #0891b2, #0369a1);
+      color: #fff;
+      box-shadow: 0 4px 20px rgba(8, 145, 178, .35)
+    }
+
+    .btn-green:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(8, 145, 178, .5)
+    }
+
+    .btn-green:disabled {
+      opacity: .5;
+      cursor: default;
+      transform: none
+    }
+
+    .btn-red {
+      background: linear-gradient(135deg, #dc2626, #b91c1c);
+      color: #fff
+    }
+
+    .btn-red:hover {
+      transform: translateY(-2px)
+    }
+
+    .err-msg {
+      color: #f87171;
+      font-size: 13px;
+      margin-top: 8px;
+      text-align: center;
+      min-height: 20px
+    }
+
+    /* ADMIN PANEL */
+    .admin-modal {
+      max-width: 600px
+    }
+
+    .tab-bar {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 20px;
+      background: rgba(255, 255, 255, .04);
+      border-radius: 14px;
+      padding: 4px
+    }
+
+    .tab {
+      flex: 1;
+      padding: 9px;
+      text-align: center;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--muted);
+      transition: all .2s
+    }
+
+    .tab.active {
+      background: rgba(34, 211, 238, .15);
+      color: #22d3ee;
+      border: 1px solid rgba(34, 211, 238, .25)
+    }
+
+    .admin-sec {
+      display: none
+    }
+
+    .admin-sec.active {
+      display: block
+    }
+
+    .logo-upload-area {
+      border: 2px dashed rgba(255, 255, 255, .15);
+      border-radius: 16px;
+      padding: 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color .2s;
+      position: relative
+    }
+
+    .logo-upload-area:hover {
+      border-color: rgba(74, 222, 128, .4)
+    }
+
+    .logo-preview {
+      width: 80px;
+      height: 80px;
+      border-radius: 20px;
+      object-fit: cover;
+      margin: 0 auto 10px;
+      display: block
+    }
+
+    .logo-preview-emoji {
+      font-size: 40px;
+      line-height: 80px;
+      display: block;
+      text-align: center
+    }
+
+    .upload-hint {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 6px
+    }
+
+    #admin-logo-input {
+      display: none
+    }
+
+    .field-row {
+      margin-bottom: 14px
+    }
+
+    .field-row label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      display: block;
+      margin-bottom: 6px
+    }
+
+    .field-row input,
+    .field-row textarea {
+      width: 100%;
+      background: rgba(255, 255, 255, .06);
+      border: 1px solid rgba(255, 255, 255, .12);
+      border-radius: 10px;
+      padding: 10px 14px;
+      color: var(--text);
+      font-size: 14px;
+      font-family: Sarabun, sans-serif;
+      outline: none;
+      transition: border-color .2s;
+      resize: vertical
+    }
+
+    .field-row input:focus,
+    .field-row textarea:focus {
+      border-color: rgba(74, 222, 128, .4)
+    }
+
+    .drag-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      min-height: 40px
+    }
+
+    .drag-item {
+      background: rgba(255, 255, 255, .05);
+      border: 1px solid rgba(255, 255, 255, .1);
+      border-radius: 12px;
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: grab;
+      transition: all .2s;
+      user-select: none
+    }
+
+    .drag-item:active {
+      cursor: grabbing
+    }
+
+    .drag-item.dragging {
+      opacity: .4;
+      border-style: dashed
+    }
+
+    .drag-item.drag-over {
+      border-color: #22d3ee;
+      background: rgba(34, 211, 238, .08)
+    }
+
+    .drag-handle {
+      color: #374151;
+      font-size: 18px;
+      flex-shrink: 0;
+      cursor: grab
+    }
+
+    .drag-icon {
+      font-size: 26px;
+      flex-shrink: 0
+    }
+
+    .drag-info {
+      flex: 1;
+      min-width: 0
+    }
+
+    .drag-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text)
+    }
+
+    .drag-sub {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 2px
+    }
+
+    .drag-sub-url {
+      font-size: 10px;
+      color: #475569;
+      margin-top: 1px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 160px
+    }
+
+    .drag-toggle {
+      flex-shrink: 0
+    }
+
+    .toggle {
+      position: relative;
+      width: 42px;
+      height: 24px
+    }
+
+    .toggle input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+      position: absolute
+    }
+
+    .toggle-slider {
+      position: absolute;
+      inset: 0;
+      background: rgba(255, 255, 255, .1);
+      border-radius: 12px;
+      transition: .3s;
+      cursor: pointer
+    }
+
+    .toggle-slider::before {
+      content: '';
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      left: 3px;
+      top: 3px;
+      background: #64748b;
+      border-radius: 50%;
+      transition: .3s
+    }
+
+    .toggle input:checked+.toggle-slider {
+      background: rgba(34, 211, 238, .3)
+    }
+
+    .toggle input:checked+.toggle-slider::before {
+      transform: translateX(18px);
+      background: #22d3ee
+    }
+
+    .save-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px
+    }
+
+    .save-row .btn {
+      margin-top: 0
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, .15);
+      color: #94a3b8
+    }
+
+    .btn-outline:hover {
+      background: rgba(255, 255, 255, .06)
+    }
+
+    .drag-edit-btn {
+      flex-shrink: 0;
+      background: rgba(34, 211, 238, .1);
+      border: 1px solid rgba(34, 211, 238, .2);
+      color: #22d3ee;
+      border-radius: 8px;
+      padding: 5px 10px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: Sarabun, sans-serif;
+      transition: all .2s
+    }
+
+    .drag-edit-btn:hover {
+      background: rgba(34, 211, 238, .22)
+    }
+
+    .drag-del-btn {
+      flex-shrink: 0;
+      background: rgba(239, 68, 68, .1);
+      border: 1px solid rgba(239, 68, 68, .2);
+      color: #fca5a5;
+      border-radius: 8px;
+      padding: 5px 8px;
+      font-size: 12px;
+      cursor: pointer;
+      font-family: Sarabun, sans-serif;
+      transition: all .2s
+    }
+
+    .drag-del-btn:hover {
+      background: rgba(239, 68, 68, .25);
+      color: #fff
+    }
+
+    .live-toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(255, 255, 255, .04);
+      border: 1px solid rgba(255, 255, 255, .1);
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-bottom: 14px
+    }
+
+    .live-toggle-label {
+      display: flex;
+      flex-direction: column;
+      gap: 3px
+    }
+
+    .live-toggle-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text)
+    }
+
+    .live-toggle-desc {
+      font-size: 11px;
+      color: var(--muted)
+    }
+
+    .live-status-badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 8px;
+      font-size: 11px;
+      font-weight: 700;
+      margin-top: 4px;
+      transition: all .3s
+    }
+
+    .live-status-badge.is-live {
+      background: rgba(8, 145, 178, .2);
+      color: #22d3ee;
+      border: 1px solid rgba(34, 211, 238, .3)
+    }
+
+    .live-status-badge.is-soon {
+      background: rgba(255, 255, 255, .07);
+      color: #64748b;
+      border: 1px solid rgba(255, 255, 255, .1)
+    }
+
+    .url-hint {
+      font-size: 11px;
+      color: #475569;
+      margin-top: 5px;
+      line-height: 1.5
+    }
+
+    .url-hint code {
+      background: rgba(255, 255, 255, .07);
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 11px;
+      color: #94a3b8
+    }
+
+    .emoji-picker-wrap {
+      margin-top: 10px
+    }
+
+    .emoji-picker-wrap label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      display: block;
+      margin-bottom: 8px
+    }
+
+    .emoji-current {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 10px
+    }
+
+    .emoji-current-icon {
+      font-size: 44px;
+      width: 60px;
+      height: 60px;
+      background: rgba(255, 255, 255, .06);
+      border: 1px solid rgba(255, 255, 255, .12);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0
+    }
+
+    .emoji-current-hint {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.5
+    }
+
+    .emoji-input-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 10px
+    }
+
+    .emoji-input-row input {
+      flex: 1;
+      background: rgba(255, 255, 255, .06);
+      border: 1px solid rgba(255, 255, 255, .12);
+      border-radius: 10px;
+      padding: 9px 14px;
+      color: var(--text);
+      font-size: 22px;
+      font-family: Sarabun, sans-serif;
+      outline: none;
+      text-align: center;
+      transition: border-color .2s
+    }
+
+    .emoji-input-row input:focus {
+      border-color: rgba(74, 222, 128, .4)
+    }
+
+    .emoji-grid {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap: 6px;
+      max-height: 160px;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: #334155 transparent
+    }
+
+    .emoji-btn {
+      background: rgba(255, 255, 255, .04);
+      border: 1px solid rgba(255, 255, 255, .08);
+      border-radius: 8px;
+      font-size: 20px;
+      padding: 6px;
+      cursor: pointer;
+      transition: all .15s;
+      text-align: center;
+      line-height: 1
+    }
+
+    .emoji-btn:hover {
+      background: rgba(34, 211, 238, .15);
+      border-color: rgba(34, 211, 238, .3);
+      transform: scale(1.15)
+    }
+
+    .emoji-btn.selected {
+      background: rgba(34, 211, 238, .2);
+      border-color: #22d3ee
+    }
+
+    .emoji-cats {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 8px
+    }
+
+    .emoji-cat {
+      background: rgba(255, 255, 255, .05);
+      border: 1px solid rgba(255, 255, 255, .1);
+      border-radius: 8px;
+      padding: 4px 10px;
+      font-size: 12px;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all .2s;
+      font-family: Sarabun, sans-serif
+    }
+
+    .emoji-cat.active {
+      background: rgba(34, 211, 238, .15);
+      color: #22d3ee;
+      border-color: rgba(34, 211, 238, .3)
+    }
+
+    .edit-section-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: #475569;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin: 18px 0 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px
+    }
+
+    .edit-section-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: rgba(255, 255, 255, .06)
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%) translateY(60px);
+      background: rgba(8, 145, 178, .95);
+      color: #fff;
+      padding: 10px 22px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 700;
+      z-index: 999;
+      transition: transform .3s;
+      backdrop-filter: blur(10px);
+      white-space: nowrap
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0)
+    }
+
+    .toast.err {
+      background: rgba(220, 38, 38, .92)
+    }
+
+    .loading {
+      position: fixed;
+      inset: 0;
+      z-index: 300;
+      background: rgba(13, 17, 23, .85);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 14px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .3s
+    }
+
+    .loading.show {
+      opacity: 1;
+      pointer-events: all
+    }
+
+    .spinner {
+      width: 44px;
+      height: 44px;
+      border: 3px solid rgba(255, 255, 255, .1);
+      border-top-color: #22d3ee;
+      border-radius: 50%;
+      animation: spin .7s linear infinite
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg)
+      }
+    }
+
+    .apps-grid.cols-1 {
+      grid-template-columns: 1fr
+    }
+
+    .apps-grid.cols-2 {
+      grid-template-columns: 1fr 1fr
+    }
+
+    .apps-grid.cols-3 {
+      grid-template-columns: 1fr 1fr 1fr
+    }
+
+    .apps-grid.cols-3 .app-card {
+      padding: 14px 12px 12px
+    }
+
+    .apps-grid.cols-3 .app-icon {
+      font-size: 28px;
+      margin-bottom: 8px
+    }
+
+    .apps-grid.cols-3 .app-name {
+      font-size: 13px
+    }
+
+    .apps-grid.cols-3 .app-desc {
+      font-size: 11px
+    }
+
+    .apps-grid.cols-1 .app-card:not(.wide) {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      padding: 16px 18px
+    }
+
+    .apps-grid.cols-1 .app-card:not(.wide) .app-icon {
+      font-size: 36px;
+      margin: 0;
+      flex-shrink: 0
+    }
+
+    .apps-grid.cols-1 .app-card:not(.wide) .app-name {
+      font-size: 15px
+    }
+
+    .apps-grid.cols-1 .app-card:not(.wide) .arr {
+      position: static;
+      margin-left: auto
+    }
+
+    .apps-grid.size-sm .app-card:not(.wide) {
+      padding: 12px
+    }
+
+    .apps-grid.size-sm .app-icon {
+      font-size: 28px;
+      margin-bottom: 8px
+    }
+
+    .apps-grid.size-sm .app-name {
+      font-size: 13px
+    }
+
+    .apps-grid.size-sm .app-desc {
+      display: none
+    }
+
+    .apps-grid.size-lg .app-card:not(.wide) {
+      padding: 26px 20px 20px
+    }
+
+    .apps-grid.size-lg .app-icon {
+      font-size: 50px;
+      margin-bottom: 16px
+    }
+
+    .apps-grid.size-lg .app-name {
+      font-size: 17px
+    }
+
+    .apps-grid.size-lg .app-desc {
+      font-size: 13px
+    }
+
+    .layout-section {
+      margin-bottom: 18px
+    }
+
+    .layout-section-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: #475569;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px
+    }
+
+    .layout-section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: rgba(255, 255, 255, .06)
+    }
+
+    .layout-btn-group {
+      display: flex;
+      gap: 8px
+    }
+
+    .layout-btn {
+      flex: 1;
+      background: rgba(255, 255, 255, .05);
+      border: 1px solid rgba(255, 255, 255, .1);
+      border-radius: 12px;
+      padding: 10px 6px;
+      cursor: pointer;
+      transition: all .2s;
+      text-align: center;
+      font-family: Sarabun, sans-serif;
+      color: var(--muted)
+    }
+
+    .layout-btn:hover {
+      border-color: rgba(34, 211, 238, .3);
+      background: rgba(34, 211, 238, .06)
+    }
+
+    .layout-btn.active {
+      background: rgba(34, 211, 238, .15);
+      border-color: #22d3ee;
+      color: #22d3ee
+    }
+
+    .layout-btn-label {
+      font-size: 11px;
+      font-weight: 700;
+      margin-top: 4px
+    }
+
+    .layout-preview {
+      display: flex;
+      gap: 3px;
+      justify-content: center;
+      margin-bottom: 6px;
+      height: 20px;
+      align-items: flex-end
+    }
+
+    .lp-block {
+      border-radius: 3px;
+      background: currentColor;
+      opacity: .5
+    }
+
+    .wide-toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(255, 255, 255, .04);
+      border: 1px solid rgba(255, 255, 255, .1);
+      border-radius: 12px;
+      padding: 12px 16px;
+      margin-bottom: 8px
+    }
+
+    .wide-toggle-info {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text)
+    }
+
+    .wide-toggle-sub {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 2px
+    }
+
+    /* ── ACCORDION GROUP ── */
+    .app-group {
+      margin-bottom: 8px;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid rgba(14, 165, 233, .12);
+      transition: border-color .2s
+    }
+
+    .app-group.open {
+      border-color: rgba(34, 211, 238, .25)
+    }
+
+    .group-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 18px;
+      cursor: pointer;
+      background: rgba(255, 255, 255, .03);
+      transition: background .2s;
+      user-select: none
+    }
+
+    .group-header:hover {
+      background: rgba(14, 165, 233, .07)
+    }
+
+    .app-group.open .group-header {
+      background: rgba(14, 165, 233, .08)
+    }
+
+    .group-icon {
+      font-size: 24px;
+      flex-shrink: 0;
+      transition: transform .3s
+    }
+
+    .group-title {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--text);
+      flex: 1
+    }
+
+    .group-meta {
+      font-size: 11px;
+      color: var(--muted);
+      background: rgba(255, 255, 255, .06);
+      border-radius: 20px;
+      padding: 2px 10px;
+      flex-shrink: 0
+    }
+
+    .group-chevron {
+      font-size: 13px;
+      color: var(--muted);
+      transition: transform .3s;
+      flex-shrink: 0
+    }
+
+    .app-group.open .group-chevron {
+      transform: rotate(180deg);
+      color: var(--accent)
+    }
+
+    .group-body {
+      display: none;
+      padding: 0 12px 14px;
+      background: rgba(0, 0, 0, .1)
+    }
+
+    .app-group.open .group-body {
+      display: block;
+      animation: groupOpen .22s ease
+    }
+
+    @keyframes groupOpen {
+      from {
+        opacity: 0;
+        transform: translateY(-8px)
+      }
+
+      to {
+        opacity: 1;
+        transform: none
+      }
+    }
+
+    .group-body .apps-grid {
+      margin-bottom: 0
+    }
+
+    /* group color accents */
+    .grp-student .group-header {
+      border-left: 3px solid rgba(99, 102, 241, .6)
+    }
+
+    .grp-learn .group-header {
+      border-left: 3px solid rgba(14, 165, 233, .6)
+    }
+
+    .grp-admin .group-header {
+      border-left: 3px solid rgba(14, 165, 233, .5)
+    }
+
+    .grp-staff .group-header {
+      border-left: 3px solid rgba(239, 68, 68, .5)
+    }
+
+    .grp-school .group-header {
+      border-left: 3px solid rgba(56, 189, 248, .5)
+    }
+
+    .grp-finance .group-header {
+      border-left: 3px solid rgba(20, 184, 166, .5)
+    }
+
+    .grp-activity.group-header {
+      border-left: 3px solid rgba(20, 184, 166, .4)
+    }
+
+    @media(max-width:420px) {
+      .apps-grid {
+        grid-template-columns: 1fr
+      }
+
+      .apps-grid.cols-2 {
+        grid-template-columns: 1fr 1fr
+      }
+
+      .apps-grid.cols-3 {
+        grid-template-columns: 1fr 1fr 1fr
+      }
+
+      .wide {
+        grid-column: 1
+      }
+
+      .school-name {
+        font-size: 22px
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="bg-layer"></div>
+  <div class="glow-wrap">
+    <div class="glow g1"></div>
+    <div class="glow g2"></div>
+    <div class="glow g3"></div>
+  </div>
+  <div class="ptcl" id="ptcl"></div>
+  <div class="toast" id="toast"></div>
+  <div class="loading" id="loading">
+    <div class="spinner"></div>
+    <div style="font-size:13px;color:#64748b">กำลังโหลด...</div>
+  </div>
+
+  <!-- ── STICKY HEADER ── -->
+  <header
+    style="position:sticky;top:0;z-index:200;background:rgba(2,11,24,.82);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid rgba(34,211,238,.1);box-shadow:0 1px 30px rgba(0,0,0,.4)">
+    <div style="max-width:700px;margin:0 auto;padding:10px 20px;display:flex;align-items:center;gap:14px">
+      <!-- Logo -->
+      <div id="main-logo"
+        style="width:44px;height:44px;border-radius:13px;background:linear-gradient(135deg,#0891b2,#06b6d4);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;box-shadow:0 4px 14px rgba(8,145,178,.5)">
+        <span id="main-logo-emoji">🏫</span>
+      </div>
+      <!-- Title -->
+      <div style="flex:1;min-width:0">
+        <div id="main-school-name"
+          style="font-size:15px;font-weight:900;background:linear-gradient(135deg,#22d3ee,#7dd3fc,#38bdf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+          Super App บ้านคำไผ่</div>
+        <div id="main-school-sub"
+          style="font-size:11px;color:#475569;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+          ระบบบริหารจัดการโรงเรียนออนไลน์</div>
+      </div>
+      <!-- Date pill -->
+      <div
+        style="display:flex;align-items:center;gap:7px;background:rgba(14,165,233,.08);border:1px solid rgba(34,211,238,.18);border-radius:20px;padding:5px 13px;flex-shrink:0">
+        <span
+          style="width:7px;height:7px;border-radius:50%;background:#22d3ee;display:inline-block;animation:blink 1.5s infinite;flex-shrink:0"></span>
+        <span id="greeting-txt" style="font-size:11.5px;color:#94a3b8;white-space:nowrap"></span>
+      </div>
+      <!-- School Docs Link -->
+      <a href="./school-docs.html"
+        style="display:flex;align-items:center;gap:7px;background:linear-gradient(135deg,rgba(124,58,201,.25),rgba(147,51,234,.15));border:1px solid rgba(168,85,247,.3);border-radius:22px;padding:7px 15px;color:#d8b4fe;font-family:Sarabun,sans-serif;font-size:12px;font-weight:700;cursor:pointer;flex-shrink:0;transition:all .2s;white-space:nowrap;text-decoration:none">
+        <span style="font-size:14px">📚</span>
+        <span>School Docs</span>
+      </a>
+      <!-- Admin FAB inline -->
+      <button id="fab-btn" onclick="openLogin()"
+        style="display:flex;align-items:center;gap:7px;background:linear-gradient(135deg,rgba(8,145,178,.25),rgba(6,182,212,.15));border:1px solid rgba(34,211,238,.3);border-radius:22px;padding:7px 15px;color:#67e8f9;font-family:Sarabun,sans-serif;font-size:12px;font-weight:700;cursor:pointer;flex-shrink:0;transition:all .2s;white-space:nowrap">
+        <span style="width:7px;height:7px;border-radius:50%;background:#22d3ee;flex-shrink:0"
+          class="admin-fab-dot"></span>
+        <span id="fab-label">จัดการ Admin</span>
+      </button>
+    </div>
+  </header>
+
+  <div class="wrap" id="app-wrap">
+    <!-- Hero -->
+    <div class="hero" style="text-align:center;padding:40px 20px 28px;position:relative">
+      <div
+        style="display:inline-flex;align-items:center;gap:8px;background:rgba(34,211,238,.08);border:1px solid rgba(34,211,238,.2);border-radius:30px;padding:5px 16px;font-size:11px;font-weight:700;color:#67e8f9;letter-spacing:1px;text-transform:uppercase;margin-bottom:16px">
+        🏫 โรงเรียนบ้านคำไผ่</div>
+      <h1
+        style="font-size:clamp(26px,6vw,40px);font-weight:900;background:linear-gradient(135deg,#e0f2fe 0%,#38bdf8 40%,#22d3ee 70%,#a5f3fc 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.15;margin-bottom:12px">
+        ระบบบริหารจัดการ<br />โรงเรียนออนไลน์</h1>
+      <p style="font-size:14px;color:#64748b;max-width:340px;margin:0 auto;line-height:1.6">เครื่องมือครบครัน สะดวก
+        ทันสมัย<br />สำหรับครู นักเรียน และบุคลากร</p>
+    </div>
+
+    <div id="apps-render"></div>
+
+    <div class="notice">
+      <div class="notice-ico">💡</div>
+      <div class="notice-txt" id="main-notice-txt"><b>เพิ่มแอปใหม่ได้ตลอด!</b> ติดต่อผู้พัฒนาเพื่อเพิ่มแอปที่ต้องการ
+      </div>
+    </div>
+    <div class="footer" id="main-footer">Super App บ้านคำไผ่ • พัฒนาด้วย ❤️ เพื่อการศึกษา</div>
+  </div>
+
+  <!-- LOGIN MODAL -->
+  <div class="modal-bg" id="login-modal">
+    <div class="modal" style="max-width:380px">
+      <button class="modal-close" onclick="closeModal('login-modal')">✕</button>
+      <h2>🔐 Admin Login</h2>
+      <div class="form-group"><label class="form-label">อีเมล</label><input class="form-input" id="login-email"
+          type="email" placeholder="admin@school.com" autocomplete="email" /></div>
+      <div class="form-group"><label class="form-label">รหัสผ่าน</label><input class="form-input" id="login-pwd"
+          type="password" placeholder="••••••••" autocomplete="current-password" /></div>
+      <div class="err-msg" id="login-err"></div>
+      <button class="btn btn-green" id="login-btn" onclick="doLogin()">เข้าสู่ระบบ</button>
+    </div>
+  </div>
+
+  <!-- ADMIN PANEL MODAL -->
+  <div class="modal-bg" id="admin-modal">
+    <div class="modal admin-modal">
+      <button class="modal-close" onclick="doLogout()">✕ ออกจากระบบ</button>
+      <h2>⚙️ Admin Panel</h2>
+      <div class="tab-bar">
+        <div class="tab active" onclick="switchTab('tab-logo')">🖼️ โลโก้</div>
+        <div class="tab" onclick="switchTab('tab-text')">✏️ ข้อความ</div>
+        <div class="tab" onclick="switchTab('tab-apps')">📱 แอป</div>
+        <div class="tab" onclick="switchTab('tab-layout')">🔲 จัดวาง</div>
+      </div>
+      <!-- TAB LOGO -->
+      <div class="admin-sec active" id="tab-logo">
+        <div class="logo-upload-area" onclick="document.getElementById('admin-logo-input').click()">
+          <div id="logo-preview-wrap"><span class="logo-preview-emoji" id="logo-preview-emoji">🏫</span></div>
+          <div style="font-size:14px;font-weight:700;color:#94a3b8;margin-top:4px">คลิกเพื่ออัพโหลดโลโก้</div>
+          <div class="upload-hint">JPG, PNG, GIF • สูงสุด 5MB</div>
+          <input type="file" id="admin-logo-input" accept="image/*" onchange="handleAdminLogo(event)" />
+        </div>
+        <div class="save-row" style="margin-top:14px">
+          <button class="btn btn-outline" onclick="resetLogo()" style="flex:1">รีเซ็ตเป็น 🏫</button>
+          <button class="btn btn-green" onclick="saveLogo()" style="flex:2">💾 บันทึกโลโก้</button>
+        </div>
+      </div>
+      <!-- TAB TEXT -->
+      <div class="admin-sec" id="tab-text">
+        <div class="field-row"><label>ชื่อโรงเรียน</label><input id="txt-name" placeholder="Super App บ้านคำไผ่" />
+        </div>
+        <div class="field-row"><label>คำอธิบายรอง</label><input id="txt-sub"
+            placeholder="ระบบบริหารจัดการโรงเรียนออนไลน์" /></div>
+        <div class="field-row"><label>ข้อความ Notice</label><textarea id="txt-notice" rows="3"
+            placeholder="เพิ่มแอปใหม่ได้ตลอด!..."></textarea></div>
+        <div class="field-row"><label>Footer</label><input id="txt-footer"
+            placeholder="Super App บ้านคำไผ่ • พัฒนาด้วย ❤️..." /></div>
+        <div class="save-row"><button class="btn btn-green" onclick="saveText()" style="flex:1">💾
+            บันทึกข้อความ</button></div>
+      </div>
+      <!-- TAB APPS -->
+      <div class="admin-sec" id="tab-apps">
+        <p style="font-size:12px;color:var(--muted);margin-bottom:12px">⠿ ลากเรียงลำดับ &nbsp;|&nbsp; ✏️
+          แก้ไขชื่อ/ไอคอน/URL/สถานะ &nbsp;|&nbsp; toggle ซ่อน/แสดง</p>
+        <div class="drag-list" id="drag-list"></div>
+        <div class="save-row"><button class="btn btn-green" onclick="saveApps()" style="flex:1">💾
+            บันทึกลำดับแอป</button></div>
+      </div>
+      <!-- TAB LAYOUT -->
+      <div class="admin-sec" id="tab-layout">
+        <div class="layout-section">
+          <div class="layout-section-label">📐 จำนวนคอลัมน์</div>
+          <div class="layout-btn-group" id="cols-group">
+            <button class="layout-btn" data-cols="1" onclick="setLayout('cols','1')">
+              <div class="layout-preview">
+                <div class="lp-block" style="width:100%;height:18px"></div>
+              </div>
+              <div class="layout-btn-label">1 คอลัมน์</div>
+            </button>
+            <button class="layout-btn active" data-cols="2" onclick="setLayout('cols','2')">
+              <div class="layout-preview">
+                <div class="lp-block" style="flex:1;height:18px"></div>
+                <div class="lp-block" style="flex:1;height:18px"></div>
+              </div>
+              <div class="layout-btn-label">2 คอลัมน์</div>
+            </button>
+            <button class="layout-btn" data-cols="3" onclick="setLayout('cols','3')">
+              <div class="layout-preview">
+                <div class="lp-block" style="flex:1;height:18px"></div>
+                <div class="lp-block" style="flex:1;height:18px"></div>
+                <div class="lp-block" style="flex:1;height:18px"></div>
+              </div>
+              <div class="layout-btn-label">3 คอลัมน์</div>
+            </button>
+          </div>
+        </div>
+        <div class="layout-section">
+          <div class="layout-section-label">📏 ขนาดการ์ด</div>
+          <div class="layout-btn-group" id="size-group">
+            <button class="layout-btn" data-size="sm" onclick="setLayout('size','sm')">
+              <div class="layout-preview" style="height:24px;align-items:center">
+                <div class="lp-block" style="width:28px;height:12px"></div>
+              </div>
+              <div class="layout-btn-label">เล็ก</div>
+            </button>
+            <button class="layout-btn active" data-size="md" onclick="setLayout('size','md')">
+              <div class="layout-preview" style="height:24px;align-items:center">
+                <div class="lp-block" style="width:36px;height:16px"></div>
+              </div>
+              <div class="layout-btn-label">กลาง</div>
+            </button>
+            <button class="layout-btn" data-size="lg" onclick="setLayout('size','lg')">
+              <div class="layout-preview" style="height:24px;align-items:center">
+                <div class="lp-block" style="width:44px;height:20px"></div>
+              </div>
+              <div class="layout-btn-label">ใหญ่</div>
+            </button>
+          </div>
+        </div>
+        <div class="layout-section">
+          <div class="layout-section-label">🔝 แอปแรก (Featured)</div>
+          <div class="wide-toggle-row">
+            <div>
+              <div class="wide-toggle-info">แสดงแอปแรกแบบ Full Width</div>
+              <div class="wide-toggle-sub">เปิด = แอปแรกในหมวด "พร้อมใช้งาน" คาดทั้งแถว</div>
+            </div>
+            <label class="toggle"><input type="checkbox" id="layout-wide-first"
+                onchange="setWideFirst(this.checked)" /><span class="toggle-slider"></span></label>
+          </div>
+        </div>
+        <div class="layout-section">
+          <div class="layout-section-label">👁️ การแสดงผล</div>
+          <div class="wide-toggle-row" style="background:rgba(34,211,238,.06);border-color:rgba(34,211,238,.2)">
+            <div>
+              <div class="wide-toggle-info" style="color:#22d3ee">แสดงแบบกลุ่มเมนู (Accordion)</div>
+              <div class="wide-toggle-sub">เปิด = กดหัวข้อกลุ่มเพื่อกางดูเมนูย่อย</div>
+            </div>
+            <label class="toggle"><input type="checkbox" id="layout-group-mode"
+                onchange="setLayoutOption('groupMode',this.checked)" /><span class="toggle-slider"></span></label>
+          </div>
+          <div class="wide-toggle-row">
+            <div>
+              <div class="wide-toggle-info">แสดงหมวด "เร็วๆ นี้"</div>
+              <div class="wide-toggle-sub">ปิด = ซ่อนแอปที่ยังไม่พร้อมทั้งหมด</div>
+            </div>
+            <label class="toggle"><input type="checkbox" id="layout-show-coming"
+                onchange="setLayoutOption('showComing',this.checked)" checked /><span
+                class="toggle-slider"></span></label>
+          </div>
+          <div class="wide-toggle-row">
+            <div>
+              <div class="wide-toggle-info">แสดง Section Header</div>
+              <div class="wide-toggle-sub">ปิด = ซ่อนหัวข้อ "พร้อมใช้งาน / เร็วๆ นี้"</div>
+            </div>
+            <label class="toggle"><input type="checkbox" id="layout-show-header"
+                onchange="setLayoutOption('showHeader',this.checked)" checked /><span
+                class="toggle-slider"></span></label>
+          </div>
+        </div>
+        <div class="save-row"><button class="btn btn-green" onclick="saveLayout()" style="flex:1">💾
+            บันทึกการจัดวาง</button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EDIT APP MODAL -->
+  <div class="modal-bg" id="edit-app-modal">
+    <div class="modal" style="max-width:440px">
+      <button class="modal-close" onclick="closeModal('edit-app-modal')">✕</button>
+      <h2>✏️ แก้ไขแอป</h2>
+      <div class="edit-section-title">🎨 ไอคอน</div>
+      <div class="emoji-picker-wrap">
+        <div class="emoji-current">
+          <div class="emoji-current-icon" id="edit-icon-preview">❓</div>
+          <div class="emoji-current-hint">พิมพ์ emoji ในช่องด้านล่าง<br>หรือเลือกจากรายการ</div>
+        </div>
+        <div class="emoji-input-row">
+          <input id="edit-icon-input" maxlength="4" placeholder="🏫" oninput="onEmojiInput(this.value)" />
+          <button class="btn btn-outline" style="width:auto;padding:9px 14px;margin-top:0;font-size:13px"
+            onclick="document.getElementById('edit-icon-input').value='';onEmojiInput('')">ล้าง</button>
+        </div>
+        <div class="emoji-cats" id="emoji-cats"></div>
+        <div class="emoji-grid" id="emoji-grid"></div>
+      </div>
+      <div class="edit-section-title" style="margin-top:20px">📝 ข้อมูลแอป</div>
+      <div class="field-row"><label>ชื่อแอป</label><input id="edit-app-name" placeholder="ชื่อแอป..." /></div>
+      <div class="field-row"><label>คำอธิบาย</label><input id="edit-app-desc" placeholder="คำอธิบายสั้นๆ..." /></div>
+      <div class="edit-section-title">🔗 ลิงก์ URL</div>
+      <div class="field-row">
+        <label>URL ของแอป</label>
+        <input id="edit-app-url" placeholder="https://... หรือ path/to/page.html" />
+        <div class="url-hint">ใส่ URL เต็ม เช่น <code>https://example.com</code><br>หรือ path สัมพัทธ์ เช่น
+          <code>student-profile.html</code><br>ใส่ <code>#</code> หากยังไม่มีหน้า
+        </div>
+      </div>
+      <div class="edit-section-title">⚡ สถานะการใช้งาน</div>
+      <div class="live-toggle-row">
+        <div class="live-toggle-label">
+          <div class="live-toggle-title">เปิดการใช้งาน (Live)</div>
+          <div class="live-toggle-desc">เปิด = แสดงในส่วน "พร้อมใช้งาน" และกดเข้าได้<br>ปิด = แสดงในส่วน "เร็วๆ นี้"
+            และยังกดไม่ได้</div>
+          <span class="live-status-badge is-soon" id="live-status-badge">🔜 เร็วๆ นี้</span>
+        </div>
+        <label class="toggle" style="width:52px;height:28px"><input type="checkbox" id="edit-app-live"
+            onchange="onLiveToggle(this.checked)" /><span class="toggle-slider"></span></label>
+      </div>
+      <div class="save-row">
+        <button class="btn btn-outline" onclick="closeModal('edit-app-modal')" style="flex:1">ยกเลิก</button>
+        <button class="btn btn-green" onclick="saveEditApp()" style="flex:2">💾 บันทึก</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+  <script>
+    const fbConfig = { apiKey: "AIzaSyBSUa3gj5l2VSYoUnVFXQwF0OX2SJe6Szc", authDomain: "kampai-school-app.firebaseapp.com", databaseURL: "https://kampai-school-app-default-rtdb.asia-southeast1.firebasedatabase.app", projectId: "kampai-school-app", storageBucket: "kampai-school-app.firebasestorage.app", messagingSenderId: "206365774974", appId: "1:206365774974:web:8f261ade7aa07ef338f42f" };
+    firebase.initializeApp(fbConfig);
+    const auth = firebase.auth();
+    const db = firebase.database();
+
+    // ── DEFAULT APPS (รวมแอปใหม่ทั้งหมด) ──
+    const DEFAULT_APPS = [
+
+      // ══════════════════════════════════════
+      // กลุ่ม 1: 🎒 นักเรียน
+      //   รวม: นักเรียน + เรียนรู้ + เกม + คะแนน
+      // ══════════════════════════════════════
+      { id: 'profile', icon: '👤', name: 'ประวัตินักเรียน', desc: 'ข้อมูลส่วนตัว • คะแนนทุกวิชา • badge • ประวัติเกม', url: 'student-profile.html', color: 'cp', live: true, wide: true, visible: true, group: 'นักเรียน' },
+      { id: 'portal', icon: '🎓', name: 'พอร์ทัลนักเรียน', desc: 'แดชบอร์ดนักเรียน • ดูคะแนน • ประกาศ', url: 'student-portal.html', color: 'cb', live: true, wide: false, visible: true, group: 'นักเรียน' },
+      { id: 'games', icon: '🎮', name: 'เกมส์การเรียนรู้', desc: 'มินิเกมส์ฝึกทักษะ • ภาษาไทย • คณิต • เทคโนโลยี', url: 'games/index.html', color: 'cp', live: true, wide: false, visible: true, group: 'นักเรียน' },
+      { id: 'scores', icon: '📊', name: 'คะแนนรายวิชา', desc: 'คะแนนเก็บทุกวิชา • เกมช่วยเพิ่มคะแนน • กราฟพัฒนาการ', url: 'games/scores.html', color: 'cy', live: true, wide: false, visible: true, group: 'นักเรียน' },
+      { id: 'leaderboard', icon: '🏆', name: 'อันดับคะแนน', desc: 'Leaderboard รวมทุกเกม • กรองตามวิชา • ห้องเรียน', url: 'games/leaderboard.html', color: 'cg', live: true, wide: false, visible: true, group: 'นักเรียน' },
+      { id: 'exam-student', icon: '📝', name: 'ระบบสอบออนไลน์', desc: 'ทำข้อสอบ ป.4–5 ทุกวิชา • วัดผลทันที • เลือกวิชาได้', url: 'student-portal.html', color: 'cp', live: true, wide: true, visible: true, group: 'นักเรียน' },
+      { id: 'reward', icon: '⭐', name: 'คะแนนความดี', desc: 'บันทึกความดี • คะแนนพฤติกรรม • รางวัล • สะสมแต้ม', url: 'reward.html', color: 'cy', live: true, wide: false, visible: true, group: 'นักเรียน' },
+      { id: 'homework', icon: '📋', name: 'การบ้าน/งานมอบหมาย', desc: 'มอบหมายงาน • ส่งงานออนไลน์ • ติดตามสถานะ', url: 'homework.html', color: 'cb', live: true, wide: false, visible: true, group: 'นักเรียน' },
+
+      // ══════════════════════════════════════
+      // กลุ่ม 2: 🗂️ ธุรการ
+      //   รวม: ทะเบียนนักเรียน + เอกสารราชการ
+      // ══════════════════════════════════════
+      { id: 'student-reg', icon: '🗂️', name: 'ทะเบียนนักเรียน', desc: 'เพิ่ม/แก้ไข/ค้นหานักเรียน • ข้อมูลครบทุกด้าน', url: 'student-register.html', color: 'cb', live: true, wide: false, visible: true, group: 'ธุรการ' },
+      { id: 'leave', icon: '📄', name: 'ใบลา / ขาดเรียน', desc: 'ยื่นใบลา • ติดตามสถิติขาด/ลา/มาสาย • แจ้งผู้ปกครอง', url: 'leave-request.html', color: 'cb', live: true, wide: false, visible: true, group: 'ธุรการ' },
+      { id: 'transfer', icon: '🔄', name: 'ย้าย / เข้า / ออก', desc: 'ทะเบียนย้ายนักเรียน • รับนักเรียนใหม่ • จำหน่ายออก', url: 'transfer.html', color: 'cb', live: true, wide: false, visible: true, group: 'ธุรการ' },
+      { id: 'documents', icon: '📋', name: 'ระบบจัดการเอกสาร', desc: 'หนังสือราชการ • ว.PA • SAR • ICS • อบรม • e-Signature • แผนปฏิบัติการ', url: 'school-docs.html', color: 'cb', live: true, wide: true, visible: true, group: 'ธุรการ' },
+
+      // ══════════════════════════════════════
+      // กลุ่ม 3: 👨‍🏫 บุคลากร
+      //   รวม: ครู + ตาราง + ลา + การเงิน + ครุภัณฑ์
+      // ══════════════════════════════════════
+      { id: 'teacher-prof', icon: '👨‍🏫', name: 'ประวัติครู/บุคลากร', desc: 'ข้อมูลครู • วุฒิการศึกษา • ภาระงาน', url: 'teacher-profile.html', color: 'cr', live: true, wide: false, visible: true, group: 'บุคลากร' },
+      { id: 'teacher', icon: '📝', name: 'จัดการคะแนน', desc: 'ครูใส่คะแนนรายวิชา • รายงานห้องเรียน • export CSV', url: 'teacher-dashboard.html', color: 'cr', live: true, wide: false, visible: true, group: 'บุคลากร' },
+      { id: 'schedule', icon: '🗓️', name: 'ตารางสอน / ตารางเรียน', desc: 'ตารางเรียนรายชั้น • ตารางสอนครู • จัดตารางได้', url: 'schedule.html', color: 'cr', live: true, wide: false, visible: true, group: 'บุคลากร' },
+      { id: 'teacher-leave', icon: '🏖️', name: 'ลาครู / ปฏิบัติงาน', desc: 'ยื่นลา • อนุมัติ • สรุปวันลา • ปฏิบัติงานนอก', url: 'teacher-leave.html', color: 'cr', live: true, wide: false, visible: true, group: 'บุคลากร' },
+      { id: 'exam-admin', icon: '⚙️', name: 'จัดการระบบสอบ', desc: 'บริหารจัดการข้อสอบ • ดูคะแนนนักเรียน • นำเข้าข้อมูล', url: 'https://kampai-exam.vercel.app/admin', color: 'cr', live: true, wide: true, visible: true, group: 'บุคลากร' },
+
+      // ══════════════════════════════════════
+      // กลุ่ม 4: 🏫 โรงเรียน
+      //   รวม: เช็คชื่อ + ข่าว + ประกาศ + ผู้ปกครอง
+      // ══════════════════════════════════════
+      { id: 'attend', icon: '✅', name: 'เช็คชื่อนักเรียน', desc: 'เช็คชื่อออนไลน์ • สรุปการมาเรียน • รายงานรายเดือน', url: 'attendance.html', color: 'cy', live: true, wide: false, visible: true, group: 'โรงเรียน' },
+      { id: 'news', icon: '📰', name: 'ข่าวสาร', desc: 'ข่าว ศธ.360 • สพฐ. • กสศ. อัปเดตอัตโนมัติ', url: 'news.html', color: 'cy', live: true, wide: false, visible: true, group: 'โรงเรียน' },
+      { id: 'announce', icon: '📢', name: 'ประกาศ / ปฏิทิน', desc: 'ประกาศโรงเรียน • ปฏิทินกิจกรรม • วันหยุดราชการ', url: 'announcement.html', color: 'cy', live: true, wide: false, visible: true, group: 'โรงเรียน' },
+      { id: 'parent', icon: '👨‍👩‍👧', name: 'ติดต่อผู้ปกครอง', desc: 'ข้อมูลผู้ปกครอง • แจ้งเตือน • รายงานนักเรียน', url: 'parent-contact.html', color: 'cy', live: true, wide: false, visible: true, group: 'โรงเรียน' },
+
+      // ══════════════════════════════════════
+      // กลุ่ม 5: 🌱 กิจกรรม & สิ่งแวดล้อม
+      //   รวม: ขยะ + กีฬา + อาหาร + ธรรมชาติ
+      // ══════════════════════════════════════
+      { id: 'waste', icon: '♻️', name: 'ธนาคารขยะ', desc: 'บันทึกการเก็บขยะ • ระบบคะแนน • Leaderboard', url: 'waste/waste-app-final.html', color: 'ct', live: true, wide: false, visible: true, group: 'กิจกรรม' },
+      { id: 'board', icon: '🏅', name: 'อันดับขยะ', desc: 'Leaderboard นักเรียน • ดูได้ทุกคน ไม่ต้อง Login', url: 'waste/public.html', color: 'ct', live: true, wide: false, visible: true, group: 'กิจกรรม' },
+      { id: 'lunch', icon: '🍱', name: 'อาหารกลางวัน', desc: 'สั่งอาหาร • เมนูประจำวัน • โภชนาการ', url: '#', color: 'cc', live: false, wide: false, visible: true, group: 'กิจกรรม' },
+      { id: 'garden', icon: '🌱', name: 'รดน้ำต้นไม้', desc: 'ติดตามกิจกรรมสีเขียว • ปลูกผัก • สวนโรงเรียน', url: '#', color: 'cc', live: false, wide: false, visible: true, group: 'กิจกรรม' },
+    ];
+
+    // ── STATE ──
+    let cfg = {
+      schoolName: 'Super App บ้านคำไผ่',
+      schoolSub: 'ระบบบริหารจัดการโรงเรียนออนไลน์',
+      noticeTxt: '<b>เพิ่มแอปใหม่ได้ตลอด!</b> ติดต่อผู้พัฒนาเพื่อเพิ่มแอปที่ต้องการ',
+      footer: 'Super App บ้านคำไผ่ • พัฒนาด้วย ❤️ เพื่อการศึกษา',
+      logoData: null,
+      apps: JSON.parse(JSON.stringify(DEFAULT_APPS)),
+      layout: { cols: '2', size: 'md', wideFirst: false, showComing: true, showHeader: true, groupMode: false }
+    };
+    let pendingLogoData = null;
+
+    function showLoading(v) { document.getElementById('loading').classList.toggle('show', v) }
+
+    let isDbLoaded = false;
+    db.ref('superapp_config').on('value', snap => {
+      isDbLoaded = true;
+      const v = snap.val();
+      if (v) {
+        if (v.schoolName) cfg.schoolName = v.schoolName;
+        if (v.schoolSub) cfg.schoolSub = v.schoolSub;
+        if (v.noticeTxt) cfg.noticeTxt = v.noticeTxt;
+        if (v.footer) cfg.footer = v.footer;
+        if (v.logoData) cfg.logoData = v.logoData;
+        if (v.apps && Array.isArray(v.apps)) {
+          const saved = v.apps;
+          // ค่าที่ Admin แก้ไว้ (live/url/color/name/icon/desc/visible) มีสิทธิ์สูงกว่า DEFAULT_APPS เสมอ
+          const merged = DEFAULT_APPS.map(def => {
+            const s = saved.find(a => a.id === def.id);
+            if (!s) return def;
+            return {
+              ...def,
+              name: s.name || def.name,
+              icon: s.icon || def.icon,
+              desc: s.desc || def.desc,
+              url: s.url || def.url,
+              live: s.live !== undefined ? s.live : def.live,
+              color: s.color || def.color,
+              wide: s.wide !== undefined ? s.wide : def.wide,
+              visible: s.visible !== undefined ? s.visible : def.visible,
+              group: s.group || def.group
+            };
+          });
+          // เพิ่มแอปที่ Admin สร้างเองนอก DEFAULT_APPS
+          saved.forEach(s => { if (!merged.find(a => a.id === s.id)) merged.push(s); });
+          cfg.apps = merged;
+        }
+        if (v.layout) cfg.layout = { ...cfg.layout, ...v.layout };
+      }
+      applyConfig();
+      showLoading(false);
+    }, err => {
+      console.warn("Firebase Error:", err);
+      if (!isDbLoaded) {
+        isDbLoaded = true;
+        applyConfig();
+        showLoading(false);
+      }
+    });
+
+    showLoading(true);
+    
+    // สำรอง: หาก Firebase โหลดไม่เสร็จภายใน 5 วินาที ให้ปิด Loading และโหลดหน้าด้วย Default Apps
+    setTimeout(() => {
+      if (!isDbLoaded) {
+        console.warn("Firebase timeout, loading default config...");
+        isDbLoaded = true;
+        applyConfig();
+        showLoading(false);
+      }
+    }, 5000);
+
+    function applyConfig() {
+      document.getElementById('main-school-name').textContent = cfg.schoolName;
+      document.getElementById('main-school-sub').textContent = cfg.schoolSub;
+      document.getElementById('main-notice-txt').innerHTML = cfg.noticeTxt;
+      document.getElementById('main-footer').textContent = cfg.footer;
+      const logoBox = document.getElementById('main-logo');
+      logoBox.innerHTML = cfg.logoData ? `<img src="${cfg.logoData}" alt="logo"/>` : `<span id="main-logo-emoji">🏫</span>`;
+      renderApps(cfg.apps);
+      applyLayoutUI();
+      document.getElementById('txt-name').value = cfg.schoolName;
+      document.getElementById('txt-sub').value = cfg.schoolSub;
+      document.getElementById('txt-notice').value = cfg.noticeTxt.replace(/<[^>]+>/g, '');
+      document.getElementById('txt-footer').value = cfg.footer;
+      updateAdminLogoPreview(cfg.logoData);
+    }
+
+    function renderApps(apps) {
+      const container = document.getElementById('apps-render');
+      const L = cfg.layout;
+      const colClass = 'cols-' + (L.cols || '2');
+      const sizeClass = L.size && L.size !== 'md' ? 'size-' + L.size : '';
+      const gridClass = ['apps-grid', colClass, sizeClass].filter(Boolean).join(' ');
+
+      const GROUP_ICON = { 'นักเรียน': '🎒', 'ธุรการ': '🗂️', 'บุคลากร': '👨‍🏫', 'โรงเรียน': '🏫', 'กิจกรรม': '🌱' };
+      const GROUP_CLS = { 'นักเรียน': 'grp-student', 'ธุรการ': 'grp-admin', 'บุคลากร': 'grp-staff', 'โรงเรียน': 'grp-school', 'กิจกรรม': 'grp-activity' };
+      // กลุ่มที่กางไว้ใน localStorage
+      const openGroups = new Set(JSON.parse(localStorage.getItem('kampai_open_groups') || '[]'));
+
+      const visApps = apps.filter(a => a.visible);
+      let html = '';
+
+      if (L.groupMode) {
+        // ── โหมด ACCORDION ──
+        const groups = [...new Set(visApps.map(a => a.group || 'อื่นๆ'))];
+        groups.forEach(grp => {
+          const grpApps = visApps.filter(a => (a.group || 'อื่นๆ') === grp);
+          const allApps = [...grpApps.filter(a => a.live), ...(L.showComing !== false ? grpApps.filter(a => !a.live) : [])];
+          if (!allApps.length) return;
+          const ico = GROUP_ICON[grp] || '📌';
+          const cls = GROUP_CLS[grp] || '';
+          const isOpen = openGroups.has(grp);
+          const liveCount = grpApps.filter(a => a.live).length;
+          html += `<div class="app-group ${cls} ${isOpen ? 'open' : ''}" id="grp-${grp}">
+        <div class="group-header" onclick="toggleGroup('${grp}')">
+          <span class="group-icon">${ico}</span>
+          <span class="group-title">${grp}</span>
+          <span class="group-meta">${liveCount} แอป</span>
+          <span class="group-chevron">▼</span>
+        </div>
+        <div class="group-body">
+          <div class="${gridClass}" style="padding-top:10px">
+            ${allApps.map((a, i) => a.live ? renderCard(a, L, false) : renderCardSoon(a)).join('')}
+          </div>
+        </div>
+      </div>`;
+        });
+      } else if (L.showHeader === false) {
+        // ── โหมดไม่แสดง header ──
+        const liveApps = visApps.filter(a => a.live);
+        const comingApps = visApps.filter(a => !a.live);
+        if (liveApps.length) { html += `<div class="${gridClass}">`; liveApps.forEach((a, i) => { html += renderCard(a, L, i === 0); }); html += `</div>`; }
+        if (comingApps.length && L.showComing !== false) { html += `<div class="${gridClass}">`; comingApps.forEach(a => { html += renderCardSoon(a); }); html += `</div>`; }
+      } else {
+        // ── โหมด Header ตามกลุ่ม (เดิม) ──
+        const groups = [...new Set(visApps.map(a => a.group || 'อื่นๆ'))];
+        groups.forEach(grp => {
+          const grpApps = visApps.filter(a => (a.group || 'อื่นๆ') === grp);
+          const liveGrp = grpApps.filter(a => a.live);
+          const comingGrp = grpApps.filter(a => !a.live);
+          const ico = GROUP_ICON[grp] || '📌';
+          if (liveGrp.length) {
+            html += `<div class="sec-title">${ico} ${grp}</div>`;
+            html += `<div class="${gridClass}">`;
+            liveGrp.forEach((a, i) => { html += renderCard(a, L, L.wideFirst && i === 0); });
+            html += `</div>`;
+          }
+          if (comingGrp.length && L.showComing !== false) {
+            if (!liveGrp.length) html += `<div class="sec-title">${ico} ${grp} <span style="font-size:10px;color:var(--muted);font-weight:400;text-transform:none;letter-spacing:0">— เร็วๆ นี้</span></div>`;
+            html += `<div class="${gridClass}">`;
+            comingGrp.forEach(a => { html += renderCardSoon(a); });
+            html += `</div>`;
+          }
+        });
+      }
+      container.innerHTML = html;
+    }
+
+    function toggleGroup(grp) {
+      const el = document.getElementById('grp-' + grp);
+      if (!el) return;
+      const isOpen = el.classList.toggle('open');
+      // บันทึกสถานะใน localStorage
+      let openGroups = new Set(JSON.parse(localStorage.getItem('kampai_open_groups') || '[]'));
+      if (isOpen) openGroups.add(grp); else openGroups.delete(grp);
+      localStorage.setItem('kampai_open_groups', JSON.stringify([...openGroups]));
+    }
+
+    function renderCard(a, L, forceWide) {
+      const wide = forceWide || a.wide ? 'wide' : '';
+      if (wide) {
+        return `<a href="${a.url}" class="app-card ${a.color} wide">
+          <div class="app-icon">${a.icon}</div>
+          <div class="app-text">
+            <div class="app-name">${a.name}</div>
+            <div class="app-desc">${a.desc}</div>
+          </div>
+          <span class="badge badge-live" style="position:static;margin-left:auto;flex-shrink:0">● LIVE</span>
+          <span class="arr">→</span>
+        </a>`;
+      }
+      return `<a href="${a.url}" class="app-card ${a.color}">
+        <span class="badge badge-live">● LIVE</span>
+        <div class="app-icon">${a.icon}</div>
+        <div class="app-name">${a.name}</div>
+        <div class="app-desc">${a.desc}</div>
+        <span class="arr">→</span>
+      </a>`;
+    }
+
+    function renderCardSoon(a) {
+      return `<div class="app-card cc">
+        <span class="badge badge-soon">เร็วๆ นี้</span>
+        <div class="app-icon">${a.icon}</div>
+        <div class="app-name">${a.name}</div>
+        <div class="app-desc">${a.desc}</div>
+      </div>`;
+    }
+
+
+
+    // ── THAI DATE ──
+    const DAYS_TH = ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์'];
+    const MONTHS_TH = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
+    const now = new Date();
+    document.getElementById('greeting-txt').textContent = `วัน${DAYS_TH[now.getDay()]} ที่ ${now.getDate()} เดือน${MONTHS_TH[now.getMonth()]} ปี ${now.getFullYear() + 543}`;
+
+    // ── PARTICLES ──
+    const emojis = ['🍃', '⭐', '✨', '🌟', '♻️', '🌱', '🎈', '💫', '🌸', '🦋'];
+    const pw = document.getElementById('ptcl');
+    for (let i = 0; i < 20; i++) { const p = document.createElement('div'); p.className = 'pt'; p.textContent = emojis[~~(Math.random() * emojis.length)]; p.style.cssText = `left:${Math.random() * 100}%;font-size:${12 + Math.random() * 14}px;animation-duration:${10 + Math.random() * 14}s;animation-delay:${Math.random() * 12}s`; pw.appendChild(p); }
+
+    // ── MODAL ──
+    function openModal(id) { document.getElementById(id).classList.add('open') }
+    function closeModal(id) { document.getElementById(id).classList.remove('open') }
+    function showToast(msg, isErr = false) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.toggle('err', isErr); t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2600); }
+
+    // ── AUTH ──
+    auth.onAuthStateChanged(user => { document.getElementById('fab-label').textContent = user ? '⚙️ จัดการระบบ' : 'จัดการ Admin'; });
+    function openLogin() { if (auth.currentUser) { openAdminPanel(); return; } document.getElementById('login-err').textContent = ''; openModal('login-modal'); }
+    async function doLogin() {
+      const email = document.getElementById('login-email').value.trim();
+      const pwd = document.getElementById('login-pwd').value;
+      const btn = document.getElementById('login-btn');
+      const errEl = document.getElementById('login-err');
+      errEl.textContent = '';
+      if (!email || !pwd) { errEl.textContent = 'กรุณากรอกอีเมลและรหัสผ่าน'; return; }
+      btn.disabled = true; btn.textContent = 'กำลังเข้าสู่ระบบ...';
+      try {
+        await auth.signInWithEmailAndPassword(email, pwd);
+        closeModal('login-modal'); openAdminPanel(); showToast('✅ เข้าสู่ระบบสำเร็จ!');
+      } catch (e) { errEl.textContent = e.code === 'auth/wrong-password' || e.code === 'auth/user-not-found' ? 'อีเมลหรือรหัสผ่านไม่ถูกต้อง' : 'เกิดข้อผิดพลาด: ' + e.message; }
+      btn.disabled = false; btn.textContent = 'เข้าสู่ระบบ';
+    }
+    document.getElementById('login-pwd').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+    function doLogout() { auth.signOut(); closeModal('admin-modal'); showToast('ออกจากระบบแล้ว'); }
+
+    // ── ADMIN PANEL ──
+    function openAdminPanel() {
+      document.getElementById('txt-name').value = cfg.schoolName;
+      document.getElementById('txt-sub').value = cfg.schoolSub;
+      document.getElementById('txt-notice').value = cfg.noticeTxt.replace(/<b>/g, '').replace(/<\/b>/g, '');
+      document.getElementById('txt-footer').value = cfg.footer;
+      updateAdminLogoPreview(cfg.logoData);
+      buildDragList(cfg.apps);
+      switchTab('tab-logo');
+      openModal('admin-modal');
+    }
+    function switchTab(id) {
+      document.querySelectorAll('.tab').forEach((t, i) => { const tabs = ['tab-logo', 'tab-text', 'tab-apps', 'tab-layout']; t.classList.toggle('active', tabs[i] === id); });
+      document.querySelectorAll('.admin-sec').forEach(s => s.classList.toggle('active', s.id === id));
+    }
+
+    // ── LOGO ──
+    function updateAdminLogoPreview(data) { const wrap = document.getElementById('logo-preview-wrap'); wrap.innerHTML = data ? `<img class="logo-preview" src="${data}" alt="logo preview"/>` : `<span class="logo-preview-emoji">🏫</span>`; }
+    function handleAdminLogo(e) { const file = e.target.files[0]; e.target.value = ''; if (!file) return; if (!file.type.startsWith('image/')) { showToast('❌ เลือกไฟล์รูปภาพเท่านั้น', true); return; } if (file.size > 5 * 1024 * 1024) { showToast('❌ ไฟล์ใหญ่เกินไป (สูงสุด 5MB)', true); return; } const r = new FileReader(); r.onload = ev => { pendingLogoData = ev.target.result; updateAdminLogoPreview(pendingLogoData); showToast('📷 โหลดรูปแล้ว — กด "บันทึกโลโก้"'); }; r.readAsDataURL(file); }
+    function resetLogo() { pendingLogoData = ''; updateAdminLogoPreview(null); }
+    async function saveLogo() { if (pendingLogoData === null) { showToast('⚠️ ยังไม่ได้เลือกรูปใหม่'); return; } try { await db.ref('superapp_config/logoData').set(pendingLogoData || null); cfg.logoData = pendingLogoData || null; pendingLogoData = null; applyConfig(); showToast('✅ บันทึกโลโก้สำเร็จ!'); } catch (e) { showToast('❌ บันทึกไม่สำเร็จ: ' + e.message, true); } }
+
+    // ── TEXT ──
+    async function saveText() { const name = document.getElementById('txt-name').value.trim() || cfg.schoolName; const sub = document.getElementById('txt-sub').value.trim() || cfg.schoolSub; const notice = document.getElementById('txt-notice').value.trim() || 'เพิ่มแอปใหม่ได้ตลอด!'; const footer = document.getElementById('txt-footer').value.trim() || cfg.footer; try { await db.ref('superapp_config').update({ schoolName: name, schoolSub: sub, noticeTxt: notice, footer }); showToast('✅ บันทึกข้อความสำเร็จ!'); } catch (e) { showToast('❌ บันทึกไม่สำเร็จ', true); } }
+
+    // ── DRAG & DROP ──
+    let dragSrc = null;
+    function buildDragList(apps) {
+      const list = document.getElementById('drag-list'); list.innerHTML = '';
+      apps.forEach(a => {
+        const item = document.createElement('div'); item.className = 'drag-item'; item.draggable = true; item.dataset.id = a.id;
+        const urlShort = a.url && a.url !== '#' ? a.url.replace(/^https?:\/\//, '').substring(0, 30) + (a.url.length > 30 ? '…' : '') : '—';
+        item.innerHTML = `<span class="drag-handle">⠿</span><span class="drag-icon" id="dicon-${a.id}">${a.icon}</span><div class="drag-info"><div class="drag-title" id="dtitle-${a.id}">${a.name}</div><div class="drag-sub" id="dsub-${a.id}">${a.live ? '🟢 พร้อมใช้งาน' : '🔜 เร็วๆ นี้'}</div><div class="drag-sub-url" id="durl-${a.id}" title="${a.url || '#'}">🔗 ${urlShort}</div></div><button class="drag-edit-btn" onclick="openEditApp('${a.id}')">✏️</button><button class="drag-del-btn" onclick="deleteApp('${a.id}')" title="ลบเมนูนี้">🗑</button><label class="toggle drag-toggle"><input type="checkbox" ${a.visible ? 'checked' : ''} onchange="toggleApp('${a.id}',this.checked)"/><span class="toggle-slider"></span></label>`;
+        item.addEventListener('dragstart', e => { dragSrc = item; item.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move'; });
+        item.addEventListener('dragend', () => { item.classList.remove('dragging'); document.querySelectorAll('.drag-item').forEach(x => x.classList.remove('drag-over')); });
+        item.addEventListener('dragover', e => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; item.classList.add('drag-over'); });
+        item.addEventListener('dragleave', () => item.classList.remove('drag-over'));
+        item.addEventListener('drop', e => { e.preventDefault(); if (dragSrc && dragSrc !== item) { const all = [...list.children]; if (all.indexOf(dragSrc) < all.indexOf(item)) item.after(dragSrc); else item.before(dragSrc); } item.classList.remove('drag-over'); });
+        addTouchDrag(item, list);
+        list.appendChild(item);
+      });
+    }
+    function toggleApp(id, checked) { const a = cfg.apps.find(x => x.id === id); if (a) a.visible = checked; }
+    async function saveApps() {
+      const items = [...document.getElementById('drag-list').children];
+      const newApps = items.map(el => { const id = el.dataset.id; const found = cfg.apps.find(a => a.id === id) || DEFAULT_APPS.find(a => a.id === id); const vis = el.querySelector('input[type=checkbox]').checked; return { ...found, visible: vis }; });
+      try { await db.ref('superapp_config/apps').set(newApps); cfg.apps = newApps; renderApps(newApps); showToast('✅ บันทึกลำดับแอปสำเร็จ!'); } catch (e) { showToast('❌ บันทึกไม่สำเร็จ', true); }
+    }
+
+    function deleteApp(id) {
+      if (!confirm('ลบเมนู "' + (cfg.apps.find(a => a.id === id)?.name || id) + '" ออกถาวรหรือไม่?\n(สามารถเพิ่มกลับได้จาก DEFAULT_APPS)')) return;
+      cfg.apps = cfg.apps.filter(a => a.id !== id);
+      buildDragList(cfg.apps);
+      showToast('🗑 ลบเมนูแล้ว — กด "บันทึกลำดับแอป" เพื่อยืนยัน');
+    }
+    function addTouchDrag(item, list) {
+      let startY, clone, origRect;
+      item.addEventListener('touchstart', e => { if (!e.target.closest('.drag-handle')) return; startY = e.touches[0].clientY; origRect = item.getBoundingClientRect(); clone = item.cloneNode(true); clone.style.cssText = `position:fixed;top:${origRect.top}px;left:${origRect.left}px;width:${origRect.width}px;z-index:999;opacity:.85;pointer-events:none;border:1px solid #4ade80;border-radius:12px`; document.body.appendChild(clone); item.style.opacity = '.3'; }, { passive: true });
+      item.addEventListener('touchmove', e => { if (!clone) return; e.preventDefault(); const dy = e.touches[0].clientY - startY; clone.style.top = (origRect.top + dy) + 'px'; const mid = origRect.top + dy + origRect.height / 2;[...list.children].forEach(el => { if (el === item) return; const r = el.getBoundingClientRect(); if (mid > r.top && mid < r.bottom) { if (mid < r.top + r.height / 2) el.before(item); else el.after(item); } }); }, { passive: false });
+      item.addEventListener('touchend', () => { if (clone) { clone.remove(); clone = null; } item.style.opacity = ''; });
+    }
+
+    document.querySelectorAll('.modal-bg').forEach(bg => { bg.addEventListener('click', e => { if (e.target === bg) bg.classList.remove('open'); }); });
+
+    // ── LAYOUT ──
+    function applyLayoutUI() {
+      const L = cfg.layout;
+      document.querySelectorAll('#cols-group .layout-btn').forEach(b => b.classList.toggle('active', b.dataset.cols === (L.cols || '2')));
+      document.querySelectorAll('#size-group .layout-btn').forEach(b => b.classList.toggle('active', b.dataset.size === (L.size || 'md')));
+      const wf = document.getElementById('layout-wide-first'); if (wf) wf.checked = !!L.wideFirst;
+      const sc = document.getElementById('layout-show-coming'); if (sc) sc.checked = L.showComing !== false;
+      const sh = document.getElementById('layout-show-header'); if (sh) sh.checked = L.showHeader !== false;
+      const gm = document.getElementById('layout-group-mode'); if (gm) gm.checked = !!L.groupMode;
+    }
+    function setLayout(type, val) { if (type === 'cols') cfg.layout.cols = val; if (type === 'size') cfg.layout.size = val; applyLayoutUI(); renderApps(cfg.apps); }
+    function setWideFirst(v) { cfg.layout.wideFirst = v; renderApps(cfg.apps); }
+    function setLayoutOption(key, v) { cfg.layout[key] = v; renderApps(cfg.apps); }
+    async function saveLayout() { try { await db.ref('superapp_config/layout').set(cfg.layout); showToast('✅ บันทึกการจัดวางสำเร็จ!'); } catch (e) { showToast('❌ บันทึกไม่สำเร็จ', true); } }
+
+    // ── EMOJI PICKER ──
+    const EMOJI_CATS = {
+      '🏫 โรงเรียน': ['🏫', '📚', '✏️', '📝', '📖', '🎒', '🖊️', '📐', '📏', '🔬', '🔭', '🧪', '📊', '📈', '📉', '🗂️', '📋', '📌', '📍', '🗓️', '🏆', '🥇', '🎖️', '🌟', '⭐', '💡', '🔑', '👤', '👨‍🏫', '👩‍🏫'],
+      '🍱 อาหาร': ['🍱', '🍚', '🍜', '🍝', '🍛', '🥘', '🍲', '🥗', '🥪', '🥙', '🌮', '🌯', '🍔', '🍕', '🍦', '🎂', '🍰', '🧁', '🍩', '🍪', '🧃', '🥤', '🍵', '☕', '🥛', '🍶'],
+      '🏃 กีฬา': ['🏃', '⚽', '🏀', '🏐', '🎾', '🏸', '🏓', '⛳', '🎱', '🏊', '🤸', '🥊', '🏋️', '🚴', '🛹', '🏄', '🥋', '🎯', '🎽', '🏅'],
+      '🌱 ธรรมชาติ': ['🌱', '🌿', '🍃', '🌲', '🌳', '🌴', '🌸', '🌺', '🌻', '🌹', '🍀', '🌾', '🍂', '🍁', '🌍', '🌊', '⛰️', '🌈', '☀️', '🌙', '⭐', '❄️', '🔥', '💧', '♻️'],
+      '❤️ ทั่วไป': ['❤️', '🧡', '💛', '💚', '💙', '💜', '💕', '💖', '😊', '😃', '🥳', '🎉', '🎊', '🎈', '🎁', '🏠', '🔔', '📢', '📣', '💬', '✅', '⚠️', 'ℹ️', '🔒', '🔐', '⚙️', '🛠️', '📊', '♻️', '🎮'],
+    };
+    let currentEditId = null;
+    let currentEmojiCat = Object.keys(EMOJI_CATS)[0];
+    let selectedEmoji = '';
+
+    function initEmojiPicker() {
+      const catWrap = document.getElementById('emoji-cats'); catWrap.innerHTML = '';
+      Object.keys(EMOJI_CATS).forEach(cat => { const btn = document.createElement('button'); btn.className = 'emoji-cat' + (cat === currentEmojiCat ? ' active' : ''); btn.textContent = cat; btn.onclick = () => { currentEmojiCat = cat; initEmojiPicker(); }; catWrap.appendChild(btn); });
+      const grid = document.getElementById('emoji-grid'); grid.innerHTML = '';
+      EMOJI_CATS[currentEmojiCat].forEach(em => { const btn = document.createElement('button'); btn.className = 'emoji-btn' + (em === selectedEmoji ? ' selected' : ''); btn.textContent = em; btn.title = em; btn.onclick = () => { selectedEmoji = em; document.getElementById('edit-icon-input').value = em; document.getElementById('edit-icon-preview').textContent = em; initEmojiPicker(); }; grid.appendChild(btn); });
+    }
+    function onEmojiInput(val) { const em = [...val][0] || ''; selectedEmoji = em; document.getElementById('edit-icon-preview').textContent = em || '❓'; initEmojiPicker(); }
+    function onLiveToggle(checked) { const badge = document.getElementById('live-status-badge'); if (checked) { badge.textContent = '🟢 พร้อมใช้งาน'; badge.className = 'live-status-badge is-live'; } else { badge.textContent = '🔜 เร็วๆ นี้'; badge.className = 'live-status-badge is-soon'; } }
+
+    function openEditApp(id) {
+      currentEditId = id;
+      const a = cfg.apps.find(x => x.id === id); if (!a) return;
+      selectedEmoji = a.icon;
+      document.getElementById('edit-icon-preview').textContent = a.icon;
+      document.getElementById('edit-icon-input').value = a.icon;
+      document.getElementById('edit-app-name').value = a.name;
+      document.getElementById('edit-app-desc').value = a.desc;
+      document.getElementById('edit-app-url').value = a.url || '#';
+      const liveChk = document.getElementById('edit-app-live'); liveChk.checked = !!a.live; onLiveToggle(!!a.live);
+      initEmojiPicker(); openModal('edit-app-modal');
+    }
+    async function saveEditApp() {
+      const a = cfg.apps.find(x => x.id === currentEditId); if (!a) return;
+      const newIcon = selectedEmoji || a.icon;
+      const newName = document.getElementById('edit-app-name').value.trim() || a.name;
+      const newDesc = document.getElementById('edit-app-desc').value.trim() || a.desc;
+      const newUrl = document.getElementById('edit-app-url').value.trim() || '#';
+      const newLive = document.getElementById('edit-app-live').checked;
+      const newColor = newLive ? (a.color === 'cc' ? 'cg' : a.color) : 'cc';
+      a.icon = newIcon; a.name = newName; a.desc = newDesc; a.url = newUrl; a.live = newLive; a.color = newColor;
+      const di = document.getElementById('dicon-' + currentEditId); const dt = document.getElementById('dtitle-' + currentEditId); const ds = document.getElementById('dsub-' + currentEditId); const du = document.getElementById('durl-' + currentEditId);
+      if (di) di.textContent = newIcon; if (dt) dt.textContent = newName; if (ds) ds.textContent = newLive ? '🟢 พร้อมใช้งาน' : '🔜 เร็วๆ นี้';
+      if (du) { const urlShort = newUrl && newUrl !== '#' ? newUrl.replace(/^https?:\/\//, '').substring(0, 30) + (newUrl.length > 30 ? '…' : '') : '—'; du.textContent = '🔗 ' + urlShort; du.title = newUrl; }
+      try { await db.ref('superapp_config/apps').set(cfg.apps); renderApps(cfg.apps); closeModal('edit-app-modal'); showToast('✅ แก้ไขแอปสำเร็จ!'); } catch (e) { showToast('❌ บันทึกไม่สำเร็จ', true); }
+    }
+
+    // ── PWA: Register Service Worker ──
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js')
+          .then(r => console.log('[SW] Registered:', r.scope))
+          .catch(e => console.warn('[SW] Failed:', e));
+      });
+    }
+  </script>
+</body>
+
+</html>

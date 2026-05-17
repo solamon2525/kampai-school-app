@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>คำไวพจน์มหาสนุก - Board Game</title>
+    
+    <!-- โหลด Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- โหลด React และ ReactDOM -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    
+    <!-- โหลด Babel สำหรับแปลง JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <style>
+        @keyframes shake {
+          0%, 100% { transform: translateX(0); }
+          25% { transform: translateX(-5px) rotate(-1deg); }
+          75% { transform: translateX(5px) rotate(1deg); }
+        }
+        .animate-shake { animation: shake 0.4s ease-in-out; }
+        .animate-bounce-short { animation: bounce 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .animate-spin-slow { animation: spin 8s linear infinite; }
+        .animate-fade-in { animation: fadeIn 0.5s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        body { font-family: 'Sarabun', 'Prompt', sans-serif; }
+    </style>
+</head>
+<body class="bg-gradient-to-b from-blue-50 to-indigo-100 min-h-screen text-gray-800">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        const TEAM_COLORS = [
+          { id: 0, defaultName: 'ผู้เล่น (คุณ)', color: 'bg-blue-500', border: 'border-blue-500', text: 'text-blue-600', icon: '🐘' },
+          { id: 1, defaultName: 'AI บอทจอมโหด', color: 'bg-red-500', border: 'border-red-500', text: 'text-red-600', icon: '🦁' },
+          { id: 2, defaultName: 'ทีมสีเขียว', color: 'bg-green-500', border: 'border-green-500', text: 'text-green-600', icon: '🐒' },
+          { id: 3, defaultName: 'ทีมสีเหลือง', color: 'bg-yellow-400', border: 'border-yellow-400', text: 'text-yellow-600', icon: '🐦' },
+          { id: 4, defaultName: 'ทีมสีม่วง', color: 'bg-purple-500', border: 'border-purple-500', text: 'text-purple-600', icon: '🐱' },
+        ];
+
+        const FULL_QUESTION_BANK = [
+          { q: "ข้อใดเป็นคำไวพจน์ของ 'พระอาทิตย์'?", options: ["ภาสกร", "รัชนีกร", "โกสุม", "อรรณพ"], correct: "ภาสกร", category: "หมวดธรรมชาติ" },
+          { q: "คำว่า 'ศศิธร' มีความหมายตรงกับข้อใด?", options: ["ท้องฟ้า", "พระจันทร์", "ดวงดาว", "แผ่นดิน"], correct: "พระจันทร์", category: "หมวดธรรมชาติ" },
+          { q: "ข้อใดคือคำไวพจน์ของ 'ท้องฟ้า'?", options: ["ทิฆัมพร", "ชลาลัย", "พสุนธรา", "อรัญ"], correct: "ทิฆัมพร", category: "หมวดธรรมชาติ" },
+          { q: "คำว่า 'คงคา' และ 'สินธุ' หมายถึงอะไร?", options: ["ป่า", "ภูเขา", "น้ำ", "ไฟ"], correct: "น้ำ", category: "หมวดธรรมชาติ" },
+          { q: "ข้อใดแปลว่า 'ทะเล หรือ มหาสมุทร'?", options: ["อรรณพ", "บรรพต", "อัคคี", "พนา"], correct: "อรรณพ", category: "หมวดธรรมชาติ" },
+          { q: "คำว่า 'ธรณี' และ 'เมทนี' หมายถึงสิ่งใด?", options: ["ท้องฟ้า", "แผ่นดิน", "ลม", "ทอง"], correct: "แผ่นดิน", category: "หมวดธรรมชาติ" },
+          { q: "คำไวพจน์ของ 'ภูเขา' คือข้อใด?", options: ["สิงขร", "พนัส", "วายุ", "มโน"], correct: "สิงขร", category: "หมวดธรรมชาติ" },
+          { q: "ข้อใดหมายถึง 'ป่า'?", options: ["ชัฏ", "รัชฎา", "มาลา", "ดรุณ"], correct: "ชัฏ", category: "หมวดธรรมชาติ" },
+          { q: "คำว่า 'อัคนี' และ 'เตโช' หมายถึงอะไร?", options: ["ลม", "น้ำ", "ไฟ", "เงิน"], correct: "ไฟ", category: "หมวดธรรมชาติ" },
+          { q: "คำไวพจน์ของ 'ลม' คือข้อใด?", options: ["วายุ", "พิรุณ", "บุษบา", "กัลยา"], correct: "วายุ", category: "หมวดธรรมชาติ" },
+          { q: "คำว่า 'วัสสะ' มีความหมายตรงกับข้อใด?", options: ["แดด", "ฝน", "หมอก", "พายุ"], correct: "ฝน", category: "หมวดธรรมชาติ" },
+          { q: "ข้อใดแปลว่า 'ทองคำ'?", options: ["ชมพูนุท", "หิรัญ", "ปรัก", "วิรัช"], correct: "ชมพูนุท", category: "หมวดสิ่งของ" },
+          { q: "คำว่า 'หิรัญ' หมายถึงสิ่งใด?", options: ["ทอง", "เงิน", "เพชร", "นาก"], correct: "เงิน", category: "หมวดสิ่งของ" },
+          { q: "คำไวพจน์ของ 'ดอกไม้' คือข้อใด?", options: ["บุษบา", "ปทุม", "รุกข์", "วานร"], correct: "บุษบา", category: "หมวดพืชพรรณ" },
+          { q: "ข้อใดคือคำไวพจน์ของ 'ดอกบัว'?", options: ["สัตตบงกช", "มาลี", "สกุณา", "สินธพ"], correct: "สัตตบงกช", category: "หมวดพืชพรรณ" },
+          { q: "คำว่า 'พฤกษา' และ 'รุกขชาติ' หมายถึงอะไร?", options: ["สัตว์", "ป่า", "ต้นไม้", "ภูเขา"], correct: "ต้นไม้", category: "หมวดพืชพรรณ" },
+          { q: "คำไวพจน์ของ 'นก' คือข้อใด?", options: ["ทิชากร", "ไอยรา", "มโนมัย", "ไกรสร"], correct: "ทิชากร", category: "หมวดสัตว์" },
+          { q: "คำว่า 'กุญชร' และ 'หัตถี' หมายถึงสัตว์ชนิดใด?", options: ["ม้า", "ช้าง", "ลิง", "วัว"], correct: "ช้าง", category: "หมวดสัตว์" },
+          { q: "ข้อใดแปลว่า 'ม้า'?", options: ["ดุรงค์", "มัจฉา", "วานร", "พฤษภ"], correct: "ดุรงค์", category: "หมวดสัตว์" },
+          { q: "คำไวพจน์ของ 'ปลา' คือข้อใด?", options: ["มัตสยา", "ไกรสร", "ภมร", "วอก"], correct: "มัตสยา", category: "หมวดสัตว์" },
+          { q: "คำว่า 'กุมาร' และ 'ดรุณ' หมายถึงใคร?", options: ["ผู้ใหญ่", "เด็ก", "เทวดา", "ยักษ์"], correct: "เด็ก", category: "หมวดบุคคล" },
+          { q: "คำไวพจน์ของ 'ผู้หญิง' คือข้อใด?", options: ["วนิดา", "กัลยา", "อะมาตย์", "สมณะ"], correct: "วนิดา", category: "หมวดบุคคล" },
+          { q: "คำว่า 'อสูร' และ 'รากษส' หมายถึงสิ่งใด?", options: ["เทวดา", "ยักษ์", "มนุษย์", "สัตว์"], correct: "ยักษ์", category: "หมวดบุคคล" },
+          { q: "คำว่า 'มโน' และ 'หทัย' หมายถึงอะไร?", options: ["ร่างกาย", "สายตา", "ใจ", "ความโกรธ"], correct: "ใจ", category: "หมวดทั่วไป" },
+          { q: "ข้อใดคือคำไวพจน์ของ 'เมือง'?", options: ["ธานี", "อาสัญ", "วิลาศ", "รจนา"], correct: "ธานี", category: "หมวดสถานที่" },
+          { q: "ข้อใดแปลว่า 'ช้าง'?", options: ["คช", "พานร", "มัจฉาชาติ", "พิรุณ"], correct: "คช", category: "หมวดสัตว์" },
+          { q: "คำว่า 'สกุณา' หมายถึงสัตว์ชนิดใด?", options: ["นก", "ช้าง", "ปลา", "ลิง"], correct: "นก", category: "หมวดสัตว์" },
+          { q: "ข้อใดคือคำไวพจน์ของ 'ลิง'?", options: ["กบี่", "คาวี", "สินธพ", "ไกรสร"], correct: "กบี่", category: "หมวดสัตว์" },
+          { q: "คำว่า 'ราชสีห์' หมายถึงสัตว์ชนิดใด?", options: ["ช้าง", "สิงโต", "ม้า", "งู"], correct: "สิงโต", category: "หมวดสัตว์" },
+          { q: "ข้อใดเป็นคำไวพจน์ของ 'งู'?", options: ["ภุชงค์", "มธุกร", "พานร", "มีน"], correct: "ภุชงค์", category: "หมวดสัตว์" },
+          { q: "คำว่า 'ภมร' หมายถึงสัตว์ชนิดใด?", options: ["แมลงภู่", "ปลา", "ม้า", "ช้าง"], correct: "แมลงภู่", category: "หมวดสัตว์" },
+          { q: "ข้อใดคือคำไวพจน์ของ 'พระมหากษัตริย์'?", options: ["ภูมินทร์", "มานพ", "วนิดา", "อมร"], correct: "ภูมินทร์", category: "หมวดบุคคล" },
+          { q: "คำว่า 'สุร' และ 'เทวา' หมายถึงใคร?", options: ["เทวดา", "ยักษ์", "เด็ก", "ผู้หญิง"], correct: "เทวดา", category: "หมวดบุคคล" },
+          { q: "ข้อใดคือคำไวพจน์ของ 'ศัตรู'?", options: ["ปรปักษ์", "เกลอ", "สหาย", "มิตร"], correct: "ปรปักษ์", category: "หมวดบุคคล" },
+          { q: "คำว่า 'เกลอ' หมายถึงข้อใด?", options: ["ศัตรู", "เพื่อน", "ยักษ์", "เด็ก"], correct: "เพื่อน", category: "หมวดบุคคล" },
+          { q: "ข้อใดเป็นคำไวพจน์ของ 'ตา' (ร่างกาย)?", options: ["เนตร", "กมล", "กายา", "ธานี"], correct: "เนตร", category: "หมวดร่างกาย" },
+          { q: "คำว่า 'สรีระ' หมายถึงข้อใด?", options: ["ร่างกาย", "จิตใจ", "ดวงตา", "เมือง"], correct: "ร่างกาย", category: "หมวดร่างกาย" },
+          { q: "ข้อใดคือคำไวพจน์ของ 'ความตาย'?", options: ["มรณะ", "รูจี", "โสภา", "พารา"], correct: "มรณะ", category: "หมวดทั่วไป" },
+          { q: "คำว่า 'วิลาศ' หมายถึงอะไร?", options: ["ตาย", "สวยงาม", "เมือง", "ใจ"], correct: "สวยงาม", category: "หมวดทั่วไป" },
+          { q: "ข้อใดเป็นคำไวพจน์ของ 'ม้า'?", options: ["สินธพ", "วานร", "คช", "มัจฉา"], correct: "สินธพ", category: "หมวดสัตว์" }
+        ];
+
+        const App = () => {
+          const [screen, setScreen] = useState('LOBBY'); 
+          const [gameMode, setGameMode] = useState('SOLO'); 
+          const [playerCount, setPlayerCount] = useState(2);
+          const [teamNames, setTeamNames] = useState(TEAM_COLORS.map(t => t.defaultName));
+          const [scores, setScores] = useState([0, 0, 0, 0, 0]);
+          const [positions, setPositions] = useState([0, 0, 0, 0, 0]);
+          const [currentTurn, setCurrentTurn] = useState(0);
+          const [totalRolls, setTotalRolls] = useState(0);
+          const [diceValue, setDiceValue] = useState(1);
+          const [isRolling, setIsRolling] = useState(false);
+          const [hasRolledInTurn, setHasRolledInTurn] = useState(false);
+          const [activeQuestion, setActiveQuestion] = useState(null);
+          const [timeLeft, setTimeLeft] = useState(15);
+          const [specialEffectMsg, setSpecialEffectMsg] = useState("");
+          const [isMuted, setIsMuted] = useState(false);
+          const [specialTiles, setSpecialTiles] = useState({});
+          const [questionPool, setQuestionPool] = useState([...FULL_QUESTION_BANK]);
+          const [isAiThinking, setIsAiThinking] = useState(false);
+          const [aiSabotageTime, setAiSabotageTime] = useState(0); 
+          const [blockedOption, setBlockedOption] = useState(null); 
+          const [editingTeamIdx, setEditingTeamIdx] = useState(null);
+          const [actionLog, setActionLog] = useState("ยินดีต้อนรับสู่เกม! ทอยลูกเต๋าเพื่อเริ่มเดิน");
+
+          const timerRef = useRef(null);
+          const sabotageTimerRef = useRef(null);
+          const audioCtxRef = useRef(null);
+
+          const randomizeItems = () => {
+            const newTiles = {};
+            const boardIndices = Array.from({ length: 33 }, (_, i) => i + 1);
+            const shuffled = boardIndices.sort(() => 0.5 - Math.random());
+            for (let i = 0; i < 3; i++) {
+              newTiles[shuffled.pop()] = { type: 'ladder', icon: <span className="text-white text-sm">🪜</span>, label: 'เจอเนินสูง! ปีนขึ้นไป +4', effect: 4, color: 'bg-blue-400' };
+            }
+            for (let i = 0; i < 3; i++) {
+              newTiles[shuffled.pop()] = { type: 'lightning', icon: <span className="text-white text-sm">⚡</span>, label: 'พลังสายฟ้า! รับคะแนน x2', effect: 0, color: 'bg-yellow-400' };
+            }
+            for (let i = 0; i < 3; i++) {
+              newTiles[shuffled.pop()] = { type: 'turtle', icon: <span className="text-white text-sm">🐢</span>, label: 'เจอพื้นลื่น! ถอยหลัง -3', effect: -3, color: 'bg-red-400' };
+            }
+            setSpecialTiles(newTiles);
+            setActionLog("✨ ไอเทมบนกระดานถูกสลับตำแหน่งใหม่แล้ว!");
+          };
+
+          useEffect(() => {
+            randomizeItems();
+          }, []);
+
+          useEffect(() => {
+            if (gameMode === 'SOLO' && currentTurn === 1 && !isRolling && !hasRolledInTurn && screen === 'BOARD') {
+                const aiRollTimer = setTimeout(() => {
+                    rollDice();
+                }, 2000);
+                return () => clearTimeout(aiRollTimer);
+            }
+
+            if (gameMode === 'SOLO' && currentTurn === 1 && screen === 'QUESTION') {
+                setAiSabotageTime(5); 
+                setIsAiThinking(true);
+                setBlockedOption(null);
+
+                sabotageTimerRef.current = setInterval(() => {
+                    setAiSabotageTime(prev => {
+                        if (prev <= 1) {
+                            clearInterval(sabotageTimerRef.current);
+                            executeAiChoice();
+                            return 0;
+                        }
+                        return prev - 1;
+                    });
+                }, 1000);
+
+                return () => clearInterval(sabotageTimerRef.current);
+            }
+          }, [currentTurn, screen, isRolling, hasRolledInTurn]);
+
+          const executeAiChoice = () => {
+            setIsAiThinking(false);
+            
+            let availableOptions = activeQuestion.options;
+            if (blockedOption !== null) {
+                availableOptions = activeQuestion.options.filter(opt => opt !== blockedOption);
+            }
+
+            const isCorrectInPool = availableOptions.includes(activeQuestion.correct);
+            const aiWillBeCorrect = Math.random() < 0.8;
+
+            if (isCorrectInPool && aiWillBeCorrect) {
+                handleAnswer(activeQuestion.correct);
+            } else {
+                const wrongInPool = availableOptions.filter(opt => opt !== activeQuestion.correct);
+                if (wrongInPool.length > 0) {
+                    handleAnswer(wrongInPool[Math.floor(Math.random() * wrongInPool.length)]);
+                } else {
+                    handleAnswer(availableOptions[0]);
+                }
+            }
+          };
+
+          const initAudio = () => {
+            if (!audioCtxRef.current) {
+              audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtxRef.current.state === 'suspended') {
+              audioCtxRef.current.resume();
+            }
+          };
+
+          const playSound = (type) => {
+            if (isMuted || !audioCtxRef.current) return;
+            const ctx = audioCtxRef.current;
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            if (type === 'tick') {
+              osc.type = 'sine';
+              osc.frequency.setValueAtTime(800, ctx.currentTime);
+              gain.gain.setValueAtTime(0.05, ctx.currentTime);
+              gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
+              osc.start(); osc.stop(ctx.currentTime + 0.1);
+            } else if (type === 'dice') {
+              osc.type = 'square';
+              osc.frequency.setValueAtTime(150 + Math.random() * 200, ctx.currentTime);
+              gain.gain.setValueAtTime(0.03, ctx.currentTime);
+              gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.05);
+              osc.start(); osc.stop(ctx.currentTime + 0.05);
+            } else if (type === 'correct') {
+              osc.type = 'triangle';
+              osc.frequency.setValueAtTime(523.25, ctx.currentTime);
+              osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.3);
+              gain.gain.setValueAtTime(0.2, ctx.currentTime);
+              gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
+              osc.start(); osc.stop(ctx.currentTime + 0.4);
+            } else if (type === 'wrong') {
+              osc.type = 'sawtooth';
+              osc.frequency.setValueAtTime(150, ctx.currentTime);
+              osc.frequency.exponentialRampToValueAtTime(50, ctx.currentTime + 0.5);
+              gain.gain.setValueAtTime(0.2, ctx.currentTime);
+              gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+              osc.start(); osc.stop(ctx.currentTime + 0.5);
+            } else if (type === 'shuffle') {
+              osc.type = 'sine';
+              osc.frequency.setValueAtTime(1000, ctx.currentTime);
+              osc.frequency.linearRampToValueAtTime(400, ctx.currentTime + 0.5);
+              gain.gain.setValueAtTime(0.1, ctx.currentTime);
+              gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+              osc.start(); osc.stop(ctx.currentTime + 0.5);
+            }
+          };
+
+          useEffect(() => {
+            if (screen === 'QUESTION' && timeLeft > 0 && !isAiThinking) {
+              timerRef.current = setInterval(() => {
+                playSound('tick');
+                setTimeLeft(prev => prev - 1);
+              }, 1000);
+            } else if (timeLeft === 0 && screen === 'QUESTION' && !isAiThinking) {
+              playSound('wrong');
+              setActionLog(`${teamNames[currentTurn]} หมดเวลาตอบ! พลาดโอกาสขยับตัวไปอย่างน่าเสียดาย`);
+              setScreen('PENALTY');
+            }
+            return () => clearInterval(timerRef.current);
+          }, [screen, timeLeft, isAiThinking]);
+
+          const handleTeamNameChange = (index, value) => {
+            const newNames = [...teamNames];
+            newNames[index] = value;
+            setTeamNames(newNames);
+          };
+
+          const shuffleArray = (array) => {
+            const newArr = [...array];
+            for (let i = newArr.length - 1; i > 0; i--) {
+              const j = Math.floor(Math.random() * (i + 1));
+              [newArr[i], newArr[j]] = [newArr[j], newArr[i]];
+            }
+            return newArr;
+          };
+
+          const triggerQuestion = () => {
+            let currentPool = [...questionPool];
+            if (currentPool.length === 0) currentPool = [...FULL_QUESTION_BANK];
+            const randomIndex = Math.floor(Math.random() * currentPool.length);
+            const pickedQuestion = currentPool[randomIndex];
+            const updatedPool = currentPool.filter((_, idx) => idx !== randomIndex);
+            setQuestionPool(updatedPool);
+            const shuffledOptions = shuffleArray(pickedQuestion.options);
+            setActiveQuestion({ ...pickedQuestion, options: shuffledOptions });
+            setTimeLeft(15);
+            setScreen('QUESTION');
+          };
+
+          const rollDice = () => {
+            initAudio();
+            if (isRolling || hasRolledInTurn) return;
+            setIsRolling(true);
+            setHasRolledInTurn(true);
+            setSpecialEffectMsg("");
+            setActionLog(`${teamNames[currentTurn]} กำลังทอยลูกเต๋า...`);
+            
+            const newTotalRolls = totalRolls + 1;
+            setTotalRolls(newTotalRolls);
+            if (newTotalRolls % 5 === 0) {
+              randomizeItems();
+              playSound('shuffle');
+            }
+
+            let rolls = 0;
+            let lastValue = 1;
+            const interval = setInterval(() => {
+              playSound('dice');
+              lastValue = Math.floor(Math.random() * 6) + 1;
+              setDiceValue(lastValue);
+              rolls++;
+              if (rolls > 15) {
+                clearInterval(interval);
+                setIsRolling(false);
+                setActionLog(`${teamNames[currentTurn]} ทอยได้ ${lastValue} แต้ม! เตรียมตอบคำถาม...`);
+                setTimeout(() => {
+                  triggerQuestion();
+                }, 1000);
+              }
+            }, 80);
+          };
+
+          const handleAnswer = (selectedOption) => {
+            clearInterval(timerRef.current);
+            const targetPos = Math.min(positions[currentTurn] + diceValue, 34);
+            const tileEffect = specialTiles[targetPos];
+
+            if (selectedOption === activeQuestion.correct) {
+              playSound('correct');
+              let scoreGain = 1;
+              let finalPos = targetPos;
+              
+              let logMsg = `${teamNames[currentTurn]} ตอบถูก! ได้เดินหน้า ${diceValue} ช่อง`;
+              
+              if (tileEffect) {
+                if (tileEffect.type === 'lightning') {
+                  scoreGain = 2;
+                  setSpecialEffectMsg(tileEffect.label);
+                  logMsg += ` และ ${tileEffect.label}`;
+                } else if (tileEffect.type === 'ladder' || tileEffect.type === 'turtle') {
+                  finalPos = Math.max(0, Math.min(34, targetPos + tileEffect.effect));
+                  setSpecialEffectMsg(tileEffect.label);
+                  logMsg += ` และ ${tileEffect.label}`;
+                }
+              }
+              
+              setActionLog(logMsg);
+              const newScores = [...scores];
+              newScores[currentTurn] += scoreGain;
+              setScores(newScores);
+              const newPositions = [...positions];
+              newPositions[currentTurn] = finalPos;
+              setPositions(newPositions);
+              if (finalPos === 34) setScreen('WINNER');
+              else setScreen('RESULT');
+            } else {
+              playSound('wrong');
+              setActionLog(`${teamNames[currentTurn]} ตอบผิด! ต้องหยุดอยู่ที่เดิมในรอบนี้`);
+              setScreen('PENALTY');
+            }
+          };
+
+          const nextTurn = () => {
+            setHasRolledInTurn(false);
+            const nextPlayer = (currentTurn + 1) % playerCount;
+            setCurrentTurn(nextPlayer);
+            setActionLog(`เปลี่ยนตา! ถึงตาของ ${teamNames[nextPlayer]} แล้ว`);
+            setScreen('BOARD');
+          };
+
+          const renderBoard = () => {
+            const tiles = [];
+            for (let i = 0; i < 35; i++) {
+              const effect = specialTiles[i];
+              const isFinish = i === 34;
+              const isStart = i === 0;
+              
+              let bgStyle = 'bg-gradient-to-br from-white to-blue-50 border-blue-100';
+              if (isStart) bgStyle = 'bg-gradient-to-br from-green-50 to-green-100 border-green-300';
+              if (isFinish) bgStyle = 'bg-gradient-to-br from-yellow-100 to-yellow-200 border-yellow-400 border-dashed ring-2 ring-yellow-400 ring-offset-2';
+              
+              tiles.push(
+                <div 
+                  key={i} 
+                  className={`relative h-14 w-14 sm:h-16 sm:w-16 border-2 rounded-xl flex items-center justify-center font-bold text-lg
+                    ${bgStyle} transition-all duration-300 shadow-sm overflow-hidden group`}
+                >
+                  <div className="absolute top-0.5 left-1 flex items-center gap-0.5">
+                     {isFinish ? (
+                       <div className="flex items-center">
+                         <span className="text-[10px]">🏁</span>
+                         <span className="text-[8px] font-black text-red-600 ml-0.5 uppercase tracking-tighter">FINISH</span>
+                       </div>
+                     ) : (
+                       <span className="text-gray-400 opacity-70 text-[8px] sm:text-[10px] leading-none font-black">{i + 1}</span>
+                     )}
+                  </div>
+                  
+                  {effect && (
+                    <div className={`absolute top-0 right-0 w-6 h-6 ${effect.color} rounded-bl-xl flex items-center justify-center opacity-90 shadow-sm`}>
+                       <div className="scale-75">{effect.icon}</div>
+                    </div>
+                  )}
+                  
+                  <div className="flex flex-wrap justify-center gap-0.5 z-10 px-0.5 mt-2">
+                    {positions.slice(0, playerCount).map((pos, teamIdx) => (
+                      pos === i && (
+                        <div 
+                          key={teamIdx} 
+                          className={`w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center text-xl sm:text-2xl rounded-full ${TEAM_COLORS[teamIdx].color} border-2 border-white shadow-md animate-bounce transform transition-all relative z-20`}
+                        >
+                          {TEAM_COLORS[teamIdx].icon}
+                        </div>
+                      )
+                    ))}
+                  </div>
+                </div>
+              );
+            }
+            return tiles;
+          };
+
+          return (
+            <div className="p-2 sm:p-4 flex flex-col items-center justify-center text-gray-800 w-full">
+              <div className="fixed top-10 left-10 text-white/50 text-8xl pointer-events-none animate-pulse">☁️</div>
+              <div className="fixed bottom-20 right-10 text-white/60 text-9xl pointer-events-none">☁️</div>
+              <div className="fixed top-20 right-20 text-yellow-100/60 pointer-events-none animate-spin-slow text-7xl">⭐</div>
+
+              <button onClick={() => { initAudio(); setIsMuted(!isMuted); }} className="fixed top-4 right-4 z-50 p-3 bg-white/80 backdrop-blur rounded-full shadow-md border border-white text-blue-500 hover:bg-white transition-all text-xl">
+                {isMuted ? '🔇' : '🔊'}
+              </button>
+
+              {screen === 'LOBBY' && (
+                <div className="bg-white/90 backdrop-blur-sm p-6 sm:p-10 rounded-[2.5rem] shadow-2xl max-w-2xl w-full text-center border-4 border-white relative overflow-hidden">
+                  <h1 className="text-4xl sm:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 mb-2 tracking-tight drop-shadow-sm">🎯 คำไวพจน์มหาสนุก</h1>
+                  <p className="text-gray-500 mb-6 font-bold uppercase text-xs tracking-widest">เกมกระดานสุดพรีเมียม | 35 ช่อง</p>
+                  
+                  <div className="grid grid-cols-2 gap-4 mb-8">
+                     <button onClick={() => { setGameMode('SOLO'); setPlayerCount(2); }} className={`p-4 rounded-3xl border-4 transition-all flex flex-col items-center gap-2 ${gameMode === 'SOLO' ? 'border-blue-500 bg-blue-50 scale-105 shadow-lg' : 'border-gray-100 bg-white opacity-60 hover:opacity-100'}`}>
+                        <span className="text-4xl drop-shadow-sm">🤖</span>
+                        <span className="font-black text-sm">ท้าชิงกับ AI</span>
+                        <span className="text-[10px] text-blue-400 font-bold tracking-tighter uppercase">(โหมดขัดขวาง 5 วิ)</span>
+                     </button>
+                     <button onClick={() => { setGameMode('MULTI'); }} className={`p-4 rounded-3xl border-4 transition-all flex flex-col items-center gap-2 ${gameMode === 'MULTI' ? 'border-blue-500 bg-blue-50 scale-105 shadow-lg' : 'border-gray-100 bg-white opacity-60 hover:opacity-100'}`}>
+                        <span className="text-4xl drop-shadow-sm">👥</span>
+                        <span className="font-black text-sm">เล่นกับเพื่อน</span>
+                     </button>
+                  </div>
+
+                  {gameMode === 'MULTI' && (
+                    <div className="mb-8 animate-fade-in">
+                        <h3 className="text-xs font-black text-gray-400 uppercase mb-4 tracking-widest">เลือกจำนวนผู้เล่น</h3>
+                        <div className="flex justify-center gap-2">
+                        {[2, 3, 4, 5].map(num => (
+                            <button key={num} onClick={() => setPlayerCount(num)} className={`w-12 h-12 rounded-2xl font-black transition-all ${playerCount === num ? 'bg-gradient-to-br from-blue-500 to-blue-600 text-white scale-110 ring-4 ring-blue-100 shadow-md' : 'bg-gray-50 text-gray-400 border border-gray-100 hover:bg-gray-100'}`}>{num}</button>
+                        ))}
+                        </div>
+                    </div>
+                  )}
+                  
+                  <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-3xl mb-8 border border-blue-100 text-left shadow-inner">
+                    <h3 className="text-lg font-bold mb-4 flex items-center gap-2 text-indigo-700"><span className="text-xl">✏️</span> ตั้งชื่อทีมประจำตัว</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {TEAM_COLORS.slice(0, playerCount).map((team, idx) => (
+                        <div key={idx} className="bg-white p-3 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-3 focus-within:ring-2 focus-within:ring-blue-300 transition-all">
+                          <div className={`w-10 h-10 rounded-full ${team.color} flex items-center justify-center text-xl border-2 border-white shadow-sm`}>{team.icon}</div>
+                          <div className="flex-1">
+                            <span className="text-[9px] font-black text-gray-400 uppercase leading-none block mb-0.5">TEAM {idx + 1} {gameMode === 'SOLO' && idx === 1 ? '(บอท)' : ''}</span>
+                            <input 
+                              disabled={gameMode === 'SOLO' && idx === 1}
+                              type="text" value={teamNames[idx]} onChange={(e) => handleTeamNameChange(idx, e.target.value)} 
+                              className="w-full focus:outline-none font-bold text-gray-700 bg-transparent disabled:text-red-500"
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <button onClick={() => { initAudio(); setScreen('BOARD'); }} className="w-full py-5 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white rounded-2xl text-2xl font-black shadow-[0_8px_0_rgb(67,56,202)] active:translate-y-2 active:shadow-none transition-all">เริ่มเกมทันที!</button>
+                </div>
+              )}
+
+              {screen === 'BOARD' && (
+                <div className="w-full max-w-6xl flex flex-col lg:flex-row gap-6 animate-fade-in z-10">
+                  <div className="flex-1 bg-white/90 backdrop-blur-sm p-4 sm:p-6 rounded-[2.5rem] shadow-2xl border-4 border-white relative overflow-hidden flex flex-col">
+                    
+                    <div className="bg-indigo-50 border border-indigo-100 text-indigo-700 px-4 py-2 rounded-xl mb-4 text-sm font-bold flex items-center gap-2 shadow-inner">
+                       <span className="animate-pulse">🔔</span> {actionLog}
+                    </div>
+
+                    <div className="flex justify-between items-center mb-6">
+                      <div className="flex items-center gap-4">
+                         <div className={`w-14 h-14 rounded-2xl shadow-lg flex items-center justify-center text-3xl ${TEAM_COLORS[currentTurn].color} border-2 border-white transform transition-transform ${isRolling ? 'scale-110' : ''}`}>{TEAM_COLORS[currentTurn].icon}</div>
+                         <div>
+                            <p className="text-[10px] sm:text-xs font-bold text-gray-400 uppercase block mb-1">
+                              {gameMode === 'SOLO' && currentTurn === 1 ? 'ตาของ AI' : 'ถึงตาของคุณ'}
+                            </p>
+                            <p className="text-lg sm:text-xl font-black text-gray-800">{teamNames[currentTurn]}</p>
+                         </div>
+                      </div>
+                      <div className="flex flex-col items-end">
+                        <div className="bg-gradient-to-r from-gray-100 to-gray-50 px-4 py-1.5 rounded-full font-black text-gray-600 text-xs shadow-sm border border-gray-200">ช่องที่ {positions[currentTurn] + 1} / 35</div>
+                        <div className="flex items-center gap-1 mt-1"><span className="text-[9px] font-bold text-indigo-400 uppercase tracking-widest">ทอยสะสม: {totalRolls}</span></div>
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-7 gap-1.5 justify-items-center mb-auto bg-gray-50/50 p-3 rounded-3xl border border-gray-100 shadow-inner">{renderBoard()}</div>
+                    
+                    <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm mt-6">
+                       <div className="space-y-4">
+                          {TEAM_COLORS.slice(0, playerCount).map((t, i) => (
+                            <div key={i} className="flex items-center gap-2">
+                              <div className="w-5 text-center text-sm">{t.icon}</div>
+                              <div className="flex-1 h-2.5 bg-gray-100 rounded-full overflow-hidden shadow-inner">
+                                <div className={`h-full ${t.color} transition-all duration-1000 ease-out`} style={{ width: `${(positions[i] / 34) * 100}%` }}></div>
+                              </div>
+                            </div>
+                          ))}
+                       </div>
+                    </div>
+                  </div>
+
+                  <div className="w-full lg:w-80 flex flex-col gap-6 z-10">
+                    <div className="bg-white/90 backdrop-blur-sm p-6 rounded-[2.5rem] shadow-xl border border-white">
+                      <h3 className="text-lg font-black mb-4 flex items-center gap-2"><span className="text-xl">🏆</span> ลีดเดอร์บอร์ด</h3>
+                      <div className="space-y-2">
+                        {TEAM_COLORS.slice(0, playerCount).map((team, idx) => (
+                          <div key={idx} className={`flex items-center justify-between p-3 rounded-2xl transition-all ${idx === currentTurn ? 'bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 shadow-md scale-105 z-10 relative' : 'bg-gray-50 border border-transparent opacity-80'}`}>
+                            <div className="flex items-center gap-2 flex-1">
+                              <span>{team.icon}</span>
+                              {editingTeamIdx === idx ? (
+                                <input autoFocus type="text" value={teamNames[idx]} onBlur={() => setEditingTeamIdx(null)} onKeyDown={(e) => e.key === 'Enter' && setEditingTeamIdx(null)} onChange={(e) => handleTeamNameChange(idx, e.target.value)} className="font-bold text-xs bg-white border border-indigo-300 rounded px-1 w-full focus:outline-none focus:ring-1 focus:ring-indigo-500" />
+                              ) : (
+                                <span className="font-bold text-xs truncate max-w-[80px] cursor-pointer hover:text-indigo-600" onClick={() => setEditingTeamIdx(idx)}>{teamNames[idx]}</span>
+                              )}
+                            </div>
+                            <span className={`font-black text-xl ${team.text}`}>{scores[idx]}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    
+                    <div className="bg-white/90 backdrop-blur-sm p-6 rounded-[2.5rem] shadow-xl flex flex-col items-center border border-white">
+                      <div className="relative mb-6 mt-2">
+                        <div className={`w-24 h-24 rounded-[2rem] flex items-center justify-center text-white transition-all shadow-[0_8px_0_rgba(0,0,0,0.1)] ${isRolling ? 'bg-indigo-500 animate-spin' : hasRolledInTurn ? 'bg-gray-400' : 'bg-gradient-to-br from-blue-500 to-indigo-600 shadow-[0_8px_0_rgb(67,56,202)] animate-pulse'}`}>
+                          {hasRolledInTurn && !isRolling ? <span className="text-4xl">🔒</span> : <span className="text-5xl">🎲</span>}
+                        </div>
+                        <div className="absolute -top-3 -right-3 bg-yellow-400 w-12 h-12 rounded-full border-4 border-white flex items-center justify-center font-black text-2xl shadow-lg text-yellow-900">{diceValue}</div>
+                      </div>
+                      <button 
+                        disabled={isRolling || hasRolledInTurn || (gameMode === 'SOLO' && currentTurn === 1)}
+                        onClick={rollDice} 
+                        className={`w-full py-5 font-black rounded-2xl transition-all ${isRolling || hasRolledInTurn || (gameMode === 'SOLO' && currentTurn === 1) ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-[0_6px_0_rgb(67,56,202)] hover:shadow-[0_4px_0_rgb(67,56,202)] hover:translate-y-1 active:translate-y-2 active:shadow-none'}`}
+                      >
+                        {gameMode === 'SOLO' && currentTurn === 1 ? 'AI กำลังเล่น...' : isRolling ? 'กำลังหมุนลูกเต๋า...' : 'ทอยลูกเต๋าเลย!'}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {screen === 'QUESTION' && (
+                <div className="bg-white p-6 sm:p-10 rounded-[3rem] shadow-2xl max-w-3xl w-full border-4 border-blue-500 relative overflow-hidden animate-bounce-short z-10">
+                  <div className={`absolute top-0 left-0 h-2 transition-all duration-1000 ease-linear ${isAiThinking ? 'bg-red-500' : 'bg-gradient-to-r from-blue-400 to-indigo-500'}`} style={{ width: `${((isAiThinking ? aiSabotageTime / 5 : timeLeft / 15)) * 100}%` }}></div>
+                  
+                  <div className="bg-gradient-to-r from-indigo-50 to-blue-50 border border-indigo-100 rounded-2xl py-3 px-6 mb-6 flex items-center justify-between shadow-sm">
+                    <div className="flex items-center gap-3">
+                        <span className="text-2xl drop-shadow-md">{TEAM_COLORS[currentTurn].icon}</span>
+                        <span className="font-black text-indigo-700 text-sm sm:text-lg">ทอยได้ {diceValue} แต้ม</span>
+                    </div>
+                    <div className="flex gap-2">
+                        <span className="bg-blue-100 text-blue-700 text-[10px] px-3 py-1 rounded-full font-bold uppercase tracking-widest">{activeQuestion.category}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between mb-8">
+                     <div className={`px-5 py-2 rounded-full text-white font-bold shadow-md ${TEAM_COLORS[currentTurn].color} flex items-center gap-2`}>
+                        ตอบโดย: {teamNames[currentTurn]}
+                     </div>
+                     <div className={`flex items-center gap-2 font-black text-3xl drop-shadow-sm ${isAiThinking ? 'text-red-500' : timeLeft <= 5 ? 'text-red-500 animate-ping' : 'text-indigo-500'}`}>
+                        {isAiThinking ? <span className="text-2xl">🛡️</span> : <span className="text-2xl">⏱️</span>} 
+                        {isAiThinking ? `${aiSabotageTime}s` : `${timeLeft}s`}
+                     </div>
+                  </div>
+
+                  {isAiThinking && (
+                     <div className="mb-8 p-5 bg-gradient-to-r from-red-500 to-rose-600 rounded-2xl text-center shadow-lg transform transition-all animate-pulse">
+                        <p className="text-white font-black text-xl flex items-center justify-center gap-2"><span className="text-2xl">🛡️</span> บล็อกคำตอบของ AI!</p>
+                        <p className="text-red-100 text-sm font-bold mt-1">คลิกข้อที่คิดว่าถูกที่สุด เพื่อห้ามไม่ให้ AI ตอบข้อนั้น</p>
+                     </div>
+                  )}
+
+                  <h2 className="text-2xl sm:text-4xl font-black text-center text-gray-800 mb-10 leading-tight">"{activeQuestion.q}"</h2>
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {activeQuestion.options.map((opt, idx) => (
+                      <button 
+                        key={idx} 
+                        onClick={() => {
+                           if (isAiThinking) setBlockedOption(opt);
+                           else handleAnswer(opt);
+                        }} 
+                        className={`group w-full py-5 px-6 text-left text-lg font-black border-4 transition-all shadow-sm flex items-center justify-between rounded-2xl
+                          ${blockedOption === opt 
+                            ? 'border-red-500 bg-red-500 text-white scale-[1.02] shadow-lg' 
+                            : 'border-gray-100 bg-white hover:border-indigo-400 hover:shadow-md'}
+                          ${!isAiThinking && 'hover:bg-gradient-to-r hover:from-blue-500 hover:to-indigo-600 hover:text-white hover:border-transparent active:scale-95'}`}
+                      >
+                        <span>{opt}</span>
+                        {blockedOption === opt && <span className="animate-bounce text-xl">🔒</span>}
+                        {!isAiThinking && <span className="opacity-0 group-hover:opacity-100 transition-opacity text-xl">➡️</span>}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {screen === 'RESULT' && (
+                <div className="bg-white p-10 rounded-[3rem] shadow-2xl max-w-md w-full text-center border-4 border-green-400 relative overflow-hidden z-10">
+                  <div className="absolute -top-10 -right-10 w-40 h-40 bg-green-50 rounded-full opacity-50"></div>
+                  <div className="w-24 h-24 bg-gradient-to-br from-green-100 to-green-200 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6 text-5xl shadow-inner border border-green-300">{TEAM_COLORS[currentTurn].icon}</div>
+                  <h2 className="text-4xl font-black text-green-600 mb-4">{gameMode === 'SOLO' && currentTurn === 1 ? 'AI ตอบถูก!' : 'สุดยอด! ถูกต้อง'}</h2>
+                  <p className="text-xl text-gray-600 mb-4 font-bold">{teamNames[currentTurn]} ได้เดินหน้า {diceValue} ช่อง</p>
+                  {specialEffectMsg && <div className="bg-gradient-to-r from-blue-100 to-indigo-100 text-indigo-700 p-4 rounded-2xl font-black mb-6 animate-bounce shadow-sm border border-indigo-200">{specialEffectMsg}</div>}
+                  <button onClick={nextTurn} className="w-full py-5 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-2xl text-2xl font-black shadow-[0_6px_0_rgb(5,150,105)] active:translate-y-1 active:shadow-none transition-all mt-4">ไปตาถัดไป</button>
+                </div>
+              )}
+
+              {screen === 'PENALTY' && (
+                <div className="bg-white p-10 rounded-[3rem] shadow-2xl max-w-md w-full text-center border-4 border-red-400 relative overflow-hidden animate-shake z-10">
+                  <div className="absolute -top-10 -left-10 w-40 h-40 bg-red-50 rounded-full opacity-50"></div>
+                  <div className="w-24 h-24 bg-gradient-to-br from-red-100 to-red-200 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6 text-5xl opacity-80 shadow-inner border border-red-300">{TEAM_COLORS[currentTurn].icon}</div>
+                  <h2 className="text-4xl font-black text-red-600 mb-4">{gameMode === 'SOLO' && currentTurn === 1 ? 'AI พลาดแล้ว!' : 'ว้า... ยังไม่ถูกนะ'}</h2>
+                  <p className="text-xl text-gray-600 mb-8 font-bold">{teamNames[currentTurn]} ต้องหยุดรอที่เดิม</p>
+                  <button onClick={nextTurn} className="w-full py-5 bg-gradient-to-r from-red-500 to-rose-600 text-white rounded-2xl text-2xl font-black shadow-[0_6px_0_rgb(225,29,72)] active:translate-y-1 active:shadow-none transition-all">เปลี่ยนคนเล่น</button>
+                </div>
+              )}
+
+              {screen === 'WINNER' && (
+                <div className="bg-white p-12 rounded-[4rem] shadow-2xl max-w-xl w-full text-center border-8 border-yellow-400 relative overflow-hidden animate-confetti z-10">
+                  <div className="absolute inset-0 bg-yellow-50 opacity-30"></div>
+                  <div className="text-8xl mb-6 animate-bounce drop-shadow-xl">{TEAM_COLORS[currentTurn].icon}</div>
+                  <h2 className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-500 to-amber-600 mb-2 drop-shadow-sm">{gameMode === 'SOLO' && currentTurn === 1 ? 'AI เป็นผู้ชนะ!' : 'คุณคือแชมป์เปี้ยน!'}</h2>
+                  <p className="text-3xl font-black text-yellow-600 mb-10">🏆 {teamNames[currentTurn]} 🏆</p>
+                  <div className="bg-white/80 backdrop-blur p-8 rounded-[2rem] mb-10 text-left border-2 border-yellow-100 shadow-xl relative z-10">
+                    <h3 className="font-black text-gray-400 uppercase text-[10px] mb-6 tracking-widest text-center">สรุปผลคะแนน</h3>
+                    <div className="space-y-4">
+                      {TEAM_COLORS.slice(0, playerCount).map((t, i) => (
+                        <div key={i} className={`flex justify-between items-center font-black text-xl p-4 rounded-xl transition-all ${i === currentTurn ? 'bg-gradient-to-r from-yellow-100 to-amber-100 text-yellow-800 shadow-md scale-105 border border-yellow-200' : 'text-gray-500 bg-gray-50'}`}>
+                          <div className="flex items-center gap-3"><span className="text-2xl drop-shadow-sm">{t.icon}</span><span>{teamNames[i]}</span></div>
+                          <span>{scores[i]} pts</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <button onClick={() => window.location.reload()} className="w-full py-6 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-3xl text-3xl font-black shadow-[0_10px_0_rgb(67,56,202)] hover:shadow-[0_5px_0_rgb(67,56,202)] hover:translate-y-1 active:translate-y-2 active:shadow-none transition-all relative z-10">เล่นใหม่อีกครั้ง</button>
+                </div>
+              )}
+            </div>
+          );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

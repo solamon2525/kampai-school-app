@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pizza เศษส่วน — บ้านคำไผ่</title>
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--bg:#0d1117;--surface:#1c2128;--border:#30363d;--text:#e6edf3;--muted:#8b949e;
+         --green:#3fb950;--red:#e53935;--yellow:#ffd700;--orange:#ff7043}
+    body{font-family:'Kanit',sans-serif;background:var(--bg);color:var(--text);
+      min-height:100vh;display:flex;flex-direction:column}
+    .nav{background:rgba(13,17,23,.9);backdrop-filter:blur(10px);
+      border-bottom:1px solid var(--border);display:flex;align-items:center;
+      justify-content:space-between;padding:0 16px;height:50px;z-index:10}
+    .back{text-decoration:none;color:var(--muted);font-size:13px;padding:4px 12px;
+      border:1px solid var(--border);border-radius:8px;transition:.2s}
+    .back:hover{color:var(--text);border-color:var(--red)}
+    .nav-title{font-weight:700;font-size:15px}
+    main{flex:1;display:flex;flex-direction:column;align-items:center;
+      justify-content:center;padding:20px;gap:18px}
+    .hud{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+    .hud-box{background:var(--surface);border:1px solid var(--border);border-radius:12px;
+      padding:8px 20px;text-align:center;min-width:80px}
+    .hud-val{font-size:1.6rem;font-weight:700;display:block}
+    .hud-val.y{color:var(--yellow)}.hud-val.g{color:var(--green)}
+    .hud-label{font-size:11px;color:var(--muted);display:block}
+    /* PIZZA */
+    canvas{display:block;width:220px;height:220px;margin:0 auto}
+    .q-text{font-size:1.15rem;font-weight:600;text-align:center;color:var(--text);
+      background:var(--surface);border:1px solid var(--border);border-radius:12px;
+      padding:12px 20px;max-width:400px;width:100%}
+    .choices{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;width:100%;max-width:400px}
+    .choice{background:var(--bg);border:2px solid var(--border);border-radius:12px;
+      padding:14px;font-family:inherit;font-size:1.3rem;font-weight:700;
+      color:var(--text);cursor:pointer;transition:.2s;text-align:center}
+    .choice:hover{border-color:var(--orange);background:rgba(255,112,67,.1);transform:translateY(-2px)}
+    .choice.correct{border-color:var(--green);background:rgba(63,185,80,.15);color:var(--green)}
+    .choice.wrong{border-color:var(--red);background:rgba(229,57,53,.15);color:var(--red)}
+    .fb{height:26px;text-align:center;font-size:15px;font-weight:600}
+    .fb.ok{color:var(--green)}.fb.no{color:var(--red)}
+    .overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;
+      display:none;align-items:center;justify-content:center}
+    .overlay.on{display:flex}
+    .panel{background:var(--surface);border:1px solid var(--border);border-radius:20px;
+      padding:28px 34px;text-align:center;max-width:360px;width:90%}
+    .score-big{font-size:3rem;font-weight:700;color:var(--yellow);margin:12px 0}
+    .btn{background:var(--red);color:#fff;border:none;border-radius:12px;
+      padding:12px 24px;font-family:inherit;font-size:14px;font-weight:600;
+      cursor:pointer;transition:.2s;margin:4px}
+    .btn:hover{background:#b71c1c;transform:translateY(-2px)}
+    .btn-outline{background:transparent;border:2px solid var(--border);color:var(--text)}
+    .btn-outline:hover{background:var(--border)}
+  </style>
+</head>
+<body>
+<nav class="nav">
+  <a class="back" href="../index.html">← กลับ</a>
+  <span class="nav-title">🍕 Pizza เศษส่วน</span>
+  <span style="width:60px"></span>
+</nav>
+<main>
+  <div class="hud">
+    <div class="hud-box"><span class="hud-val y" id="score">0</span><span class="hud-label">คะแนน</span></div>
+    <div class="hud-box"><span class="hud-val g" id="q-num">1</span><span class="hud-label">ข้อที่</span></div>
+    <div class="hud-box"><span class="hud-val" id="lives">❤️❤️❤️</span><span class="hud-label">ชีวิต</span></div>
+  </div>
+  <canvas id="pizza" width="220" height="220"></canvas>
+  <div class="q-text" id="q-text"></div>
+  <div class="fb" id="fb"></div>
+  <div class="choices" id="choices"></div>
+</main>
+<div class="overlay" id="modal">
+  <div class="panel">
+    <h2 id="modal-emoji">🍕</h2>
+    <h3 id="modal-title" style="margin-bottom:8px">เกมจบแล้ว!</h3>
+    <div class="score-big" id="final-score">0</div>
+    <p style="color:var(--muted);margin-bottom:16px">คะแนนสุดท้าย</p>
+    <button class="btn" onclick="restartGame()">🔄 เล่นใหม่</button>
+    <button class="btn btn-outline" onclick="location.href='../index.html'">🏠 กลับ</button>
+  </div>
+</div>
+<script>
+let score=0,lives=3,qNum=0,answered=false;
+const maxQ=15;
+
+const PIZZA_COLORS=["#e53935","#fb8c00","#fdd835","#43a047","#1e88e5","#8e24aa","#00acc1","#f06292"];
+
+function gcd(a,b){return b===0?a:gcd(b,a%b);}
+function fracStr(n,d){const g=gcd(n,d);return `${n/g}/${d/g}`;}
+
+function genQuestion(){
+  answered=false;
+  const denoms=[2,3,4,5,6,8];
+  const d=denoms[Math.floor(Math.random()*denoms.length)];
+  const n=1+Math.floor(Math.random()*(d-1));
+  drawPizza(n,d);
+
+  // Question types
+  const qType=Math.random();
+  let qText, answer, choicePool=new Set();
+  if(qType<0.4){
+    qText=`พิซซ่าถูกแบ่งเป็น ${d} ชิ้น สีแดงเป็นเศษส่วนอะไร?`;
+    answer=fracStr(n,d);
+    choicePool.add(answer);
+    while(choicePool.size<4){
+      let dn=denoms[Math.floor(Math.random()*denoms.length)];
+      let nn=1+Math.floor(Math.random()*(dn-1));
+      choicePool.add(fracStr(nn,dn));
+    }
+  }else if(qType<0.7){
+    const frac=fracStr(n,d);
+    qText=`ถ้าพิซซ่า ${d} ชิ้น กิน ${frac} ชิ้น — กินไปกี่ชิ้น?`;
+    const g=gcd(n,d);answer=String(n/g);
+    choicePool.add(answer);
+    for(let i=1;i<=d;i++) choicePool.add(String(i));
+    const arr=[...choicePool].slice(0,4);
+    if(!arr.includes(answer)) arr[3]=answer;
+    choicePool=new Set(arr);
+  }else{
+    qText=`${fracStr(n,d)} + ${fracStr(n,d)} = ?`;
+    let nn=n*2,dd=d;const g=gcd(nn,dd);nn/=g;dd/=g;
+    answer=`${nn}/${dd}`;choicePool.add(answer);
+    while(choicePool.size<4){
+      let dn=denoms[Math.floor(Math.random()*denoms.length)];
+      let rn=1+Math.floor(Math.random()*(dn-1));
+      choicePool.add(fracStr(rn,dn));
+    }
+  }
+  const arr=[...choicePool].sort(()=>Math.random()-.5);
+  document.getElementById("q-text").textContent=qText;
+  document.getElementById("choices").innerHTML=arr.map(c=>`<button class="choice" onclick="answer('${c}','${answer}')">${c}</button>`).join("");
+  document.getElementById("q-num").textContent=qNum;
+}
+
+function answer(chosen,correct){
+  if(answered)return;answered=true;
+  const btns=document.querySelectorAll(".choice");
+  btns.forEach(b=>{b.disabled=true;if(b.textContent===correct)b.classList.add("correct");});
+  const fb=document.getElementById("fb");
+  if(chosen===correct){
+    score+=10;
+    fb.className="fb ok";fb.textContent="🎉 ถูกต้อง! +10";
+  }else{
+    lives--;btns.forEach(b=>{if(b.textContent===chosen)b.classList.add("wrong");});
+    fb.className="fb no";fb.textContent=`❌ ผิด! คำตอบคือ ${correct}`;
+    if(lives<=0){setTimeout(()=>endGame(false),800);updateHUD();return;}
+  }
+  updateHUD();
+  if(qNum>=maxQ){setTimeout(()=>endGame(true),800);return;}
+  setTimeout(()=>{qNum++;genQuestion();},1200);
+}
+
+function drawPizza(n,d){
+  const canvas=document.getElementById("pizza");
+  const ctx=canvas.getContext("2d");
+  const W=220,H=220,r=100,cx=110,cy=110;
+  ctx.clearRect(0,0,W,H);
+  // crust
+  ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);
+  ctx.fillStyle="#8B4513";ctx.fill();
+  // slices
+  for(let i=0;i<d;i++){
+    const start=(i/d)*Math.PI*2-Math.PI/2;
+    const end=((i+1)/d)*Math.PI*2-Math.PI/2;
+    ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,r-8,start,end);ctx.closePath();
+    ctx.fillStyle=i<n?"#e53935":"#FFA726";
+    ctx.fill();ctx.strokeStyle="#333";ctx.lineWidth=2;ctx.stroke();
+  }
+  // cheese dots
+  ctx.fillStyle="rgba(255,255,255,.3)";
+  for(let i=0;i<d;i++){
+    const ang=(i+.5)/d*Math.PI*2-Math.PI/2;
+    ctx.beginPath();ctx.arc(cx+Math.cos(ang)*55,cy+Math.sin(ang)*55,6,0,Math.PI*2);ctx.fill();
+  }
+  // center
+  ctx.beginPath();ctx.arc(cx,cy,12,0,Math.PI*2);
+  ctx.fillStyle="#FFA726";ctx.fill();
+}
+
+function updateHUD(){
+  document.getElementById("score").textContent=score;
+  document.getElementById("lives").textContent="❤️".repeat(Math.max(0,lives));
+}
+
+function endGame(win){
+  document.getElementById("modal-emoji").textContent=win?"🏆":"💔";
+  document.getElementById("modal-title").textContent=win?"ยอดเยี่ยม! ทำข้อสอบครบแล้ว!":"ชีวิตหมดแล้ว!";
+  document.getElementById("final-score").textContent=score;
+  document.getElementById("modal").classList.add("on");
+}
+
+function restartGame(){
+  score=0;lives=3;qNum=1;
+  document.getElementById("modal").classList.remove("on");
+  document.getElementById("fb").textContent="";
+  updateHUD();genQuestion();
+}
+
+qNum=1;genQuestion();
+</script>
+</body>
+</html>

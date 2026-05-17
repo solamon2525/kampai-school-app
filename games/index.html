@@ -1,0 +1,1593 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>เกมส์การเรียนรู้ — โรงเรียนบ้านคำไผ่</title>
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --red:#e53935;--bg:#0d1117;--bg2:#161b22;--surface:#1c2128;
+      --border:#30363d;--text:#e6edf3;--muted:#8b949e;--radius:12px;
+    }
+    body{font-family:'Kanit',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+    .nav{position:sticky;top:0;z-index:100;background:rgba(13,17,23,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:56px}
+    .nav-left{display:flex;align-items:center;gap:12px}
+    .back{text-decoration:none;color:var(--muted);font-size:13px;font-weight:500;padding:5px 12px;border-radius:8px;border:1px solid var(--border);transition:.2s}
+    .back:hover{color:var(--text);border-color:var(--red);background:rgba(229,57,53,.08)}
+    .brand{font-size:15px;font-weight:600}
+    .search-btn{background:none;border:1px solid var(--border);color:var(--muted);width:36px;height:36px;border-radius:8px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:.2s}
+    .search-btn:hover{border-color:var(--red);color:var(--text)}
+    .hero{position:relative;height:240px;display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;overflow:hidden}
+    .hero-bg{position:absolute;inset:0;background:radial-gradient(ellipse at 20% 50%,rgba(229,57,53,.35) 0%,transparent 60%),radial-gradient(ellipse at 80% 30%,rgba(47,134,247,.3) 0%,transparent 60%),linear-gradient(180deg,#0a0f1a 0%,#0d1117 100%)}
+    .particles{position:absolute;inset:0;pointer-events:none}
+    .particles span{position:absolute;width:2px;height:2px;background:rgba(255,255,255,.7);border-radius:50%;animation:twinkle 3s ease-in-out infinite}
+    @keyframes twinkle{0%,100%{opacity:.2;transform:scale(1)}50%{opacity:1;transform:scale(2)}}
+    .hero-content{position:relative;z-index:2}
+    .hero-title{font-size:clamp(1.8rem,5vw,3rem);font-weight:700;color:#fff;text-shadow:0 2px 20px rgba(0,0,0,.5)}
+    .hero-line{width:100px;height:4px;background:var(--red);border-radius:2px;margin:10px auto 12px}
+    .hero-sub{font-size:14px;color:rgba(255,255,255,.6)}
+    .filters{background:var(--bg2);border-bottom:1px solid var(--border);padding:10px 20px}
+    .filters-inner{max-width:1100px;margin:0 auto;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+    .fbtn{background:transparent;border:2px solid var(--red);color:var(--text);padding:5px 16px;border-radius:8px;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;transition:.2s;white-space:nowrap}
+    .fbtn:hover,.fbtn.active{background:var(--red);color:#fff;transform:translateY(-1px);box-shadow:0 4px 14px rgba(229,57,53,.4)}
+    .skeleton-grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(var(--card-min,155px),1fr))}
+    .skel-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+    .skel-thumb{aspect-ratio:1/1;background:linear-gradient(90deg,var(--surface) 25%,var(--bg2) 50%,var(--surface) 75%);background-size:200% 100%;animation:shimmer 1.4s infinite}
+    .skel-body{padding:10px 12px 12px;display:flex;flex-direction:column;gap:6px}
+    .skel-line{height:10px;border-radius:4px;background:linear-gradient(90deg,var(--surface) 25%,var(--bg2) 50%,var(--surface) 75%);background-size:200% 100%;animation:shimmer 1.4s infinite}
+    .skel-line.short{width:55%}
+    @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+    .main{max-width:1100px;margin:0 auto;padding:24px 20px 60px}
+    .sec-hdr{display:flex;align-items:center;gap:10px;margin-bottom:18px}
+    .sec-title{font-size:17px;font-weight:600}
+    .sec-count{background:var(--surface);border:1px solid var(--border);color:var(--muted);font-size:12px;padding:2px 10px;border-radius:20px}
+    .grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(var(--card-min,155px),1fr))}
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;color:var(--text);display:flex;flex-direction:column;transition:transform .22s,box-shadow .22s,border-color .22s;animation:fadeUp .4s ease both;cursor:pointer}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+    .card:nth-child(1){animation-delay:.05s}.card:nth-child(2){animation-delay:.10s}.card:nth-child(3){animation-delay:.15s}.card:nth-child(4){animation-delay:.20s}.card:nth-child(5){animation-delay:.25s}.card:nth-child(6){animation-delay:.30s}
+    .card:hover{transform:translateY(-6px);box-shadow:0 14px 40px rgba(0,0,0,.5);border-color:var(--red)}
+    .thumb{aspect-ratio:1/1;width:100%;display:block;background:#111;overflow:hidden;position:relative}
+    .thumb img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;display:block;transition:transform .3s ease}
+    .thumb img.errored{object-fit:contain;opacity:.4;filter:grayscale(1)}
+    .updated-badge{font-size:10px;color:var(--muted);margin-top:2px}
+    .modal-preview{max-width:900px;width:95vw;height:85vh;display:flex;flex-direction:column;padding:0;overflow:hidden}
+    .modal-preview .preview-bar{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--border);flex-shrink:0}
+    .modal-preview iframe{flex:1;border:none;width:100%;background:#fff}
+    .card:hover .thumb img{transform:scale(1.06)}
+    .card-body{padding:var(--card-pad,10px 12px 12px);background:var(--surface);border-top:1px solid var(--border);display:flex;flex-direction:column;gap:4px}
+    .card-name{font-size:var(--card-font,13px);font-weight:600;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+    .card-tags{display:flex;flex-wrap:wrap;gap:3px;margin-top:2px}
+    .tag{font-size:var(--tag-font,10px);padding:2px 7px;border-radius:20px;font-weight:500}
+    .grid-sizer{display:flex;align-items:center;gap:6px}
+    .gsz-btn{background:var(--bg2);border:1px solid var(--border);color:var(--muted);width:30px;height:30px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:700;font-family:inherit;transition:.2s;display:flex;align-items:center;justify-content:center}
+    .gsz-btn:hover{border-color:var(--red);color:var(--text)}
+    .gsz-btn.active{background:var(--red);border-color:var(--red);color:#fff}
+    .t-thai{background:rgba(229,57,53,.15);color:#ef9a9a;border:1px solid rgba(229,57,53,.3)}
+    .t-math{background:rgba(47,134,247,.15);color:#90caf9;border:1px solid rgba(47,134,247,.3)}
+    .t-tech{background:rgba(0,188,212,.15);color:#80deea;border:1px solid rgba(0,188,212,.3)}
+    .t-other{background:rgba(124,58,237,.15);color:#c4b5fd;border:1px solid rgba(124,58,237,.3)}
+    .empty{text-align:center;padding:60px 20px;color:var(--muted);display:none}
+    .empty.on{display:block}
+    footer{background:var(--bg2);border-top:1px solid var(--border);text-align:center;padding:18px;font-size:13px;color:var(--muted)}
+    .admin-fab{position:fixed;bottom:20px;right:20px;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:10px 16px;border-radius:30px;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;box-shadow:0 8px 24px rgba(0,0,0,.4);z-index:90;transition:.2s}
+    .admin-fab:hover{border-color:var(--red);transform:translateY(-2px)}
+    .admin-fab-dot{width:8px;height:8px;background:#4ade80;border-radius:50%;box-shadow:0 0 8px #4ade80}
+    .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:200;display:none;align-items:flex-start;justify-content:center;padding:12px;backdrop-filter:blur(4px);overflow-y:auto}
+    .modal-bg.open{display:flex}
+    .modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;width:100%;max-width:500px;padding:24px;position:relative;box-shadow:0 24px 60px rgba(0,0,0,.6);animation:modalIn .3s ease;margin:auto;overflow-y:visible}
+    .modal.wide{max-width:660px}
+    @keyframes modalIn{from{opacity:0;transform:scale(.95) translateY(20px)}to{opacity:1;transform:scale(1) translateY(0)}}
+    .modal-close{position:absolute;top:16px;right:16px;background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer}
+    .modal-close:hover{color:var(--red)}
+    .modal h2{font-size:18px;margin-bottom:20px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+    .form-group{margin-bottom:14px}
+    .form-group label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px;font-weight:500}
+    .form-input{width:100%;background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:8px;font-family:inherit;outline:none;font-size:14px}
+    .form-input:focus{border-color:var(--red)}
+    .btn{padding:10px 16px;border-radius:8px;border:none;font-family:inherit;font-weight:600;cursor:pointer;transition:.2s;text-align:center;font-size:14px}
+    .btn-green{background:#238636;color:#fff;width:100%}
+    .btn-green:hover{background:#2ea043}
+    .btn-blue{background:#1f6feb;color:#fff;width:100%}
+    .btn-blue:hover{background:#388bfd}
+    .btn-blue:disabled{background:#1f6feb66;cursor:not-allowed}
+    .btn-red{background:#da3633;color:#fff;width:100%;margin-top:12px}
+    .btn-red:hover{background:#f85149}
+    .btn-outline{background:transparent;border:1px solid var(--border);color:var(--text)}
+    .btn-outline:hover{border-color:var(--muted)}
+    .btn-sm{padding:6px 12px;font-size:12px;width:auto}
+    .err-msg{color:#ff7b72;font-size:13px;margin-bottom:12px}
+    .admin-list{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
+    .admin-item{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:8px 10px;display:flex;align-items:center;gap:8px;cursor:grab}
+    .order-input{width:36px;height:28px;background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:inherit;font-size:13px;font-weight:700;text-align:center;outline:none;flex-shrink:0}
+    .order-input:focus{border-color:var(--red)}
+    .admin-item:active{cursor:grabbing}
+    .admin-item.dragging{opacity:.4;border-style:dashed}
+    .admin-item.drag-over{border-color:var(--red)}
+    .admin-item-drag{color:var(--muted);font-size:16px;cursor:grab;flex-shrink:0}
+    .admin-item-thumb{width:48px;height:32px;background:var(--surface);border-radius:4px;overflow:hidden;display:flex;align-items:center;justify-content:center}
+    .admin-item-thumb img{width:100%;height:100%;object-fit:cover}
+    .admin-item-info{flex:1;overflow:hidden}
+    .admin-item-title{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .admin-item-sub{font-size:11px;color:var(--muted)}
+    .admin-item-actions{display:flex;gap:6px}
+    .btn-icon{background:var(--surface);border:1px solid var(--border);color:var(--text);width:28px;height:28px;border-radius:6px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px}
+    .btn-icon:hover{border-color:var(--red)}
+    .img-upload-area{background:var(--bg2);border:2px dashed var(--border);border-radius:12px;padding:20px;text-align:center;cursor:pointer;margin-bottom:14px;transition:.2s;overflow:hidden}
+    .img-upload-area:hover{border-color:var(--red);background:rgba(229,57,53,.05)}
+    .img-upload-preview{max-width:100%;max-height:140px;object-fit:contain;display:none;border-radius:8px;margin:0 auto}
+    .sec-divider{border:none;border-top:1px solid var(--border);margin:20px 0}
+    .sec-heading{font-size:13px;font-weight:700;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+    .sec-heading::after{content:'';flex:1;height:1px;background:var(--border)}
+    textarea.code-area{width:100%;min-height:220px;background:#0d1117;border:1px solid var(--border);color:#79c0ff;padding:12px 14px;border-radius:8px;font-family:'Courier New',monospace;font-size:12px;line-height:1.6;outline:none;resize:vertical;transition:border-color .2s}
+    textarea.code-area:focus{border-color:#388bfd}
+    .path-preview{font-size:12px;font-family:monospace;color:#79c0ff;background:rgba(47,134,247,.08);border:1px solid rgba(47,134,247,.2);padding:6px 12px;border-radius:6px;margin-top:6px}
+    .push-status{padding:12px 14px;border-radius:8px;font-size:13px;margin-top:10px;line-height:1.7;display:none}
+    .push-status.loading{background:rgba(47,134,247,.1);border:1px solid rgba(47,134,247,.3);color:#79c0ff;display:block}
+    .push-status.success{background:rgba(63,185,80,.1);border:1px solid rgba(63,185,80,.3);color:#3fb950;display:block}
+    .push-status.error{background:rgba(248,81,73,.1);border:1px solid rgba(248,81,73,.3);color:#ff7b72;display:block}
+    .token-status-bar{display:flex;align-items:center;justify-content:space-between;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;margin-bottom:14px;font-size:13px}
+    .token-dot{width:8px;height:8px;border-radius:50%;margin-right:6px;flex-shrink:0}
+    .token-dot.ok{background:#4ade80;box-shadow:0 0 6px #4ade80}
+    .token-dot.missing{background:#ff7b72;box-shadow:0 0 6px #ff7b72}
+    .token-info{display:flex;align-items:center;flex:1}
+    .token-note{font-size:11px;color:var(--muted);margin-top:5px;line-height:1.6}
+    .card.featured{border-color:rgba(255,193,7,.5);box-shadow:0 0 16px rgba(255,193,7,.15)}
+    .featured-badge{position:absolute;top:8px;left:8px;background:#ffc107;color:#000;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;z-index:2;letter-spacing:.02em}
+    .featured-pin{font-size:10px;color:#ffc107;margin-top:2px}
+    .card.scheduled{opacity:.5;pointer-events:none}
+    .scheduled-badge{position:absolute;top:8px;right:8px;background:rgba(13,17,23,.85);color:#8b949e;font-size:10px;padding:2px 8px;border-radius:20px;border:1px solid var(--border);z-index:2}
+    .random-btn{background:linear-gradient(135deg,#7c3aed,#e53935);border:none;color:#fff;padding:6px 14px;border-radius:8px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:.2s;white-space:nowrap;flex-shrink:0}
+    .random-btn:hover{opacity:.85;transform:scale(1.04)}
+    .history-bar{background:var(--bg2);border-bottom:1px solid var(--border);padding:8px 20px;display:none}
+    .history-bar.on{display:block}
+    .history-inner{max-width:1100px;margin:0 auto}
+    .history-label{font-size:11px;color:var(--muted);margin-bottom:6px;font-weight:600;letter-spacing:.04em;text-transform:uppercase}
+    .history-cards{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scrollbar-width:thin}
+    .history-cards::-webkit-scrollbar{height:3px}
+    .history-cards::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+    .hcard{flex-shrink:0;width:60px;cursor:pointer;border-radius:8px;overflow:hidden;border:1px solid var(--border);transition:.2s;position:relative}
+    .hcard:hover{border-color:var(--red);transform:translateY(-2px)}
+    .hcard img{width:60px;height:60px;object-fit:cover;display:block}
+    .hcard-name{font-size:9px;padding:3px 4px;text-align:center;background:var(--surface);line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+    .badge-bar{display:flex;gap:6px;flex-wrap:wrap;padding:6px 0 2px}
+    .badge-item{display:flex;align-items:center;gap:4px;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:20px;padding:3px 10px;font-size:11px;transition:.2s}
+    .badge-item.earned{background:rgba(255,193,7,.12);border-color:rgba(255,193,7,.4);color:#ffc107}
+    .badge-item.earned .badge-icon{filter:none}
+    .badge-icon{font-size:14px;filter:grayscale(1) opacity(.4)}
+    .dash-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px}
+    .dash-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 14px}
+    .dash-num{font-size:22px;font-weight:700;color:var(--text)}
+    .dash-label{font-size:11px;color:var(--muted);margin-top:2px}
+    .bar-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+    .bar-label{font-size:12px;min-width:80px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .bar-track{flex:1;background:var(--surface);border-radius:4px;height:8px;overflow:hidden}
+    .bar-fill{height:100%;border-radius:4px;background:var(--red);transition:width .6s ease}
+    .bar-count{font-size:11px;color:var(--muted);min-width:24px;text-align:right}
+    @media(max-width:600px){.hero{height:190px}.grid{gap:8px}.gsz-btn{width:24px;height:24px;font-size:9px;padding:0}.grid-sizer span{display:none}}
+  </style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-left">
+    <a class="back" href="../index.html">← หน้าหลัก</a>
+    <div class="brand">🏫 โรงเรียนบ้านคำไผ่</div>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="particles" id="pts"></div>
+  <div class="hero-content">
+    <h1 class="hero-title">🎮 เกมส์การเรียนรู้</h1>
+    <div class="hero-line"></div>
+    <p class="hero-sub">เรียนรู้อย่างสนุก • ฝึกทักษะทุกวิชา • โรงเรียนบ้านคำไผ่</p>
+  </div>
+</section>
+
+<div class="filters">
+  <div class="filters-inner">
+    <button class="fbtn active" onclick="setF('all',this)">ทั้งหมด</button>
+    <button class="fbtn" onclick="setF('thai',this)">🇹🇭 ภาษาไทย</button>
+    <button class="fbtn" onclick="setF('math',this)">🔢 คณิตศาสตร์</button>
+    <button class="fbtn" onclick="setF('tech',this)">💻 เทคโนโลยี</button>
+    <button class="fbtn" onclick="setF('other',this)">✨ อื่นๆ</button>
+    
+    <div style="flex:1"></div>
+    <input type="text" id="search-input" placeholder="🔍 ค้นหาชื่อเกม..." oninput="searchGames()" style="background:var(--bg); border:1px solid var(--border); color:var(--text); padding:6px 14px; border-radius:8px; font-family:inherit; font-size:13px; outline:none; width: 100%; max-width: 240px; transition: border-color 0.2s;" onfocus="this.style.borderColor='var(--red)'" onblur="this.style.borderColor='var(--border)'">
+  </div>
+</div>
+
+<div class="history-bar" id="history-bar">
+  <div class="history-inner">
+    <div class="history-label">🕐 เล่นล่าสุด</div>
+    <div class="history-cards" id="history-cards"></div>
+  </div>
+</div>
+
+<main class="main">
+  <div class="badge-bar" id="badge-bar"></div>
+
+  <div class="sec-hdr">
+    <span class="sec-title" id="sec-title">เกมส์ทั้งหมด</span>
+    <span class="sec-count" id="cnt">0 เกมส์</span>
+    <button class="random-btn" onclick="playRandom()" title="สุ่มเกม">🎲 สุ่มเกม</button>
+    <div style="flex:1"></div>
+    <div class="grid-sizer">
+      <span style="font-size:11px;color:var(--muted)">ขนาด:</span>
+      <button class="gsz-btn" onclick="setGridSize('xs')" id="gsz-xs" title="เล็กมาก">XS</button>
+      <button class="gsz-btn" onclick="setGridSize('s')" id="gsz-s" title="เล็ก">S</button>
+      <button class="gsz-btn active" onclick="setGridSize('m')" id="gsz-m" title="กลาง">M</button>
+      <button class="gsz-btn" onclick="setGridSize('l')" id="gsz-l" title="ใหญ่">L</button>
+      <button class="gsz-btn" onclick="setGridSize('xl')" id="gsz-xl" title="ใหญ่มาก">XL</button>
+    </div>
+  </div>
+  <div class="skeleton-grid" id="skeleton"></div>
+  <div class="grid" id="grid" style="display:none"></div>
+  <div class="empty" id="empty">🔍 ไม่พบเกมส์ที่ค้นหา</div>
+</main>
+
+<footer>โรงเรียนบ้านคำไผ่ — ระบบบริหารจัดการโรงเรียนออนไลน์  |  🎮 เกมส์การเรียนรู้</footer>
+
+<button class="admin-fab" onclick="openLogin()">
+  <span class="admin-fab-dot"></span>
+  <span id="fab-label">จัดการ Admin</span>
+</button>
+
+<div class="modal-bg" id="login-modal">
+  <div class="modal" style="max-width:380px">
+    <button class="modal-close" onclick="closeModal('login-modal')">✕</button>
+    <h2>🔐 Admin Login</h2>
+    <div class="form-group">
+      <label>อีเมล</label>
+      <input class="form-input" id="login-email" type="email" placeholder="admin@school.com" />
+    </div>
+    <div class="form-group">
+      <label>รหัสผ่าน</label>
+      <input class="form-input" id="login-pwd" type="password" placeholder="••••••••" />
+    </div>
+    <div class="err-msg" id="login-err"></div>
+    <button class="btn btn-green" id="login-btn" onclick="doLogin()">เข้าสู่ระบบ</button>
+  </div>
+</div>
+
+<div class="modal-bg" id="admin-modal">
+  <div class="modal wide">
+    <button class="modal-close" onclick="doLogout()">✕ ออกจากระบบ</button>
+    <h2>⚙️ จัดการเกมส์</h2>
+
+    <button class="btn btn-green" style="margin-bottom:14px" onclick="openEditModal(null)">+ เพิ่มเกมใหม่</button>
+    <button class="btn btn-outline" style="margin-bottom:14px;width:100%" onclick="openDashboard()">📊 Dashboard สถิติ</button>
+
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <span style="font-size:12px;color:var(--muted)">ใส่เลขลำดับ หรือลากวางเพื่อเรียง</span>
+      <button class="btn btn-outline btn-sm" onclick="sortByNumber()">🔢 เรียงตามเลข</button>
+    </div>
+    <div class="admin-list" id="drag-list"></div>
+    <button class="btn btn-outline" style="width:100%;margin-bottom:4px" onclick="saveGamesOrder()">💾 บันทึกลำดับ</button>
+
+    <hr class="sec-divider">
+
+    <div class="sec-heading">🔑 GitHub Token</div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:10px;background:rgba(255,193,7,.08);border:1px solid rgba(255,193,7,.2);border-radius:6px;padding:6px 10px">⚠️ เพิ่ม Firebase Rules:<br><code style="font-size:10px">"leaderboard":{".read":true,".write":true}<br>"stats":{".read":true,".write":true}</code></div>
+    <div class="token-status-bar">
+      <div class="token-info">
+        <span class="token-dot" id="token-dot"></span>
+        <span id="token-status-text">กำลังตรวจสอบ...</span>
+      </div>
+      <button class="btn btn-outline btn-sm" onclick="openTokenModal()">✏️ ตั้งค่า Token</button>
+    </div>
+
+    <hr class="sec-divider">
+
+    <div class="sec-heading">📁 อัปโหลดไฟล์เกม HTML ขึ้น GitHub</div>
+
+    <div class="form-group">
+      <label>โฟลเดอร์ปลายทาง</label>
+      <select class="form-input" id="gh-folder" onchange="updatePathPreview()">
+        <option value="games/thai">games/thai/</option>
+        <option value="games/math">games/math/</option>
+        <option value="games/tech">games/tech/</option>
+        <option value="games/other">games/other/</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>ชื่อเกม (ภาษาไทย)</label>
+      <div style="display:flex;gap:8px">
+        <input class="form-input" id="gh-gamename-th" placeholder="เช่น ตกปลามาตราตัวสะกด" oninput="onGameNameThInput()" style="flex:1" />
+        <button class="btn btn-outline btn-sm" id="slug-btn" onclick="generateSlug()" style="white-space:nowrap;padding:0 14px">✨ แปลงชื่อ</button>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>ชื่อไฟล์ (.html) <span style="font-size:11px;color:var(--muted)">— จะถูกสร้างอัตโนมัติ หรือพิมพ์เองได้</span></label>
+      <input class="form-input" id="gh-filename" placeholder="เช่น fishing-spelling.html" oninput="updatePathPreview()" />
+      <div id="slug-status" style="font-size:12px;color:var(--muted);margin-top:4px;display:none"></div>
+      <div class="path-preview" id="path-preview">📁 games/thai/</div>
+    </div>
+
+    <div class="form-group">
+      <label>วาง HTML Code ของเกมที่นี่</label>
+      <textarea class="code-area" id="gh-code" placeholder="<!DOCTYPE html>
+<html lang="th">
+...
+</html>"></textarea>
+    </div>
+
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-outline" style="flex:1" onclick="previewNewHtmlCode()">👁 Preview</button>
+      <button class="btn btn-blue" style="flex:2" id="push-btn" onclick="pushToGitHub()">🚀 บันทึกขึ้น GitHub ทันที</button>
+    </div>
+    <div class="push-status" id="push-status"></div>
+  </div>
+</div>
+
+<div class="modal-bg" id="token-modal">
+  <div class="modal" style="max-width:420px">
+    <button class="modal-close" onclick="closeModal('token-modal')">✕</button>
+    <h2>🔑 ตั้งค่า GitHub Token</h2>
+    <div class="form-group">
+      <label>Personal Access Token</label>
+      <input class="form-input" id="token-input" type="password" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" />
+      <div class="token-note">
+        Token จะถูกเข้ารหัสและเก็บใน Firebase (เฉพาะ Admin เท่านั้นที่อ่านได้)<br>
+        ต้องการสิทธิ์: <strong>Contents → Read and write</strong>
+      </div>
+    </div>
+    <div class="err-msg" id="token-err"></div>
+    <button class="btn btn-outline" style="width:100%;margin-bottom:10px" onclick="testToken()">🔍 ทดสอบ Token ก่อนบันทึก</button>
+    <div id="token-test-result" style="display:none;padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:12px;line-height:1.6"></div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-outline" style="flex:1" onclick="closeModal('token-modal')">ยกเลิก</button>
+      <button class="btn btn-green" style="flex:2" onclick="saveToken()">💾 บันทึก Token</button>
+    </div>
+    <button class="btn btn-red" style="margin-top:10px" onclick="deleteToken()">🗑 ลบ Token ออกจาก Firebase</button>
+  </div>
+</div>
+
+<div class="modal-bg" id="edit-modal">
+  <div class="modal wide">
+    <button class="modal-close" onclick="closeModal('edit-modal')">✕</button>
+    <h2 id="edit-title">✏️ เพิ่ม/แก้ไขเกม</h2>
+
+    <div class="img-upload-area" onclick="document.getElementById('edit-img-input').click()">
+      <div id="img-upload-hint">
+        <div style="font-size:24px;margin-bottom:8px">🖼️</div>
+        <div style="font-size:14px;font-weight:600">คลิกเพื่ออัพโหลดรูปปกเกม</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:4px">JPG, PNG หรือ GIF สูงสุด 2MB</div>
+      </div>
+      <img id="edit-img-preview" class="img-upload-preview" />
+      <input type="file" id="edit-img-input" accept="image/*" style="display:none" onchange="handleImgUpload(event)" />
+    </div>
+    <input type="hidden" id="edit-img-data" />
+    <input type="hidden" id="edit-id" />
+    <input type="hidden" id="edit-original-url" />
+
+    <div class="form-group">
+      <label>ชื่อเกม</label>
+      <input class="form-input" id="edit-name" placeholder="ชื่อเกม..." />
+    </div>
+    <div class="form-group">
+      <label>หมวดหมู่</label>
+      <select class="form-input" id="edit-cat">
+        <option value="thai">🇹🇭 ภาษาไทย</option>
+        <option value="math">🔢 คณิตศาสตร์</option>
+        <option value="tech">💻 เทคโนโลยี</option>
+        <option value="other">✨ อื่นๆ</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>ลิงก์ URL หรือ path ไฟล์</label>
+      <input class="form-input" id="edit-url" placeholder="games/thai/attack-noun.html หรือ https://..." oninput="onEditUrlChange()" />
+      <div id="edit-url-info" style="display:none;margin-top:6px">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <span style="font-size:11px;color:var(--muted)">path เดิม:</span>
+          <code id="edit-original-url-display" style="font-size:11px;color:#79c0ff;background:rgba(47,134,247,.08);padding:2px 8px;border-radius:4px"></code>
+          <a id="edit-play-link" href="#" target="_blank" style="font-size:12px;color:#3fb950;text-decoration:none;border:1px solid rgba(63,185,80,.3);padding:2px 10px;border-radius:4px">▶ เปิดเล่น</a>
+        </div>
+        <div id="edit-rename-warn" style="display:none;font-size:11px;color:#ffa500;margin-top:4px">⚠️ ชื่อไฟล์เปลี่ยน — ระบบจะสร้างไฟล์ใหม่และลบไฟล์เดิมใน GitHub อัตโนมัติ</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px">
+      <div class="form-group" style="flex:1;margin-bottom:0">
+        <label>⭐ ปักหมุด Featured</label>
+        <select class="form-input" id="edit-featured">
+          <option value="">ปกติ</option>
+          <option value="1">⭐ แนะนำ</option>
+        </select>
+      </div>
+      <div class="form-group" style="flex:1;margin-bottom:0">
+        <label>📅 เผยแพร่วันที่ (ไม่บังคับ)</label>
+        <input class="form-input" id="edit-schedule" type="date" />
+      </div>
+    </div>
+    <div style="height:14px"></div>
+
+    <div id="edit-html-section" style="display:none">
+      <hr class="sec-divider">
+      <div class="sec-heading">✏️ แก้ไข HTML ของเกม</div>
+      <button class="btn btn-outline" style="width:100%;margin-bottom:10px" id="fetch-html-btn" onclick="fetchGameHtml()">⬇️ ดึง HTML จาก GitHub มาแก้ไข</button>
+      <div id="fetch-html-status" style="font-size:12px;margin-bottom:8px;display:none"></div>
+      <textarea class="code-area" id="edit-html-code" placeholder="HTML Code จะปรากฏที่นี่หลังกด ดึง HTML..." style="min-height:200px"></textarea>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button class="btn btn-outline" style="flex:1" id="preview-html-btn" onclick="previewHtmlCode()">👁 Preview</button>
+        <button class="btn btn-blue" style="flex:2" id="push-edit-btn" onclick="pushEditedHtml()">🚀 บันทึก HTML ขึ้น GitHub</button>
+      </div>
+      <div class="push-status" id="edit-push-status"></div>
+    </div>
+
+    <div style="display:flex;gap:10px;margin-top:20px">
+      <button class="btn btn-outline" style="flex:1" onclick="closeModal('edit-modal')">ยกเลิก</button>
+      <button class="btn btn-green" style="flex:2" onclick="saveGameData()">💾 บันทึกข้อมูล</button>
+    </div>
+    <button class="btn btn-red" id="btn-delete" style="display:none" onclick="deleteGame()">🗑 ลบเกมนี้ทิ้ง</button>
+  </div>
+</div>
+
+<div class="modal-bg" id="add-after-push-modal">
+  <div class="modal" style="max-width:460px">
+    <button class="modal-close" onclick="closeModal('add-after-push-modal')">✕</button>
+    <h2>🎮 เพิ่มเกมในรายการ</h2>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:16px">อัปโหลดไฟล์สำเร็จแล้ว! ต้องการเพิ่มเกมนี้ให้แสดงในหน้าหลักด้วยไหม?</p>
+    <div class="img-upload-area" onclick="document.getElementById('aap-img-input').click()">
+      <div id="aap-img-hint">
+        <div style="font-size:24px;margin-bottom:6px">🖼️</div>
+        <div style="font-size:13px;font-weight:600">คลิกเพื่ออัพโหลดรูปปก (ไม่บังคับ)</div>
+      </div>
+      <img id="aap-img-preview" class="img-upload-preview" />
+      <input type="file" id="aap-img-input" accept="image/*" style="display:none" onchange="handleAapImg(event)" />
+    </div>
+    <input type="hidden" id="aap-img-data" />
+    <input type="hidden" id="aap-file-path" />
+    <div class="form-group">
+      <label>ชื่อเกม</label>
+      <input class="form-input" id="aap-name" placeholder="ชื่อเกม..." />
+    </div>
+    <div class="form-group">
+      <label>หมวดหมู่</label>
+      <select class="form-input" id="aap-cat">
+        <option value="thai">🇹🇭 ภาษาไทย</option>
+        <option value="math">🔢 คณิตศาสตร์</option>
+        <option value="tech">💻 เทคโนโลยี</option>
+        <option value="other">✨ อื่นๆ</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:16px">
+      <button class="btn btn-outline" style="flex:1" onclick="closeModal('add-after-push-modal')">ข้าม</button>
+      <button class="btn btn-green" style="flex:2" onclick="confirmAddAfterPush()">✅ เพิ่มในรายการหน้าหลัก</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="preview-modal">
+  <div class="modal modal-preview">
+    <div class="preview-bar">
+      <span id="preview-title" style="font-size:14px;font-weight:600;flex:1">Preview</span>
+      <a id="preview-open-link" href="#" target="_blank" style="font-size:12px;color:#3fb950;text-decoration:none;border:1px solid rgba(63,185,80,.3);padding:4px 12px;border-radius:6px">🔗 เปิดแท็บใหม่</a>
+      <button onclick="closeModal('preview-modal')" style="background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;margin-left:8px">✕</button>
+    </div>
+    <iframe id="preview-iframe" src="" sandbox="allow-scripts allow-same-origin"></iframe>
+  </div>
+</div>
+
+<div class="modal-bg" id="dashboard-modal">
+  <div class="modal wide">
+    <button class="modal-close" onclick="closeModal('dashboard-modal')">✕</button>
+    <h2>📊 Dashboard สถิติ</h2>
+    <div class="dash-grid">
+      <div class="dash-card"><div class="dash-num" id="d-total">0</div><div class="dash-label">เกมทั้งหมด</div></div>
+      <div class="dash-card"><div class="dash-num" id="d-plays">0</div><div class="dash-label">ครั้งที่เล่น (รวม)</div></div>
+      <div class="dash-card"><div class="dash-num" id="d-featured">0</div><div class="dash-label">เกม Featured</div></div>
+      <div class="dash-card"><div class="dash-num" id="d-scheduled">0</div><div class="dash-label">รอเผยแพร่</div></div>
+    </div>
+    <div class="sec-heading" style="margin-bottom:10px">🏆 เกมยอดนิยม (Top 10)</div>
+    <div id="d-top-games"></div>
+    <div class="sec-heading" style="margin-bottom:10px;margin-top:16px">📚 หมวดหมู่</div>
+    <div id="d-cats"></div>
+  </div>
+</div>
+
+<div class="modal-bg" id="lb-modal">
+  <div class="modal" style="max-width:420px">
+    <button class="modal-close" onclick="closeModal('lb-modal')">✕</button>
+    <h2>🏆 <span id="lb-title">Leaderboard</span></h2>
+    <div id="lb-list" style="display:flex;flex-direction:column;gap:6px;margin-bottom:16px"></div>
+    <hr class="sec-divider">
+    <div class="sec-heading">บันทึกคะแนนของฉัน</div>
+    <div style="display:flex;gap:8px">
+      <input class="form-input" id="lb-name" placeholder="ชื่อผู้เล่น..." style="flex:1" />
+      <input class="form-input" id="lb-score" type="number" placeholder="คะแนน" style="width:90px" />
+    </div>
+    <button class="btn btn-green" style="margin-top:10px" onclick="submitScore()">📤 บันทึกคะแนน</button>
+    <div id="lb-msg" style="font-size:12px;margin-top:8px;color:var(--muted)"></div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+<script>
+const REPO_OWNER = 'solamon2525';
+const REPO_NAME  = 'kampai-school-app';
+const SITE_BASE  = 'https://kampai-school-app.vercel.app'; 
+
+function slugify(str){
+  return str.trim()
+    .replace(/\s+/g,'-')
+    .replace(/[^\w\-\.]/g,'')
+    .replace(/\-+/g,'-')
+    .toLowerCase();
+}
+
+function buildPlayUrl(path){
+  if(!path)return '#';
+  if(path.startsWith('http'))return path;
+  const clean=path.replace(/^\/+/,'');
+  // แก้ไข 1: เติม ?v= เวลาปัจจุบันทะลวง Cache เบราว์เซอร์
+  return `${SITE_BASE}/${clean}?v=${Date.now()}`;
+}
+
+const TOKEN_PATH = 'admin_config/gh_token';
+
+const DEFAULT_GAMES = [
+  {name:"ตกปลามาตรา ตัวสะกด",cat:"thai",img:"https://lh3.googleusercontent.com/sitesv/APaQ0STRiMSg_Xc3amGhBRzSl-FMM-39vBWWPjP5CtgFQTbSpRPCkaY7PlrbOgvkmprYSQ8hllLBmZqaTATC8cr5Hh5vr3JgW3C-Pz0RKD0LbDOF80RxalryBga8dtwqowXvohL1aqGdVUtPxarh9ttBRAVk67MmQgfW56rWrhh8Jl4VNuvfjd05nRqFjaw=w1280",url:"https://gemini.google.com/share/c601ecba61e3"},
+  {name:"คำไวพจน์",cat:"thai",img:"https://lh3.googleusercontent.com/sitesv/APaQ0SQcsvqTrMBna0gr_RLkdP2_Sx75xOrYoO-BfJ9GflLD-eJLNvAh21EU57jixhEkNL7Q2hQO4eW-GRUzojadiSQqL172uBVfEh3BnnEQBu1IeJCtRbt-qHEYqK8cUAP2nRRNQTleKLlgIN5jSNoLtqLfpjVGjpI-Bj-azZ6iHReBcgOvH696B-UN=w1280",url:"thai/camwaipot.html"},
+  {name:"Attack on คำนาม",cat:"thai",img:"https://lh3.googleusercontent.com/sitesv/APaQ0ST8PgVkIG0rfs2fwc_3AzNEiPYNFTeHoDcanPssKHOocax1Vroz5_spAk61EbHuj6O_OKq9omRaPraKnRBFDZ2gkwYmMFwcDibqAwPem-LcB_FnBWCNPhrq0J22tq-trSBJxzuCFw7w1j-9UvtBfpcOaxpVfMsujUzel3ojx2CjCQXkbRJcFj6T=w1280",url:"https://gemini.google.com/share/ecc7dac430d6"},
+  {name:"สงครามรถถังชิงดินแดนคำนาม",cat:"thai",img:"https://lh3.googleusercontent.com/sitesv/APaQ0SR4NSk92xih4Eu91Z2jn7ZqViRRxzHECzKDCsoeuAg9lyPQtWcVOLirQV-roaxlh843P135nw9icjtOyMBdoB2okyXYg4nrfIfx4HLEkwWKJ3VIweii-N0aJ5Y0BnsaKlAPi_Qp7pYjWop2RL8FSCTnd615b3AQGoDUSHvTbQCXgOpbQ1AgXiCoS3o=w1280",url:"https://gemini.google.com/share/2dd7d3327bb6"},
+  {name:"เจ้าหนูคิดไว Math Jumper",cat:"math",img:"https://lh3.googleusercontent.com/sitesv/APaQ0STOdaYcyhI9cF66BYVE0kWTO0JROSj-x4wnXNtyLda4ZWKgmmU0NzeoyQClKspzz__n87XfPgSqe_bWobfRelPeCuh0IvdOX9IwrwOjFWOOiRpPrlGXnT-5ovl35f_l3Lvy2ii416AksAYQlamlXdE3kvolAB_A0iTJiBqVbLHZGMnwZKsJeoP5=w1280",url:"https://gemini.google.com/share/aee7dcd29e8b"},
+  {name:"เกม 24",cat:"math",img:"https://lh3.googleusercontent.com/sitesv/APaQ0SQayxqSKgEnZBLfABwIaOYXFbzCo27VdPLC72i4DmyMsgWMUM_dKcqsU9BbRMGjSgzxmeEF6sPwxCH5OxSGz2LDSCr8rcIjPKyJavEWYx0MQ56Gb_k7CSbYMvTct81NJKTDklL5rsbDHPbrue1bS1JJt_7Hq0twdXECZSNn7c-6N5AACy1MiK7LSzk=w1280",url:"https://gemini.google.com/share/82c577f40612"},
+  {name:"Pizza Master Chef ล่าเศษส่วน",cat:"math",img:"https://lh3.googleusercontent.com/sitesv/APaQ0SRGiQ5ghOrFY1fnQFT7TShsjxTOxl7qlHyeWYcBpyCrEeep-p40osaKMpxkchjf9mK211TjblKLpELvFfCtaa3QNMyodjNfM3PtUdxo5TXU4-yaUKxokUd8E_NriWFFUj08zDQVeWDL6jqEskz9qPKOFOTD8qRMl4JuKaOSeoRmxWGVmG7m1Y8BiX0=w1280",url:"https://gemini.google.com/share/90ff2781996e"},
+  {name:"วงล้อซ่อนหา อักษรนำ",cat:"thai",img:"https://lh3.googleusercontent.com/sitesv/APaQ0ST6MndQfdo1dX3XRUzl_V9OZXmFHe_5OtgEzaeMj7cArz-pXOPT0ujk_MrcLbP8KUmxkD_7-xUndvJnycp0XqNnWBo3Z-_5niMClLGD25AGYoOapXjYhSGWaGCOR1DH1mlSdgskuq-xvCoLQp_KVKD-UfFPcQ5jv_qF_IQasUd3fqOLHjoYxeW5qiQ=w1280",url:"https://gemini.google.com/share/65196b5639a5"},
+  {name:"Kingdom Duel ศึกจอมปราชญ์ราชสำนัก",cat:"other",img:"https://lh3.googleusercontent.com/sitesv/APaQ0SQEvnVTG05xgVsckcBosdMoNJEZsHTPvf_5BqporkUoGJ11eog6M3RYnuzaVn54O1vqjkzaSxhot5daeHdwaItZP-t4FjipsgAmrHr6rNNrkq38nbRsVBMX5eF7cTJnK_eo-oTAIBrV_4pZAicDXCLGpvK65Y2lzYs_guBYP0SkDRDfARQ5TKAFGkY=w1280",url:"https://gemini.google.com/share/93d056345b54"},
+  {name:"Fraction Tank Battle รถถังเศษส่วน",cat:"math",img:"https://lh3.googleusercontent.com/sitesv/APaQ0SRp3LtYaeL7MjmkHwHj6WHruqENeFoTmmzZKWFWrDPf6Dl-MG6ms5Tu2Xz1_2OfXSBDpPSsgACnWHQ9UtNcb7LBu1mJ-R6oZ5BF4O8EbrcYC0hxnrjnTZN8vC0We_MekeMzfP-_FXmHFBLsB_ALIYEsFBpOczgSlv30RlL1XQG7Wf-i274I5v-w=w1280",url:"https://gemini.google.com/share/356191986427"},
+  {name:"Flappy Thai Missions ภารกิจพิชิตมาตรา",cat:"thai",img:"https://lh3.googleusercontent.com/sitesv/APaQ0SRh0qItVT5vEWsmtgrAXDlm8-OYjttOEWNdEvGLZGORV6BnS1onA3OEjcH4j60bwwyNV58Mq_dZXWc7lx73Hq4jBIRrqmftIOwOZBmPh7WbBvr3pA2XaTK3CFInDwv2pHjnK3CiqTdgCI4gsdZ0CL5WFyBu_z_Z33affevLTXgYTj3G1zfODSryxro=w1280",url:"https://gemini.google.com/share/393b4fd133d9"},
+  {name:"งูผู้หิวโหย มาตราตัวสะกด",cat:"thai",img:"https://lh3.googleusercontent.com/sitesv/APaQ0SRh0qItVT5vEWsmtgrAXDlm8-OYjttOEWNdEvGLZGORV6BnS1onA3OEjcH4j60bwwyNV58Mq_dZXWc7lx73Hq4jBIRrqmftIOwOZBmPh7WbBvr3pA2XaTK3CFInDwv2pHjnK3CiqTdgCI4gsdZ0CL5WFyBu_z_Z33affevLTXgYTj3G1zfODSryxro=w1280",url:"https://gemini.google.com/share/b033878b6637"},
+  {name:"ฝึกพิมพ์",cat:"tech",img:"https://lh3.googleusercontent.com/sitesv/APaQ0SR1thhs2LWzpK1lJrUEVWveESTAJ0rhx0iD4q82NX9GBW-gAr-AhenOvVQcAwbKx24158sfVuIAIoUmSiNFBdRFZ3IFid9wQBzqmDGIEkPFTvXNXXq1TwMZ5uCD27ORhKzxgGuPPQJV5IAchjkEMDaV92dsLAH8OLEakpEb7FOX6NHgkjukBRvvR4pwVSfIwgUIkZcvL0qOpQ2Z_gjnsu9kU4IkxxLkPePWbV8=w1280",url:"https://gemini.google.com/share/5243cf0c5874"},
+  {name:"Blockly Games",cat:"tech",img:"https://lh3.googleusercontent.com/sitesv/APaQ0SR1thhs2LWzpK1lJrUEVWveESTAJ0rhx0iD4q82NX9GBW-gAr-AhenOvVQcAwbKx24158sfVuIAIoUmSiNFBdRFZ3IFid9wQBzqmDGIEkPFTvXNXXq1TwMZ5uCD27ORhKzxgGuPPQJV5IAchjkEMDaV92dsLAH8OLEakpEb7FOX6NHgkjukBRvvR4pwVSfIwgUIkZcvL0qOpQ2Z_gjnsu9kU4IkxxLkPePWbV8=w1280",url:"https://gemini.google.com/share/46b0805c872d"},
+  {name:"รถถังหาศัพท์ Battle City",cat:"thai",img:"https://lh3.googleusercontent.com/sitesv/APaQ0SQM9Q6A89qKaew7YhlNeJPz96Hjl2mxmK4Wu5VaBMybc7zagP-PaugQhUhbbwb-YEcZLUtMppJncfeXwl4WcKd24gRbhXXHy2ton34oriyi0DgsqiybR0DtCzjp86Ug6rM9ify_dXWm4RWYSuXnMw61SwYXxbAAJp9hH1sJ4Mkjt3meAYA7PL3CyE8=w1280",url:"https://gemini.google.com/share/07e841269ed1"},
+  {name:"มือปราบคำผิด",cat:"thai",img:"https://lh3.googleusercontent.com/sitesv/APaQ0SS24Jv0CT1gtCGh4jDEWR5H8qDjPyCEweMLj_inTAMXpzdb72OTZ8YxHbQf1_2xUmt8p3PDka-PpaWSxtgbZK7mTcELRgqqKlbyl6cO7aUkzJeBrCLVWtb8LQMjvhAXZLR2CDf5Mxg9qXaEhf0v9quCtnNtWDP5L-Smz_ATSIFCdW4oaqHJMjcxSUo=w1280",url:"https://gemini.google.com/share/88d660e19747"},
+  {name:"นักสืบโจทย์ปัญหา",cat:"math",img:"https://lh3.googleusercontent.com/sitesv/APaQ0SS8wKg_B1PoheEuzHYhMvigSmtYSmX28C5zS2J3F3_Q0jBFwEvZyJ93UR3bKEV4wKa9tBz50K8g_YPt6YlbJkPbZbvNtn6T3HjtfG6ihcEf-9n28Na__sK_9OK0MmDxYYf6uA_Qvt9HfbQ229rLgXZ9YjfpJIFgfKWYIw3SlJdH3uqTsFr63sdYXPk=w1280",url:"https://gemini.google.com/share/22588f00fc9d"},
+  {name:"ป้อมปราการนักคำนวณ",cat:"math",img:"https://lh3.googleusercontent.com/sitesv/APaQ0SREJzVYrQMGJYWrWkdHGNw7ptHQzJhJz9bVVhviJWlBblr0wg1bNjwHN1EPemLmNLtWuNs96vKZ4NoC35ZfbHOFu8Wl1sjAsn1BbGql0MdiU812NRBwXZXiPVxdEyRo-Md3tiSDGpFARvauhRGuQpAJA0onMSgxILem_HqoA3RGnk-UiXBgDw0fo8Y=w1280",url:"https://gemini.google.com/share/b5170dcb0dfc"},
+  {name:"มอไซต์จอมลุยมาตรา",cat:"thai",img:"https://lh3.googleusercontent.com/sitesv/APaQ0SQcQ0gu0Gk7q2BNJrSJ-A-Zn2mrgtwhauB0t9QOVzW4XLqJ2KLGXKoTdTuO2blrU_eWsdcV7JANqkOtF9cAeUMnqdVvuFfrbq6rSBjReQ1_H0wdECwwpEIR9EEH69XHdHY3KIUVPEBsshZfRr1FMshByssKQtqC7t0gYL_vOzv5c07WCv6VIuLRouQ=w1280",url:"https://gemini.google.com/share/5d5410972b21"},
+  {name:"มหาศึกอักขระเวท",cat:"thai",img:"https://lh3.googleusercontent.com/sitesv/APaQ0SQVy_wppROvJcSJ-GrOmVgvPicx1vlYsOhzdXVarJcwCvzVKeCLNahzk4jZTno6_47WqnmgvS1wqIIYADaWV_kmB-nC2BXlLH6cM0KXneW2Eok4Nm1UqgqigebfNcTqrW7YcwrheDOx11d_fCpizpla8v0F7QHCt-ZB6hKGG0CN87U301pGddbEJ7I=w1280",url:"https://gemini.google.com/share/a0904f464522"},
+  {name:"Shinobi: นินจากระต่ายล่าคำนาม",cat:"thai",img:"https://lh3.googleusercontent.com/sitesv/APaQ0SSGcRYZvChDQqO0tYxTxqTCy7eY9zScA0vya5sP2C1ZbgPnv6WV8CEbiufJmRqXGyxfrTh-_3LYXw_wA9AI2CGwbbarxaRjYJNkpYlGdf86Tn_Vb5vo8Pcua3z-ce6D45xxWHnh8Dib3bGZVWnF6PhQxx4JEnnSu1kTVPv5feg3duglujqGEHOLAgc=w1280",url:"https://gemini.google.com/share/f5756bfcd18e"},
+  {name:"Super Math-Blaster",cat:"math",img:"https://lh3.googleusercontent.com/sitesv/APaQ0SSmrO1elxpMt_SA82VQSp4eQAcSDBBpMPFPeqbnbyxNcb3C3dx2SEw89fKYSDoQjk9OspmiiO_LocvulY_FvMQQ7GRw8GLberqgQ4SytcrxluXTSbBrsFhoGZdTMFBRbQUuP35mPrMxU6gier5AtYsZ6Q5COPy6ozQAPRjlYLxKtV4aSYNTkIsw=w1280",url:"https://gemini.google.com/share/139049405d45"},
+  {name:"ศึกจอมเวทแห่งภาษา",cat:"thai",img:"https://lh3.googleusercontent.com/sitesv/APaQ0SQ-5n735-gMifk1AK2s6Zu1ssNvaAwogXB4UpUbHVwVN4yBLUEWMv4x-lRWMV9v8pBMb_st-jicUpThRt2xswCuJ5QFS3ITrsqpDS5jclBcDU2b8Hscq9weuq4uQYQCDJxX6r18VUY-fIpbA5qEG56qjKP3OWQOPJekmP0u5p03ZzlVo1TJ2T6jAfY=w1280",url:"https://gemini.google.com/share/9ea72960f2bb"},
+  {name:"Word Shield | โล่คำศัพท์พิทักษ์โลก",cat:"thai",img:"https://lh3.googleusercontent.com/sitesv/APaQ0STXeF7MT9r88KXzdv2SvU7XBM_l1IP9FNSxp-f1f61ndbAKX2ckh6zgBeSlhkLLCvoQhI_w8QAuGvb8vg6w-fU633WAU9bOnoBXseczypBabymLZzypSqG4UJsB1LpCL-7cP2nsCC5uangbDasWdI9pRlcBWXdjO4egj8PyOBk1qbI0rTqmpVjcSOc=w1280",url:"https://gemini.google.com/share/5d55653b47bd"},
+  {name:"ปาร์ตี้อาหารจอมตะกละ",cat:"other",img:"https://lh3.googleusercontent.com/sitesv/APaQ0STRiMSg_Xc3amGhBRzSl-FMM-39vBWWPjP5CtgFQTbSpRPCkaY7PlrbOgvkmprYSQ8hllLBmZqaTATC8cr5Hh5vr3JgW3C-Pz0RKD0LbDOF80RxalryBga8dtwqowXvohL1aqGdVUtPxarh9ttBRAVk67MmQgfW56rWrhh8Jl4VNuvfjd05nRqFjaw=w1280",url:"https://gemini.google.com/share/ad6427303d82"},
+  {name:"ขนมแสนอร่อยของเจ้าตัวเปี๊ยก",cat:"other",img:"https://lh3.googleusercontent.com/sitesv/APaQ0SQcsvqTrMBna0gr_RLkdP2_Sx75xOrYoO-BfJ9GflLD-eJLNvAh21EU57jixhEkNL7Q2hQO4eW-GRUzojadiSQqL172uBVfEh3BnnEQBu1IeJCtRbt-qHEYqK8cUAP2nRRNQTleKLlgIN5jSNoLtqLfpjVGjpI-Bj-azZ6iHReBcgOvH696B-UN=w1280",url:"https://gemini.google.com/share/c13f63124971"},
+  {name:"ภารกิจพิชิตมาตราแม่กง",cat:"thai",img:"https://lh3.googleusercontent.com/sitesv/APaQ0ST8PgVkIG0rfs2fwc_3AzNEiPYNFTeHoDcanPssKHOocax1Vroz5_spAk61EbHuj6O_OKq9omRaPraKnRBFDZ2gkwYmMFwcDibqAwPem-LcB_FnBWCNPhrq0J22tq-trSBJxzuCFw7w1j-9UvtBfpcOaxpVfMsujUzel3ojx2CjCQXkbRJcFj6T=w1280",url:"https://gemini.google.com/share/67a3533ecafb"},
+  {name:"ดินแดนหรรษา มาตราแม่เกย",cat:"thai",img:"https://lh3.googleusercontent.com/sitesv/APaQ0SR4NSk92xih4Eu91Z2jn7ZqViRRxzHECzKDCsoeuAg9lyPQtWcVOLirQV-roaxlh843P135nw9icjtOyMBdoB2okyXYg4nrfIfx4HLEkwWKJ3VIweii-N0aJ5Y0BnsaKlAPi_Qp7pYjWop2RL8FSCTnd615b3AQGoDUSHvTbQCXgOpbQ1AgXiCoS3o=w1280",url:"https://gemini.google.com/share/f50fedf39f8a"},
+];
+
+const fbConfig={
+  apiKey:"AIzaSyBSUa3gj5l2VSYoUnVFXQwF0OX2SJe6Szc",
+  authDomain:"kampai-school-app.firebaseapp.com",
+  databaseURL:"https://kampai-school-app-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId:"kampai-school-app"
+};
+firebase.initializeApp(fbConfig);
+const auth=firebase.auth();
+const db=firebase.database();
+
+// แก้ไข 4: เพิ่มตัวแปร searchKeyword
+let GAMES=[],filter='all',isAdmin=false,dragSrc=null,searchKeyword='';
+let GH_TOKEN='';
+
+const PAGE_SIZE=24;
+let currentPage=1;
+
+function showSkeleton(n=12){
+  const sk=document.getElementById('skeleton');
+  const grid=document.getElementById('grid');
+  sk.innerHTML=Array(n).fill(`
+    <div class="skel-card">
+      <div class="skel-thumb"></div>
+      <div class="skel-body">
+        <div class="skel-line"></div>
+        <div class="skel-line short"></div>
+      </div>
+    </div>`).join('');
+  sk.style.display='grid';
+  grid.style.display='none';
+}
+function hideSkeleton(){
+  document.getElementById('skeleton').style.display='none';
+  document.getElementById('grid').style.display='grid';
+}
+
+showSkeleton(12);
+
+// เพิ่มฟังก์ชันค้นหา
+function searchGames() {
+  searchKeyword = document.getElementById('search-input').value.trim();
+  currentPage = 1;
+  render();
+}
+
+function render(){
+  const now=new Date();
+  const data=GAMES
+    // แก้ไข 4 (ต่อ): เพิ่มเงื่อนไขกรองค้นหาใน render
+    .filter(g=>(g.visible!==false)&&(filter==='all'||g.cat===filter)&&(searchKeyword===''||g.name.toLowerCase().includes(searchKeyword.toLowerCase())))
+    .sort((a,b)=>{
+      const af=a.featured?1:0, bf=b.featured?1:0;
+      const as=a.scheduleDate&&new Date(a.scheduleDate)>now?-1:0;
+      const bs=b.scheduleDate&&new Date(b.scheduleDate)>now?-1:0;
+      return (bs-as)||(bf-af);
+    });
+  const total=data.length;
+  const totalPages=Math.max(1,Math.ceil(total/PAGE_SIZE));
+  if(currentPage>totalPages)currentPage=1;
+  const paged=data.slice((currentPage-1)*PAGE_SIZE, currentPage*PAGE_SIZE);
+
+  document.getElementById('cnt').textContent=`${total} เกมส์`;
+  hideSkeleton();
+  const grid=document.getElementById('grid'),empty=document.getElementById('empty');
+  if(!total){grid.innerHTML='';grid.style.display='none';empty.classList.add('on');renderPager(0,0);return}
+  empty.classList.remove('on');
+  grid.style.display='grid';
+
+  grid.innerHTML=paged.map(g=>{
+    const available=isGameAvailable(g);
+    const isFeatured=!!g.featured;
+    const schedLabel=!available&&g.scheduleDate?'📅 '+new Date(g.scheduleDate).toLocaleDateString('th-TH',{day:'numeric',month:'short'}):'';
+    return `
+    <div class="card${isFeatured?' featured':''}${!available?' scheduled':''}" onclick="${available?`openGameById('${g.id}')`:'void(0)'}">
+      <div class="thumb" style="position:relative">
+        ${isFeatured?'<div class=\"featured-badge\">⭐ แนะนำ</div>':''}
+        ${schedLabel?`<div class=\"scheduled-badge\">${schedLabel}</div>`:''}
+        <img src="${g.img||''}" alt="${g.name}" loading="lazy"
+          onerror="this.classList.add('errored');this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect fill=%22%23161b22%22 width=%22100%22 height=%22100%22/><text x=%2250%22 y=%2254%22 text-anchor=%22middle%22 font-size=%2228%22>🎮</text></svg>'" />
+      </div>
+      <div class="card-body">
+        <div class="card-name">${g.name}</div>
+        <div class="card-tags">
+          <span class="tag t-${g.cat}">${catLabel(g.cat)}</span>
+          ${isFeatured?'<span class=\"tag\" style=\"background:rgba(255,193,7,.15);color:#ffc107;border:1px solid rgba(255,193,7,.3)\">⭐</span>':''}
+        </div>
+        ${g.updatedAt?`<div class="updated-badge">🕐 ${g.updatedAt}</div>`:''}
+        <button onclick="event.stopPropagation();openLeaderboard('${g.id}','${g.name.replace(/'/g,"\'")}')" style="margin-top:4px;background:none;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:2px 8px;font-size:10px;cursor:pointer;font-family:inherit;transition:.2s" onmouseenter="this.style.borderColor='#ffc107';this.style.color='#ffc107'" onmouseleave="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">🏆 คะแนน</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  renderPager(currentPage,totalPages);
+}
+
+function renderPager(cur,total){
+  let el=document.getElementById('pager');
+  if(!el){
+    el=document.createElement('div');
+    el.id='pager';
+    el.style.cssText='display:flex;align-items:center;justify-content:center;gap:8px;margin-top:20px;flex-wrap:wrap';
+    document.querySelector('.main').appendChild(el);
+  }
+  if(total<=1){el.innerHTML='';return;}
+  let html='';
+  html+=`<button onclick="goPage(${cur-1})" ${cur<=1?'disabled':''} style="background:var(--surface);border:1px solid var(--border);color:var(--text);padding:6px 12px;border-radius:6px;cursor:pointer;font-family:inherit">‹</button>`;
+  for(let i=1;i<=total;i++){
+    const active=i===cur;
+    html+=`<button onclick="goPage(${i})" style="background:${active?'var(--red)':'var(--surface)'};border:1px solid ${active?'var(--red)':'var(--border)'};color:${active?'#fff':'var(--text)'};width:32px;height:32px;border-radius:6px;cursor:pointer;font-family:inherit;font-weight:600">${i}</button>`;
+  }
+  html+=`<button onclick="goPage(${cur+1})" ${cur>=total?'disabled':''} style="background:var(--surface);border:1px solid var(--border);color:var(--text);padding:6px 12px;border-radius:6px;cursor:pointer;font-family:inherit">›</button>`;
+  el.innerHTML=html;
+}
+
+function goPage(p){
+  currentPage=p;
+  render();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function catLabel(c){return{thai:'ภาษาไทย',math:'คณิตศาสตร์',tech:'เทคโนโลยี',other:'อื่นๆ'}[c]||c}
+function setF(f,btn){
+  filter=f;currentPage=1;
+  document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('sec-title').textContent={all:'เกมส์ทั้งหมด',thai:'ภาษาไทย',math:'คณิตศาสตร์',tech:'เทคโนโลยี',other:'อื่นๆ'}[f]||'เกมส์';
+  render();
+}
+
+(function(){
+  const c=document.getElementById('pts');
+  for(let i=0;i<35;i++){
+    const s=document.createElement('span');
+    s.style.cssText=`left:${Math.random()*100}%;top:${Math.random()*100}%;animation-delay:${Math.random()*3}s;animation-duration:${2+Math.random()*3}s;width:${1+Math.random()*2}px;height:${1+Math.random()*2}px`;
+    c.appendChild(s);
+  }
+})();
+
+function openModal(id){document.getElementById(id).classList.add('open')}
+function closeModal(id){document.getElementById(id).classList.remove('open')}
+document.querySelectorAll('.modal-bg').forEach(bg=>{
+  bg.addEventListener('click',e=>{if(e.target===bg)bg.classList.remove('open')});
+});
+
+db.ref('games_config/apps').on('value',snap=>{
+  const v=snap.val();
+  if(v&&Array.isArray(v)){
+    GAMES=v;
+  } else {
+    GAMES=[...DEFAULT_GAMES].map(g=>({...g,id:'g_'+Date.now()+Math.random().toString(36).substr(2,5),visible:true}));
+    db.ref('games_config/apps').set(GAMES);
+  }
+  render();
+  renderHistory();
+  renderBadges();
+  if(document.getElementById('admin-modal').classList.contains('open'))buildAdminList();
+});
+
+auth.onAuthStateChanged(user=>{
+  isAdmin=!!user;
+  document.getElementById('fab-label').textContent=user?'⚙️ จัดการระบบ':'จัดการ Admin';
+});
+
+function openLogin(){
+  if(isAdmin){openAdminPanel();return;}
+  document.getElementById('login-err').textContent='';
+  openModal('login-modal');
+}
+async function doLogin(){
+  const email=document.getElementById('login-email').value.trim();
+  const pwd=document.getElementById('login-pwd').value;
+  const btn=document.getElementById('login-btn');
+  const err=document.getElementById('login-err');
+  err.textContent='';
+  if(!email||!pwd){err.textContent='กรุณากรอกอีเมลและรหัสผ่าน';return;}
+  btn.disabled=true;btn.textContent='กำลังเข้าสู่ระบบ...';
+  try{
+    await auth.signInWithEmailAndPassword(email,pwd);
+    closeModal('login-modal');
+    openAdminPanel();
+  }catch(e){err.textContent='อีเมลหรือรหัสผ่านไม่ถูกต้อง';}
+  btn.disabled=false;btn.textContent='เข้าสู่ระบบ';
+}
+document.getElementById('login-pwd').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin()});
+
+function doLogout(){GH_TOKEN='';auth.signOut();closeModal('admin-modal')}
+
+async function openAdminPanel(){
+  buildAdminList();
+  updatePathPreview();
+  openModal('admin-modal');
+  await loadTokenFromFirebase(); 
+}
+
+async function loadTokenFromFirebase(){
+  const dot=document.getElementById('token-dot');
+  const txt=document.getElementById('token-status-text');
+  dot.className='token-dot missing';
+  txt.textContent='กำลังโหลด Token...';
+  try{
+    const snap=await db.ref(TOKEN_PATH).get();
+    if(snap.exists()&&snap.val()){
+      try{ GH_TOKEN=atob(snap.val()).trim(); }
+      catch(e){ GH_TOKEN=snap.val().trim(); } 
+      dot.className='token-dot ok';
+      txt.textContent=`Token พร้อมใช้งาน ✓ (length:${GH_TOKEN.length})`;
+    } else {
+      GH_TOKEN='';
+      dot.className='token-dot missing';
+      txt.textContent='ยังไม่มี Token — กรุณาตั้งค่า';
+    }
+  }catch(e){
+    GH_TOKEN='';
+    dot.className='token-dot missing';
+    txt.textContent='โหลด Token ไม่ได้ — ตรวจสอบ Firebase Rules';
+  }
+}
+
+function openTokenModal(){
+  document.getElementById('token-input').value='';
+  document.getElementById('token-err').textContent='';
+  closeModal('admin-modal');
+  openModal('token-modal');
+}
+
+async function testToken(){
+  const val=document.getElementById('token-input').value.trim();
+  const resultEl=document.getElementById('token-test-result');
+  if(!val){
+    resultEl.style.display='block';
+    resultEl.style.cssText='display:block;padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:12px;line-height:1.6;background:rgba(248,81,73,.1);border:1px solid rgba(248,81,73,.3);color:#ff7b72';
+    resultEl.textContent='❌ กรุณากรอก Token ก่อน';
+    return;
+  }
+  resultEl.style.cssText='display:block;padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:12px;line-height:1.6;background:rgba(47,134,247,.1);border:1px solid rgba(47,134,247,.3);color:#79c0ff';
+  resultEl.textContent='⏳ กำลังทดสอบ Token...';
+  try{
+    const res=await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}`,{
+      headers:{Authorization:`Bearer ${val}`,Accept:'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'}
+    });
+    const data=await res.json();
+    if(res.ok){
+      const permRes=await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/`,{
+        headers:{Authorization:`Bearer ${val}`,Accept:'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'}
+      });
+      if(permRes.ok){
+        resultEl.style.cssText='display:block;padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:12px;line-height:1.6;background:rgba(63,185,80,.1);border:1px solid rgba(63,185,80,.3);color:#3fb950';
+        resultEl.innerHTML=`✅ Token ใช้งานได้!<br><span style="opacity:.8">Repo: ${data.full_name} • สิทธิ์: ${data.permissions?.push?'Read & Write ✓':'Read only ⚠️'}</span>`;
+      } else {
+        resultEl.style.cssText='display:block;padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:12px;line-height:1.6;background:rgba(255,165,0,.1);border:1px solid rgba(255,165,0,.3);color:#ffa500';
+        resultEl.textContent=`⚠️ Token ใช้ได้แต่อาจไม่มีสิทธิ์เขียนไฟล์ — ตรวจสอบ Contents: Read and write`;
+      }
+    } else if(res.status===401){
+      resultEl.style.cssText='display:block;padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:12px;line-height:1.6;background:rgba(248,81,73,.1);border:1px solid rgba(248,81,73,.3);color:#ff7b72';
+      resultEl.innerHTML=`❌ 401 Bad credentials — Token ไม่ถูกต้องหรือหมดอายุ<br><span style="opacity:.8">กรุณาสร้าง Token ใหม่ที่ GitHub</span>`;
+    } else if(res.status===404){
+      resultEl.style.cssText='display:block;padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:12px;line-height:1.6;background:rgba(248,81,73,.1);border:1px solid rgba(248,81,73,.3);color:#ff7b72';
+      resultEl.innerHTML=`❌ 404 — ไม่พบ repo หรือ Token ไม่มีสิทธิ์เข้าถึง<br><span style="opacity:.8">ตรวจสอบว่าเลือก repo: ${REPO_OWNER}/${REPO_NAME} ใน Token permissions</span>`;
+    } else {
+      resultEl.style.cssText='display:block;padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:12px;line-height:1.6;background:rgba(248,81,73,.1);border:1px solid rgba(248,81,73,.3);color:#ff7b72';
+      resultEl.textContent=`❌ Error ${res.status}: ${data.message||'ไม่ทราบสาเหตุ'}`;
+    }
+  }catch(e){
+    resultEl.style.cssText='display:block;padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:12px;line-height:1.6;background:rgba(248,81,73,.1);border:1px solid rgba(248,81,73,.3);color:#ff7b72';
+    resultEl.textContent=`❌ Network error: ${e.message}`;
+  }
+}
+
+async function saveToken(){
+  const val=document.getElementById('token-input').value.trim();
+  const err=document.getElementById('token-err');
+  err.textContent='';
+  if(!val){err.textContent='กรุณากรอก Token';return;}
+  try{
+    const encoded=btoa(val);
+    await db.ref(TOKEN_PATH).set(encoded);
+    GH_TOKEN=val;
+    closeModal('token-modal');
+    openModal('admin-modal');
+    document.getElementById('token-dot').className='token-dot ok';
+    document.getElementById('token-status-text').textContent=`Token พร้อมใช้งาน ✓ (length:${val.length})`;
+  }catch(e){
+    err.textContent='บันทึกไม่สำเร็จ: '+e.message;
+  }
+}
+
+async function deleteToken(){
+  if(!confirm('ยืนยันลบ Token ออกจาก Firebase?'))return;
+  await db.ref(TOKEN_PATH).remove();
+  GH_TOKEN='';
+  closeModal('token-modal');
+  openModal('admin-modal');
+  document.getElementById('token-dot').className='token-dot missing';
+  document.getElementById('token-status-text').textContent='ยังไม่มี Token — กรุณาตั้งค่า';
+}
+
+function buildAdminList(){
+  const list=document.getElementById('drag-list');
+  list.innerHTML='';
+  GAMES.forEach((g,i)=>{
+    const item=document.createElement('div');
+    item.className='admin-item';item.draggable=true;item.dataset.id=g.id;
+    item.innerHTML=`
+      <input class="order-input" type="number" min="1" max="${GAMES.length}" value="${i+1}" title="ลำดับ" data-id="${g.id}" />
+      <span class="admin-item-drag">⠿</span>
+      <div class="admin-item-thumb"><img src="${g.img||'https://via.placeholder.com/300x170'}" loading="lazy"/></div>
+      <div class="admin-item-info">
+        <div class="admin-item-title">${g.name}</div>
+        <div class="admin-item-sub">${catLabel(g.cat)} • ${g.visible!==false?'🟢':'🔴'} ${g.updatedAt?'• 🕐 '+g.updatedAt:''}</div>
+      </div>
+      <div class="admin-item-actions">
+        <button class="btn-icon" title="แก้ไข" onclick="openEditModal('${g.id}')">✏️</button>
+        <button class="btn-icon" title="Clone" onclick="cloneGame('${g.id}')">📋</button>
+      </div>`;
+    item.addEventListener('dragstart',()=>{dragSrc=item;item.classList.add('dragging')});
+    item.addEventListener('dragend',()=>{item.classList.remove('dragging');list.querySelectorAll('.admin-item').forEach(x=>x.classList.remove('drag-over'))});
+    item.addEventListener('dragover',e=>{e.preventDefault();item.classList.add('drag-over')});
+    item.addEventListener('dragleave',()=>item.classList.remove('drag-over'));
+    item.addEventListener('drop',e=>{
+      e.preventDefault();
+      if(dragSrc&&dragSrc!==item){
+        const a=[...list.children];
+        a.indexOf(dragSrc)<a.indexOf(item)?item.after(dragSrc):item.before(dragSrc);
+      }
+      item.classList.remove('drag-over');
+      refreshOrderNumbers();
+    });
+    list.appendChild(item);
+  });
+}
+
+function refreshOrderNumbers(){
+  const items=[...document.getElementById('drag-list').children];
+  items.forEach((el,i)=>{
+    const inp=el.querySelector('.order-input');
+    if(inp)inp.value=i+1;
+  });
+}
+
+function sortByNumber(){
+  const list=document.getElementById('drag-list');
+  const items=[...list.children];
+  const sorted=items.map(el=>({el,n:parseInt(el.querySelector('.order-input')?.value||999)}))
+    .sort((a,b)=>a.n-b.n);
+  sorted.forEach(({el})=>list.appendChild(el));
+  refreshOrderNumbers();
+}
+async function saveGamesOrder(){
+  sortByNumber();
+  const items=[...document.getElementById('drag-list').children];
+  const ordered=items.map(el=>GAMES.find(g=>g.id===el.dataset.id)).filter(Boolean);
+  await db.ref('games_config/apps').set(ordered);
+  GAMES=ordered;
+  render();
+  alert('✅ บันทึกลำดับสำเร็จ');
+}
+
+const GRID_SIZES={
+  xs:{min:'110px',pad:'6px 8px 8px', font:'11px',tag:'9px'},
+  s: {min:'140px',pad:'8px 10px 10px',font:'12px',tag:'9px'},
+  m: {min:'155px',pad:'10px 12px 12px',font:'13px',tag:'10px'},
+  l: {min:'200px',pad:'12px 14px 14px',font:'14px',tag:'11px'},
+  xl:{min:'260px',pad:'14px 16px 16px',font:'15px',tag:'12px'},
+};
+let currentSize='m';
+
+function setGridSize(sz){
+  const cfg=GRID_SIZES[sz];
+  if(!cfg)return;
+  currentSize=sz;
+  const root=document.documentElement;
+  root.style.setProperty('--card-min',cfg.min);
+  root.style.setProperty('--card-pad',cfg.pad);
+  root.style.setProperty('--card-font',cfg.font);
+  root.style.setProperty('--tag-font',cfg.tag);
+  ['xs','s','m','l','xl'].forEach(k=>{
+    const btn=document.getElementById('gsz-'+k);
+    if(btn)btn.classList.toggle('active',k===sz);
+  });
+  try{localStorage.setItem('gameGridSize',sz);}catch(e){}
+}
+
+(function initGridSize(){
+  let saved='m';
+  try{saved=localStorage.getItem('gameGridSize')||'m';}catch(e){}
+  setGridSize(saved);
+})();
+
+function handleImgUpload(e){
+  const file=e.target.files[0];e.target.value='';
+  if(!file)return;
+  if(!file.type.startsWith('image/')){alert('รูปแบบรูปภาพไม่ถูกต้อง');return;}
+  const r=new FileReader();
+  r.onload=ev=>{
+    document.getElementById('edit-img-data').value=ev.target.result;
+    document.getElementById('edit-img-preview').src=ev.target.result;
+    document.getElementById('edit-img-preview').style.display='block';
+  };
+  r.readAsDataURL(file);
+}
+function onEditUrlChange(){
+  const url=document.getElementById('edit-url').value.trim();
+  const origUrl=document.getElementById('edit-original-url').value;
+  const isLocal=url&&!url.startsWith('http');
+  document.getElementById('edit-html-section').style.display=isLocal?'block':'none';
+  document.getElementById('edit-html-code').value='';
+  document.getElementById('fetch-html-status').style.display='none';
+  document.getElementById('edit-push-status').style.display='none';
+
+  if(origUrl&&isLocal&&url!==origUrl){
+    document.getElementById('edit-rename-warn').style.display='block';
+  } else {
+    document.getElementById('edit-rename-warn').style.display='none';
+  }
+}
+
+function openEditModal(id){
+  const g=id?GAMES.find(x=>x.id===id):null;
+  document.getElementById('edit-title').textContent=g?'✏️ แก้ไขเกม':'✨ เพิ่มเกมใหม่';
+  document.getElementById('btn-delete').style.display=g?'block':'none';
+  document.getElementById('edit-id').value=g?g.id:'';
+  document.getElementById('edit-name').value=g?g.name:'';
+  document.getElementById('edit-cat').value=g?g.cat:'thai';
+  document.getElementById('edit-url').value=g?(g.url||''):'';
+  document.getElementById('edit-original-url').value=g?(g.url||''):''; 
+  document.getElementById('edit-img-data').value=g?(g.img||''):'';
+  document.getElementById('edit-img-preview').src=g?(g.img||''):'';
+  document.getElementById('edit-img-preview').style.display=g&&g.img?'block':'none';
+  document.getElementById('edit-html-code').value='';
+  document.getElementById('fetch-html-status').style.display='none';
+  document.getElementById('edit-push-status').style.display='none';
+  document.getElementById('edit-rename-warn').style.display='none';
+
+  const isLocal=g&&g.url&&!g.url.startsWith('http');
+  document.getElementById('edit-html-section').style.display=isLocal?'block':'none';
+
+  const urlInfo=document.getElementById('edit-url-info');
+  if(g&&g.url){
+    urlInfo.style.display='block';
+    document.getElementById('edit-original-url-display').textContent=g.url;
+    const playUrl=isLocal
+      ?buildPlayUrl(g.url)
+      :g.url;
+    const playLink=document.getElementById('edit-play-link');
+    playLink.href=playUrl;
+    playLink.style.display='inline';
+  } else {
+    urlInfo.style.display='none';
+  }
+
+  openModal('edit-modal');
+}
+
+async function fetchGameHtml(){
+  const origUrl=document.getElementById('edit-original-url').value.trim();
+  const url=origUrl||document.getElementById('edit-url').value.trim();
+  if(!url||url.startsWith('http')){alert('URL ต้องเป็น path ในไฟล์ repo');return;}
+  if(!GH_TOKEN){alert('กรุณาตั้งค่า GitHub Token ก่อน');return;}
+  const statusEl=document.getElementById('fetch-html-status');
+  const btn=document.getElementById('fetch-html-btn');
+  statusEl.style.display='block';
+  statusEl.style.color='var(--muted)';
+  statusEl.textContent='⏳ กำลังดึง HTML จาก GitHub...';
+  btn.disabled=true;
+  try{
+    const apiUrl=`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${url}`;
+    const res=await fetch(apiUrl,{
+      headers:{Authorization:`Bearer ${GH_TOKEN}`,Accept:'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'},
+      // แก้ไข 2: ป้องกัน API Cache โค้ดเก่ามา
+      cache: 'no-store'
+    });
+    if(res.ok){
+      const data=await res.json();
+      const decoded=decodeURIComponent(escape(atob(data.content.replace(/\n/g,''))));
+      document.getElementById('edit-html-code').value=decoded;
+      statusEl.textContent=`✅ โหลดสำเร็จ (${decoded.length.toLocaleString()} chars)`;
+      statusEl.style.color='#3fb950';
+    } else if(res.status===404){
+      statusEl.textContent='❌ ไม่พบไฟล์ใน repo';
+      statusEl.style.color='#ff7b72';
+    } else {
+      statusEl.textContent=`❌ Error ${res.status}`;
+      statusEl.style.color='#ff7b72';
+    }
+  }catch(e){
+    statusEl.textContent=`❌ ${e.message}`;
+    statusEl.style.color='#ff7b72';
+  }
+  btn.disabled=false;
+}
+
+async function pushEditedHtml(){
+  const origUrl=document.getElementById('edit-original-url').value.trim();
+  const newUrl=document.getElementById('edit-url').value.trim();
+  const code=document.getElementById('edit-html-code').value;
+  const statusEl=document.getElementById('edit-push-status');
+  const btn=document.getElementById('push-edit-btn');
+  if(!code.trim()){statusEl.className='push-status error';statusEl.textContent='❌ HTML ว่างอยู่';return;}
+  if(!GH_TOKEN){statusEl.className='push-status error';statusEl.textContent='❌ ไม่มี Token';return;}
+
+  const isRename=origUrl&&newUrl&&origUrl!==newUrl&&!newUrl.startsWith('http');
+  btn.disabled=true;
+  statusEl.className='push-status loading';
+  statusEl.textContent=isRename?'⏳ กำลังเปลี่ยนชื่อไฟล์และบันทึก...':'⏳ กำลังบันทึก HTML ขึ้น GitHub...';
+
+  const encoded=btoa(unescape(encodeURIComponent(code)));
+  const headers={Authorization:`Bearer ${GH_TOKEN}`,Accept:'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28','Content-Type':'application/json'};
+
+  try{
+    const targetUrl=isRename?newUrl:origUrl;
+    const targetApi=`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${targetUrl}`;
+    let sha=null;
+    const chk=await fetch(targetApi,{headers, cache: 'no-store'});
+    if(chk.ok){const ex=await chk.json();sha=ex.sha;}
+
+    const putRes=await fetch(targetApi,{
+      method:'PUT',headers,
+      body:JSON.stringify({message:`${isRename?'ย้ายไฟล์':'อัปเดต'}: ${targetUrl}`,content:encoded,...(sha&&{sha})})
+    });
+    if(!putRes.ok){
+      const e=await putRes.json().catch(()=>({}));
+      statusEl.className='push-status error';
+      statusEl.textContent=`❌ Error ${putRes.status}: ${e.message||''}`;
+      btn.disabled=false;return;
+    }
+
+    if(isRename){
+      const origApi=`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${origUrl}`;
+      const origChk=await fetch(origApi,{headers, cache: 'no-store'});
+      if(origChk.ok){
+        const origData=await origChk.json();
+        await fetch(origApi,{
+          method:'DELETE',headers,
+          body:JSON.stringify({message:`ลบไฟล์เดิม: ${origUrl}`,sha:origData.sha})
+        });
+      }
+      document.getElementById('edit-original-url').value=newUrl;
+      document.getElementById('edit-original-url-display').textContent=newUrl;
+      const playUrl=buildPlayUrl(newUrl);
+      document.getElementById('edit-play-link').href=playUrl;
+      document.getElementById('edit-rename-warn').style.display='none';
+    }
+
+    const finalUrl=isRename?newUrl:origUrl;
+    const pageUrl=buildPlayUrl(finalUrl);
+    statusEl.className='push-status success';
+    statusEl.innerHTML=`✅ ${isRename?'เปลี่ยนชื่อและบันทึก':'บันทึก'}สำเร็จ!<br>
+      <a href="${pageUrl}" target="_blank" style="color:#3fb950;font-size:12px">▶ เปิดเล่นทันที: ${finalUrl}</a>`;
+
+  }catch(e){
+    statusEl.className='push-status error';
+    statusEl.textContent=`❌ ${e.message}`;
+  }
+  btn.disabled=false;
+}
+
+async function saveGameData(){
+  const id=document.getElementById('edit-id').value;
+  const name=document.getElementById('edit-name').value.trim();
+  const url=document.getElementById('edit-url').value.trim();
+  if(!name){alert('กรุณากรอกชื่อเกม');return;}
+  if(!url){alert('กรุณากรอกลิงก์ URL');return;}
+  const now=new Date().toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'2-digit',hour:'2-digit',minute:'2-digit'});
+  const data={id:id||'g_'+Date.now(),name,url,cat:document.getElementById('edit-cat').value,img:document.getElementById('edit-img-data').value,visible:true,updatedAt:now};
+  let newG=[...GAMES];
+  if(id)newG=newG.map(g=>g.id===id?{...g,...data}:g);else newG.push(data);
+  await db.ref('games_config/apps').set(newG);
+  const isLocal=url&&!url.startsWith('http');
+  if(isLocal){
+    const playUrl=buildPlayUrl(url);
+    document.getElementById('edit-play-link').href=playUrl;
+    document.getElementById('edit-original-url-display').textContent=url;
+    document.getElementById('edit-original-url').value=url;
+  }
+  alert('✅ บันทึกข้อมูลเกมสำเร็จ');
+  closeModal('edit-modal');
+}
+async function deleteGame(){
+  const id=document.getElementById('edit-id').value;
+  const g=GAMES.find(x=>x.id===id);
+  if(!g)return;
+
+  const hasLocal=g.url&&!g.url.startsWith('http');
+  const msg=hasLocal
+    ?`ยืนยันลบเกม "${g.name}" ?\n\n✅ ลบจากรายการ Firebase\n${GH_TOKEN?'✅ ลบไฟล์ '+g.url+' จาก GitHub ด้วย':'⚠️ ไม่มี Token — ไฟล์ใน GitHub จะไม่ถูกลบ'}`
+    :`ยืนยันลบเกม "${g.name}" จากรายการ?`;
+
+  if(!confirm(msg))return;
+
+  await db.ref('games_config/apps').set(GAMES.filter(x=>x.id!==id));
+
+  if(hasLocal&&GH_TOKEN){
+    try{
+      const apiUrl=`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${g.url}`;
+      const headers={Authorization:`Bearer ${GH_TOKEN}`,Accept:'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'};
+      const chk=await fetch(apiUrl,{headers, cache: 'no-store'});
+      if(chk.ok){
+        const data=await chk.json();
+        await fetch(apiUrl,{method:'DELETE',headers,
+          body:JSON.stringify({message:`ลบเกม: ${g.url}`,sha:data.sha})});
+      }
+    }catch(e){console.warn('GitHub delete failed:',e);}
+  }
+  closeModal('edit-modal');
+}
+
+function openGameById(id){
+  const g=GAMES.find(x=>x.id===id);
+  if(!g||!isGameAvailable(g))return;
+  addToHistory(g);
+  recordPlay(id);
+  renderBadges();
+  if(!g.url)return;
+  if(g.url.startsWith('http'))window.open(g.url,'_blank');
+  else window.open(buildPlayUrl(g.url),'_blank');
+}
+
+function onGameNameThInput(){
+  clearTimeout(window._slugTimer);
+  const val=document.getElementById('gh-gamename-th').value.trim();
+  if(!val)return;
+  window._slugTimer=setTimeout(()=>generateSlug(),900);
+}
+
+// แก้ไข 3: เปลี่ยน API แปลภาษาเป็น MyMemory
+async function generateSlug(){
+  const nameTh=document.getElementById('gh-gamename-th').value.trim();
+  if(!nameTh){return;}
+  const btn=document.getElementById('slug-btn');
+  const statusEl=document.getElementById('slug-status');
+  btn.disabled=true;btn.textContent='⏳';
+  statusEl.style.display='block';
+  statusEl.style.color='var(--muted)';
+  statusEl.textContent='กำลังแปลและแปลงชื่อ...';
+
+  try {
+    const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(nameTh)}&langpair=th|en`);
+    const data = await res.json();
+    let englishName = data.responseData.translatedText;
+
+    if (!englishName || englishName === nameTh) {
+       throw new Error("แปลคำนี้ไม่ได้");
+    }
+
+    const slug = englishName.trim().toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, '') 
+      .replace(/\s+/g, '-')         
+      .replace(/-+/g, '-')          
+      .replace(/^-|-$/g, '');       
+
+    if(slug){
+      const fname = slug.endsWith('.html') ? slug : slug + '.html';
+      document.getElementById('gh-filename').value = fname;
+      updatePathPreview();
+      
+      statusEl.style.color = '#3fb950';
+      statusEl.textContent = `✅ ได้ชื่อ: ${fname}`;
+
+      if(document.getElementById('aap-name')) {
+         document.getElementById('aap-name').value = nameTh;
+      }
+    } else {
+      throw new Error("ได้ผลลัพธ์ว่างเปล่า");
+    }
+  } catch(e) {
+    statusEl.style.color = '#ff7b72';
+    statusEl.textContent = `❌ แปลงไม่สำเร็จ กรุณาพิมพ์ชื่อไฟล์เอง (${e.message})`;
+  }
+  
+  btn.disabled=false;btn.textContent='✨ แปลงชื่อ';
+}
+
+function updatePathPreview(){
+  const folder=document.getElementById('gh-folder').value;
+  let fname=document.getElementById('gh-filename').value.trim();
+  if(!fname){
+    document.getElementById('path-preview').textContent=`📁 ${folder}/`;
+    return;
+  }
+  if(!fname.endsWith('.html'))fname+='.html';
+  const slug=slugify(fname);
+  if(slug!==fname){
+    document.getElementById('gh-filename').value=slug;
+    fname=slug;
+  }
+  document.getElementById('path-preview').textContent=`📁 ${folder}/${fname}`;
+}
+
+async function pushToGitHub(){
+  const folder  =document.getElementById('gh-folder').value;
+  let   fname   =document.getElementById('gh-filename').value.trim();
+  const code    =document.getElementById('gh-code').value;
+  const statusEl=document.getElementById('push-status');
+  const pushBtn =document.getElementById('push-btn');
+
+  if(!fname){statusEl.className='push-status error';statusEl.textContent='❌ กรุณากรอกชื่อไฟล์';return;}
+  if(!code.trim()){statusEl.className='push-status error';statusEl.textContent='❌ กรุณาวาง HTML Code ก่อน';return;}
+  if(!GH_TOKEN){
+    statusEl.className='push-status error';
+    statusEl.textContent='❌ ยังไม่มี GitHub Token — กรุณากด "ตั้งค่า Token" ก่อน';
+    return;
+  }
+
+  if(!fname.endsWith('.html'))fname+='.html';
+  fname=slugify(fname); 
+  const filePath=`${folder}/${fname}`;
+  const apiUrl=`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${filePath}`;
+
+  pushBtn.disabled=true;
+  statusEl.className='push-status loading';
+  statusEl.textContent='⏳ กำลังอัปโหลดขึ้น GitHub...';
+
+  try{
+    let sha=null;
+    const checkRes=await fetch(apiUrl,{
+      headers:{Authorization:`Bearer ${GH_TOKEN}`,Accept:'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'},
+      cache: 'no-store'
+    });
+    if(checkRes.ok){const ex=await checkRes.json();sha=ex.sha;}
+
+    const encoded=btoa(unescape(encodeURIComponent(code)));
+    const body={message:`${sha?'อัปเดต':'เพิ่ม'}เกม: ${fname}`,content:encoded,...(sha&&{sha})};
+
+    const res=await fetch(apiUrl,{
+      method:'PUT',
+      headers:{Authorization:`Bearer ${GH_TOKEN}`,Accept:'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28','Content-Type':'application/json'},
+      body:JSON.stringify(body)
+    });
+
+    if(res.ok){
+      const filePath2=filePath; 
+      statusEl.className='push-status success';
+      const pageUrl=buildPlayUrl(filePath);
+      statusEl.innerHTML=`✅ อัปโหลดสำเร็จ! <a href="${pageUrl}" target="_blank" style="color:#3fb950;font-size:12px">🌐 เปิดไฟล์</a>`;
+      const nameTh=document.getElementById('gh-gamename-th').value.trim();
+      document.getElementById('gh-filename').value='';
+      document.getElementById('gh-code').value='';
+      document.getElementById('gh-gamename-th').value='';
+      document.getElementById('slug-status').style.display='none';
+      updatePathPreview();
+      document.getElementById('aap-file-path').value=filePath;
+      document.getElementById('aap-name').value=nameTh||fname.replace('.html','').replace(/-/g,' ');
+      const folderCat={'games/thai':'thai','games/math':'math','games/tech':'tech','games/other':'other'};
+      document.getElementById('aap-cat').value=folderCat[folder]||'other';
+      document.getElementById('aap-img-data').value='';
+      document.getElementById('aap-img-preview').src='';
+      document.getElementById('aap-img-preview').style.display='none';
+      setTimeout(()=>openModal('add-after-push-modal'),600);
+    } else {
+      const errData=await res.json().catch(()=>({}));
+      statusEl.className='push-status error';
+      const tokenPreview=GH_TOKEN?`${GH_TOKEN.substring(0,8)}... (length:${GH_TOKEN.length})`:'(ว่าง)';
+      statusEl.innerHTML=`❌ Error ${res.status}: ${errData.message||'ไม่สามารถอัปโหลดได้'}<br>
+        <span style="font-size:11px;opacity:.7">Token ที่ใช้: ${tokenPreview}</span>`;
+    }
+  }catch(e){
+    statusEl.className='push-status error';
+    statusEl.textContent=`❌ Network error: ${e.message}`;
+  }
+  pushBtn.disabled=false;
+}
+
+function previewHtmlCode(){
+  const code=document.getElementById('edit-html-code').value;
+  const name=document.getElementById('edit-name').value||'Preview';
+  openPreviewWithCode(code,name);
+}
+function previewNewHtmlCode(){
+  const code=document.getElementById('gh-code').value;
+  const name=document.getElementById('gh-gamename-th').value||document.getElementById('gh-filename').value||'Preview';
+  openPreviewWithCode(code,name);
+}
+function openPreviewWithCode(code,name){
+  if(!code.trim()){alert('ยังไม่มี HTML Code ให้ preview');return;}
+  const blob=new Blob([code],{type:'text/html'});
+  const url=URL.createObjectURL(blob);
+  document.getElementById('preview-title').textContent='👁 Preview: '+name;
+  document.getElementById('preview-iframe').src=url;
+  document.getElementById('preview-open-link').href=url;
+  openModal('preview-modal');
+}
+
+function handleAapImg(e){
+  const file=e.target.files[0];e.target.value='';
+  if(!file)return;
+  const r=new FileReader();
+  r.onload=ev=>{
+    document.getElementById('aap-img-data').value=ev.target.result;
+    document.getElementById('aap-img-preview').src=ev.target.result;
+    document.getElementById('aap-img-preview').style.display='block';
+    document.getElementById('aap-img-hint').style.display='none';
+  };
+  r.readAsDataURL(file);
+}
+async function confirmAddAfterPush(){
+  const name=document.getElementById('aap-name').value.trim();
+  if(!name){alert('กรุณากรอกชื่อเกม');return;}
+  const filePath=document.getElementById('aap-file-path').value;
+  const data={
+    id:'g_'+Date.now()+Math.random().toString(36).substr(2,5),
+    name,
+    url:filePath,
+    cat:document.getElementById('aap-cat').value,
+    img:document.getElementById('aap-img-data').value,
+    visible:true
+  };
+  const newG=[...GAMES,data];
+  await db.ref('games_config/apps').set(newG);
+  closeModal('add-after-push-modal');
+  alert('✅ เพิ่มเกม "'+name+'" ในรายการเรียบร้อย!');
+}
+
+const HIST_KEY='kampai_history';
+const HIST_MAX=10;
+
+function addToHistory(g){
+  try{
+    let hist=JSON.parse(localStorage.getItem(HIST_KEY)||'[]');
+    hist=hist.filter(x=>x.id!==g.id); 
+    hist.unshift({id:g.id,name:g.name,img:g.img||'',url:g.url,cat:g.cat});
+    hist=hist.slice(0,HIST_MAX);
+    localStorage.setItem(HIST_KEY,JSON.stringify(hist));
+    renderHistory();
+  }catch(e){}
+}
+
+function renderHistory(){
+  try{
+    const hist=JSON.parse(localStorage.getItem(HIST_KEY)||'[]');
+    const bar=document.getElementById('history-bar');
+    const cards=document.getElementById('history-cards');
+    if(!hist.length){bar.classList.remove('on');return;}
+    bar.classList.add('on');
+    cards.innerHTML=hist.map(g=>`
+      <div class="hcard" onclick="openGameObj(${JSON.stringify(g).replace(/"/g,'"')})" title="${g.name}">
+        <img src="${g.img||''}" alt="${g.name}" loading="lazy"
+          onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 60 60%22><rect fill=%22%23161b22%22 width=%2260%22 height=%2260%22/><text x=%2230%22 y=%2234%22 text-anchor=%22middle%22 font-size=%2220%22>🎮</text></svg>'" />
+        <div class="hcard-name">${g.name}</div>
+      </div>`).join('');
+  }catch(e){}
+}
+
+function openGameObj(g){
+  addToHistory(g);
+  recordPlay(g.id);
+  if(!g.url)return;
+  if(g.url.startsWith('http'))window.open(g.url,'_blank');
+  else window.open(buildPlayUrl(g.url),'_blank');
+}
+
+function playRandom(){
+  const pool=GAMES.filter(g=>g.visible!==false&&isGameAvailable(g));
+  if(!pool.length){alert('ยังไม่มีเกม');return;}
+  const g=pool[Math.floor(Math.random()*pool.length)];
+  const el=[...document.querySelectorAll('.card')].find(c=>c.dataset&&c.onclick?.toString().includes(g.id));
+  if(el){el.style.transition='none';el.style.boxShadow='0 0 0 3px var(--red)';setTimeout(()=>{el.style.boxShadow='';el.style.transition='';},400);}
+  setTimeout(()=>openGameById(g.id),300);
+}
+
+function isGameAvailable(g){
+  if(!g.scheduleDate)return true;
+  return new Date()>=new Date(g.scheduleDate);
+}
+
+function recordPlay(gameId){
+  try{db.ref('stats/plays/'+gameId).transaction(v=>(v||0)+1);}catch(e){}
+}
+
+const BADGES=[
+  {id:'thai',   icon:'🇹🇭', label:'นักอ่านไทย',   cat:'thai',  need:3},
+  {id:'math',   icon:'🔢', label:'นักคณิต',       cat:'math',  need:3},
+  {id:'tech',   icon:'💻', label:'เทคโนโลยี',     cat:'tech',  need:1},
+  {id:'other',  icon:'✨', label:'นักสำรวจ',      cat:'other', need:1},
+  {id:'all',    icon:'🏆', label:'เจ้าแห่งเกม',   cat:'all',   need:4},
+];
+
+function renderBadges(){
+  try{
+    const hist=JSON.parse(localStorage.getItem(HIST_KEY)||'[]');
+    const played={thai:new Set(),math:new Set(),tech:new Set(),other:new Set()};
+    hist.forEach(g=>{if(played[g.cat])played[g.cat].add(g.id);});
+    const catsPlayed=Object.keys(played).filter(c=>played[c].size>0).length;
+    const bar=document.getElementById('badge-bar');
+    if(!bar)return;
+    bar.innerHTML=BADGES.map(b=>{
+      const count=b.cat==='all'?catsPlayed:played[b.cat]?.size||0;
+      const earned=count>=b.need;
+      return `<div class="badge-item${earned?' earned':''}" title="${b.label}${earned?'':'  (ยังไม่ได้รับ)'}">
+        <span class="badge-icon">${b.icon}</span>
+        <span style="font-size:11px">${b.label}</span>
+        ${earned?'':'<span style="font-size:10px;opacity:.5"> ${count}/${b.need}</span>'}
+      </div>`;
+    }).join('');
+  }catch(e){}
+}
+
+let lbGameId='';
+
+function openLeaderboard(gameId,gameName){
+  lbGameId=gameId;
+  document.getElementById('lb-title').textContent=gameName||'Leaderboard';
+  document.getElementById('lb-msg').textContent='';
+  document.getElementById('lb-name').value=localStorage.getItem('kampai_playername')||'';
+  document.getElementById('lb-score').value='';
+  loadLeaderboard(gameId);
+  openModal('lb-modal');
+}
+
+async function loadLeaderboard(gameId){
+  const list=document.getElementById('lb-list');
+  list.innerHTML='<div style="color:var(--muted);font-size:13px">⏳ กำลังโหลด...</div>';
+  try{
+    const snap=await db.ref('leaderboard/'+gameId).orderByChild('score').limitToLast(10).get();
+    const rows=[];
+    snap.forEach(c=>rows.push(c.val()));
+    rows.sort((a,b)=>b.score-a.score);
+    if(!rows.length){list.innerHTML='<div style="color:var(--muted);font-size:13px;text-align:center;padding:16px">ยังไม่มีคะแนน — เป็นคนแรกเลย!</div>';return;}
+    const medals=['🥇','🥈','🥉'];
+    list.innerHTML=rows.slice(0,10).map((r,i)=>`
+      <div style="display:flex;align-items:center;gap:10px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:8px 12px">
+        <span style="font-size:16px;width:24px;text-align:center">${medals[i]||'#'+(i+1)}</span>
+        <span style="flex:1;font-size:13px;font-weight:600">${r.name}</span>
+        <span style="font-size:14px;font-weight:700;color:#ffc107">${r.score.toLocaleString()}</span>
+      </div>`).join('');
+  }catch(e){list.innerHTML='<div style="color:#ff7b72;font-size:13px">โหลดไม่ได้: '+e.message+'</div>';}
+}
+
+async function submitScore(){
+  const name=document.getElementById('lb-name').value.trim();
+  const score=parseInt(document.getElementById('lb-score').value);
+  const msg=document.getElementById('lb-msg');
+  if(!name){msg.textContent='❌ กรอกชื่อก่อน';return;}
+  if(!score||score<0){msg.textContent='❌ กรอกคะแนนที่ถูกต้อง';return;}
+  try{
+    localStorage.setItem('kampai_playername',name);
+    await db.ref('leaderboard/'+lbGameId).push({name,score,date:new Date().toLocaleDateString('th-TH')});
+    msg.style.color='#3fb950';msg.textContent='✅ บันทึกคะแนนสำเร็จ!';
+    loadLeaderboard(lbGameId);
+  }catch(e){msg.style.color='#ff7b72';msg.textContent='❌ '+e.message;}
+}
+
+async function cloneGame(id){
+  const g=GAMES.find(x=>x.id===id);
+  if(!g)return;
+  if(!confirm('Clone เกม "'+g.name+'" ?'))return;
+  const cloned={...g,id:'g_'+Date.now()+Math.random().toString(36).substr(2,5),name:'[Copy] '+g.name,featured:'',scheduleDate:'',updatedAt:''};
+  const newG=[...GAMES,cloned];
+  await db.ref('games_config/apps').set(newG);
+  alert('✅ Clone สำเร็จ! เกมใหม่อยู่ท้ายรายการ');
+}
+
+async function openDashboard(){
+  openModal('dashboard-modal');
+  const total=GAMES.length;
+  const featured=GAMES.filter(g=>g.featured).length;
+  const scheduled=GAMES.filter(g=>g.scheduleDate&&!isGameAvailable(g)).length;
+
+  let totalPlays=0;
+  const playMap={};
+  try{
+    const snap=await db.ref('stats/plays').get();
+    snap.forEach(c=>{playMap[c.key]=c.val();totalPlays+=c.val();});
+  }catch(e){}
+
+  document.getElementById('d-total').textContent=total;
+  document.getElementById('d-plays').textContent=totalPlays.toLocaleString();
+  document.getElementById('d-featured').textContent=featured;
+  document.getElementById('d-scheduled').textContent=scheduled;
+
+  const topGames=[...GAMES]
+    .map(g=>({...g,plays:playMap[g.id]||0}))
+    .sort((a,b)=>b.plays-a.plays).slice(0,10);
+  const maxPlays=Math.max(1,...topGames.map(g=>g.plays));
+  document.getElementById('d-top-games').innerHTML=topGames.map(g=>`
+    <div class="bar-row">
+      <span class="bar-label" title="${g.name}">${g.name}</span>
+      <div class="bar-track"><div class="bar-fill" style="width:${Math.round(g.plays/maxPlays*100)}%"></div></div>
+      <span class="bar-count">${g.plays}</span>
+    </div>`).join('');
+
+  const catCount={thai:0,math:0,tech:0,other:0};
+  GAMES.forEach(g=>{if(catCount[g.cat]!==undefined)catCount[g.cat]++;});
+  const catMax=Math.max(1,...Object.values(catCount));
+  const catLabels={thai:'🇹🇭 ภาษาไทย',math:'🔢 คณิตศาสตร์',tech:'💻 เทคโนโลยี',other:'✨ อื่นๆ'};
+  document.getElementById('d-cats').innerHTML=Object.entries(catCount).map(([c,n])=>`
+    <div class="bar-row">
+      <span class="bar-label">${catLabels[c]}</span>
+      <div class="bar-track"><div class="bar-fill" style="width:${Math.round(n/catMax*100)}%;background:#2f86f7"></div></div>
+      <span class="bar-count">${n}</span>
+    </div>`).join('');
+}
+
+const _origOpenEdit=openEditModal;
+openEditModal=function(id){
+  _origOpenEdit(id);
+  const g=id?GAMES.find(x=>x.id===id):null;
+  const featEl=document.getElementById('edit-featured');
+  const schedEl=document.getElementById('edit-schedule');
+  if(featEl)featEl.value=g?.featured||'';
+  if(schedEl)schedEl.value=g?.scheduleDate||'';
+};
+
+const _origSaveGame=saveGameData;
+saveGameData=async function(){
+  const origFn=_origSaveGame.toString();
+  const id=document.getElementById('edit-id').value;
+  const name=document.getElementById('edit-name').value.trim();
+  const url=document.getElementById('edit-url').value.trim();
+  if(!name||!url)return _origSaveGame();
+  const now=new Date().toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'2-digit',hour:'2-digit',minute:'2-digit'});
+  const data={
+    id:id||'g_'+Date.now(),name,url,
+    cat:document.getElementById('edit-cat').value,
+    img:document.getElementById('edit-img-data').value,
+    visible:true,
+    updatedAt:now,
+    featured:document.getElementById('edit-featured')?.value||'',
+    scheduleDate:document.getElementById('edit-schedule')?.value||''
+  };
+  let newG=[...GAMES];
+  if(id)newG=newG.map(g=>g.id===id?{...g,...data}:g);else newG.push(data);
+  await db.ref('games_config/apps').set(newG);
+  alert('✅ บันทึกข้อมูลเกมสำเร็จ');
+  closeModal('edit-modal');
+};
+</script>
+</body>
+</html>

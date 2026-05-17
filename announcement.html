@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>ประกาศ / ปฏิทิน — โรงเรียนบ้านคำไผ่</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#08080f;--bg2:#0d0d18;--surface:#111120;--surface2:#161626;--surface3:#1c1c30;
+  --border:#202035;--border2:#282848;
+  --text:#f0eeff;--muted:#5a558a;--hint:#2e2855;
+  --violet:#7c3aed;--violet2:#8b5cf6;--violet3:#c4b5fd;
+  --pink:#db2777;--pink2:#ec4899;--pink3:#f9a8d4;
+  --sky:#0284c7;--sky2:#0ea5e9;--sky3:#bae6fd;
+  --amber:#d97706;--amber2:#f59e0b;--amber3:#fcd34d;
+  --green:#059669;--green2:#10b981;--green3:#6ee7b7;
+  --red:#dc2626;--red2:#ef4444;--red3:#fca5a5;
+  --r:14px
+}
+body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+
+/* BG */
+.bg-fx{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.bg-fx::before{content:'';position:absolute;width:700px;height:700px;
+  background:conic-gradient(from 180deg at 40% 20%, rgba(124,58,237,.1) 0%, rgba(236,72,153,.07) 30%, transparent 60%);
+  top:-300px;right:-200px;border-radius:50%;animation:bgRot 25s linear infinite}
+.bg-fx::after{content:'';position:absolute;width:500px;height:500px;
+  background:radial-gradient(circle,rgba(14,165,233,.07) 0%,transparent 65%);
+  bottom:-150px;left:-100px;animation:bgPulse 15s ease-in-out infinite}
+@keyframes bgRot{to{transform:rotate(360deg)}}
+@keyframes bgPulse{0%,100%{opacity:.6}50%{opacity:1}}
+
+/* LAYOUT */
+.page{position:relative;z-index:1;max-width:900px;margin:0 auto;padding:0 16px 80px}
+.nav{display:flex;align-items:center;gap:12px;padding:16px 0 22px;border-bottom:1px solid var(--border);margin-bottom:28px}
+.back-btn{text-decoration:none;color:var(--muted);font-size:13px;font-weight:600;
+  padding:7px 14px;border:1px solid var(--border);border-radius:8px;transition:.2s;display:flex;align-items:center;gap:6px}
+.back-btn:hover{color:var(--violet3);border-color:var(--violet2)}
+.nav-title{font-size:18px;font-weight:900;flex:1}
+
+/* TABS */
+.tabs{display:flex;gap:4px;background:var(--surface);border:1px solid var(--border);
+  border-radius:12px;padding:3px;margin-bottom:24px}
+.tab{flex:1;padding:9px;border-radius:9px;border:none;font-family:'Sarabun',sans-serif;
+  font-size:13px;font-weight:700;cursor:pointer;color:var(--muted);background:transparent;transition:.2s;text-align:center}
+.tab.active{background:rgba(139,92,246,.15);color:var(--violet3);border:1px solid rgba(139,92,246,.25)}
+
+/* TOOLBAR */
+.toolbar{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;align-items:center}
+.search-wrap{position:relative;flex:1;min-width:180px}
+.search-wrap input{width:100%;background:var(--surface);border:1px solid var(--border);
+  border-radius:10px;padding:10px 14px 10px 36px;color:var(--text);
+  font-family:'Sarabun',sans-serif;font-size:13px;outline:none;transition:.2s}
+.search-wrap input:focus{border-color:var(--violet2)}
+.search-wrap input::placeholder{color:var(--hint)}
+.si{position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:14px;color:var(--hint)}
+.sel{background:var(--surface);border:1px solid var(--border);border-radius:10px;
+  padding:10px 12px;color:var(--text);font-family:'Sarabun',sans-serif;font-size:13px;
+  outline:none;cursor:pointer;min-width:120px}
+.sel:focus{border-color:var(--violet2)}
+.sel option{background:#0d0d18}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:9px;border:none;
+  font-family:'Sarabun',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:.2s;white-space:nowrap}
+.btn-violet{background:linear-gradient(135deg,var(--violet),#5b21b6);color:#fff;box-shadow:0 4px 16px rgba(124,58,237,.3)}
+.btn-violet:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(124,58,237,.4)}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--muted)}
+.btn-outline:hover{border-color:var(--violet2);color:var(--violet3)}
+.btn-danger{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);color:var(--red3)}
+.btn-danger:hover{background:rgba(239,68,68,.2)}
+.btn-sm{padding:6px 12px;font-size:12px;border-radius:7px}
+
+/* ANNOUNCE CARDS */
+.ann-list{display:flex;flex-direction:column;gap:12px}
+.ann-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);
+  overflow:hidden;transition:transform .2s,border-color .2s;animation:cardIn .3s ease both;cursor:pointer}
+@keyframes cardIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.ann-card:hover{transform:translateY(-3px);border-color:rgba(139,92,246,.3)}
+.ann-card.pinned{border-color:rgba(245,158,11,.3);background:linear-gradient(135deg,rgba(245,158,11,.06),var(--surface))}
+.ann-top{height:4px}
+.ann-body{padding:16px 18px}
+.ann-header{display:flex;align-items:flex-start;gap:10px;margin-bottom:10px}
+.ann-icon{font-size:26px;flex-shrink:0;line-height:1}
+.ann-meta{flex:1}
+.ann-title{font-size:15px;font-weight:800;margin-bottom:4px;line-height:1.3}
+.ann-desc{font-size:13px;color:var(--muted);line-height:1.6}
+.ann-footer{display:flex;align-items:center;gap:8px;margin-top:12px;flex-wrap:wrap}
+.tag{display:inline-flex;align-items:center;gap:4px;border-radius:20px;padding:2px 10px;font-size:11px;font-weight:700}
+.tag-urgent{background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.25);color:var(--red3)}
+.tag-info{background:rgba(14,165,233,.12);border:1px solid rgba(14,165,233,.2);color:var(--sky3)}
+.tag-event{background:rgba(139,92,246,.12);border:1px solid rgba(139,92,246,.2);color:var(--violet3)}
+.tag-holiday{background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.2);color:var(--green3)}
+.tag-pinned{background:rgba(245,158,11,.15);border:1px solid rgba(245,158,11,.25);color:var(--amber3)}
+.ann-date{font-size:11px;color:var(--hint);margin-left:auto}
+.ann-actions{display:none;gap:6px}
+.ann-card:hover .ann-actions{display:flex}
+
+/* CALENDAR */
+.cal-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.cal-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;background:var(--surface2);border-bottom:1px solid var(--border)}
+.cal-nav-btn{background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--muted);
+  border-radius:8px;width:32px;height:32px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:.2s}
+.cal-nav-btn:hover{color:var(--violet3);border-color:var(--violet2)}
+.cal-month-label{font-size:16px;font-weight:800}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;padding:12px}
+.cal-day-name{text-align:center;font-size:10px;font-weight:700;color:var(--hint);padding:6px 0;text-transform:uppercase;letter-spacing:.5px}
+.cal-day{min-height:64px;border-radius:8px;padding:5px 6px;transition:background .15s;cursor:pointer;position:relative}
+.cal-day:hover{background:rgba(139,92,246,.08)}
+.cal-day.today{background:rgba(139,92,246,.12);border:1px solid rgba(139,92,246,.25)}
+.cal-day.other-month .cal-num{color:var(--hint)}
+.cal-day.holiday{background:rgba(16,185,129,.07)}
+.cal-day.has-event::after{content:'';position:absolute;bottom:5px;left:50%;transform:translateX(-50%);
+  width:5px;height:5px;border-radius:50%;background:var(--violet2)}
+.cal-num{font-size:12px;font-weight:700;color:var(--muted);margin-bottom:3px}
+.cal-day.today .cal-num{color:var(--violet3);font-size:14px}
+.cal-event-chip{font-size:9px;font-weight:700;border-radius:4px;padding:1px 5px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:1px}
+
+/* MODAL */
+.modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(6px);
+  z-index:300;display:flex;align-items:center;justify-content:center;padding:16px;
+  opacity:0;pointer-events:none;transition:.25s;overflow-y:auto}
+.modal-ov.open{opacity:1;pointer-events:all}
+.modal{background:#111120;border:1px solid var(--border2);border-radius:20px;
+  width:100%;max-width:500px;margin:auto;padding:26px 22px;position:relative;
+  transform:translateY(20px) scale(.97);transition:.25s;max-height:90vh;overflow-y:auto;scrollbar-width:thin}
+.modal-ov.open .modal{transform:none}
+.modal-bar{height:4px;border-radius:4px;margin-bottom:18px}
+.modal h3{font-size:16px;font-weight:900;margin-bottom:18px}
+.modal-close{position:absolute;top:16px;right:16px;background:rgba(255,255,255,.06);
+  border:1px solid var(--border);color:var(--muted);width:28px;height:28px;
+  border-radius:50%;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;transition:.2s}
+.modal-close:hover{color:var(--text)}
+.form-g{display:flex;flex-direction:column;gap:5px;margin-bottom:14px}
+.form-g label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.form-g input,.form-g select,.form-g textarea{background:rgba(255,255,255,.05);border:1px solid var(--border);
+  border-radius:8px;padding:9px 12px;color:var(--text);font-family:'Sarabun',sans-serif;
+  font-size:13px;outline:none;transition:.2s;width:100%}
+.form-g input:focus,.form-g select:focus,.form-g textarea:focus{border-color:var(--violet2);background:rgba(139,92,246,.06)}
+.form-g textarea{resize:vertical;min-height:80px}
+.form-g select option{background:#111120}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.modal-footer{display:flex;gap:8px;margin-top:18px}
+.modal-footer .btn{flex:1}
+
+/* DETAIL MODAL */
+.detail-icon{font-size:48px;text-align:center;margin-bottom:10px}
+.detail-title{font-size:19px;font-weight:900;text-align:center;margin-bottom:6px}
+.detail-desc{font-size:14px;color:var(--muted);line-height:1.7;margin:14px 0}
+.detail-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);font-size:13px}
+.detail-row:last-child{border-bottom:none}
+.detail-key{color:var(--hint);min-width:80px;font-size:11px;text-transform:uppercase;letter-spacing:.4px}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);
+  background:rgba(8,8,15,.96);border:1px solid var(--border2);color:var(--text);
+  padding:10px 20px;border-radius:20px;font-size:13px;font-weight:700;
+  z-index:999;transition:transform .3s;backdrop-filter:blur(10px);white-space:nowrap}
+.toast.show{transform:translateX(-50%)}
+.toast.ok{border-color:rgba(139,92,246,.5);color:var(--violet3)}
+.toast.err{border-color:rgba(239,68,68,.4);color:var(--red3)}
+
+.spinner{display:inline-block;width:26px;height:26px;border:2.5px solid rgba(255,255,255,.08);
+  border-top-color:var(--violet2);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.empty-msg{text-align:center;padding:48px;color:var(--hint);font-size:13px}
+
+@media(max-width:500px){
+  .tabs{flex-wrap:wrap}
+  .tab{flex:none;padding:7px 12px;font-size:12px}
+  .cal-grid{padding:6px}
+  .cal-day{min-height:48px;padding:4px}
+  .cal-event-chip{display:none}
+  .form-row{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="bg-fx"></div>
+<div id="auth-bar"></div>
+
+<div class="page">
+  <div class="nav">
+    <a href="index.html" class="back-btn">← หน้าหลัก</a>
+    <div class="nav-title">📢 ประกาศ / ปฏิทินโรงเรียน</div>
+    <button class="btn btn-violet btn-sm" data-auth="write" onclick="openAddModal()">+ เพิ่มประกาศ</button>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" id="tab-ann" onclick="switchTab('ann')">📢 ประกาศ</button>
+    <button class="tab" id="tab-cal" onclick="switchTab('cal')">📅 ปฏิทิน</button>
+  </div>
+
+  <!-- ── ANNOUNCE TAB ── -->
+  <div id="view-ann">
+    <div class="toolbar">
+      <div class="search-wrap"><span class="si">🔍</span>
+        <input type="text" id="ann-search" placeholder="ค้นหาประกาศ..." oninput="renderAnnouncements()"/>
+      </div>
+      <select class="sel" id="ann-cat" onchange="renderAnnouncements()">
+        <option value="">ทุกประเภท</option>
+        <option value="urgent">🔴 เร่งด่วน</option>
+        <option value="info">🔵 ข่าวสาร</option>
+        <option value="event">🟣 กิจกรรม</option>
+        <option value="holiday">🟢 วันหยุด</option>
+      </select>
+    </div>
+    <div class="ann-list" id="ann-list">
+      <div class="empty-msg"><div class="spinner"></div></div>
+    </div>
+  </div>
+
+  <!-- ── CALENDAR TAB ── -->
+  <div id="view-cal" style="display:none">
+    <div class="cal-wrap">
+      <div class="cal-header">
+        <button class="cal-nav-btn" onclick="prevMonth()">‹</button>
+        <div class="cal-month-label" id="cal-month-label"></div>
+        <button class="cal-nav-btn" onclick="nextMonth()">›</button>
+      </div>
+      <div class="cal-grid" id="cal-grid"></div>
+    </div>
+    <div id="cal-events" style="margin-top:16px"></div>
+  </div>
+</div>
+
+<!-- ADD/EDIT MODAL -->
+<div class="modal-ov" id="form-modal">
+  <div class="modal">
+    <div class="modal-bar" id="form-modal-bar" style="background:linear-gradient(90deg,var(--violet),var(--pink2))"></div>
+    <button class="modal-close" onclick="closeModal('form-modal')">✕</button>
+    <h3 id="form-title">📢 เพิ่มประกาศใหม่</h3>
+    <div class="form-row">
+      <div class="form-g">
+        <label>ไอคอน</label>
+        <input id="f-icon" placeholder="📢" maxlength="4" style="font-size:22px;text-align:center"/>
+      </div>
+      <div class="form-g">
+        <label>ประเภท</label>
+        <select id="f-cat">
+          <option value="info">🔵 ข่าวสาร</option>
+          <option value="urgent">🔴 เร่งด่วน</option>
+          <option value="event">🟣 กิจกรรม</option>
+          <option value="holiday">🟢 วันหยุด</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-g"><label>หัวข้อ *</label><input id="f-title" placeholder="หัวข้อประกาศ..."/></div>
+    <div class="form-g"><label>รายละเอียด</label><textarea id="f-desc" placeholder="รายละเอียดเพิ่มเติม..."></textarea></div>
+    <div class="form-row">
+      <div class="form-g"><label>วันที่เริ่ม</label><input id="f-start" type="date"/></div>
+      <div class="form-g"><label>วันที่สิ้นสุด</label><input id="f-end" type="date"/></div>
+    </div>
+    <div class="form-g" style="flex-direction:row;align-items:center;gap:10px">
+      <label style="text-transform:none;letter-spacing:0;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:8px">
+        <input type="checkbox" id="f-pinned" style="width:16px;height:16px;accent-color:var(--violet2)"/>
+        📌 ปักหมุด (แสดงไว้บนสุดเสมอ)
+      </label>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('form-modal')">ยกเลิก</button>
+      <button class="btn btn-violet" onclick="saveAnnouncement()">💾 บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- DETAIL MODAL -->
+<div class="modal-ov" id="detail-modal">
+  <div class="modal">
+    <div class="modal-bar" id="detail-bar" style="background:linear-gradient(90deg,var(--violet),var(--pink2))"></div>
+    <button class="modal-close" onclick="closeModal('detail-modal')">✕</button>
+    <div id="detail-content"></div>
+    <div class="modal-footer" style="margin-top:14px">
+      <button class="btn btn-outline" onclick="closeModal('detail-modal')">ปิด</button>
+      <button class="btn btn-violet" data-auth="write" id="detail-edit-btn">✏️ แก้ไข</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+<script src="auth-guard.js"></script>
+<script>
+AuthGuard.init('read-only');
+const db = _db;
+const REF = db.ref('announcements');
+
+const CAT_CONFIG = {
+  urgent:  {label:'เร่งด่วน', color:'var(--red2)',    top:'linear-gradient(90deg,var(--red2),#b91c1c)',    tag:'tag-urgent'},
+  info:    {label:'ข่าวสาร',  color:'var(--sky2)',    top:'linear-gradient(90deg,var(--sky2),#0369a1)',    tag:'tag-info'},
+  event:   {label:'กิจกรรม', color:'var(--violet2)', top:'linear-gradient(90deg,var(--violet2),#5b21b6)', tag:'tag-event'},
+  holiday: {label:'วันหยุด', color:'var(--green2)',  top:'linear-gradient(90deg,var(--green2),#065f46)',  tag:'tag-holiday'},
+};
+
+let ALL = [], editId = null;
+let calYear = new Date().getFullYear(), calMonth = new Date().getMonth();
+
+// LOAD
+REF.on('value', snap=>{
+  ALL = [];
+  snap.forEach(c => ALL.push({...c.val(), _id:c.key}));
+  ALL.sort((a,b) => {
+    if(a.pinned !== b.pinned) return (b.pinned?1:0)-(a.pinned?1:0);
+    return (b.createdAt||'').localeCompare(a.createdAt||'');
+  });
+  renderAnnouncements();
+  renderCalendar();
+});
+
+// ── ANNOUNCE LIST ──
+function renderAnnouncements(){
+  const q = (document.getElementById('ann-search').value||'').toLowerCase();
+  const cat = document.getElementById('ann-cat').value;
+  let list = ALL.filter(a => {
+    if(cat && a.category !== cat) return false;
+    if(q && !`${a.title} ${a.desc||''}`.toLowerCase().includes(q)) return false;
+    return true;
+  });
+  const el = document.getElementById('ann-list');
+  if(!list.length){ el.innerHTML='<div class="empty-msg">ไม่มีประกาศ</div>'; return; }
+  el.innerHTML = list.map((a,i) => {
+    const cfg = CAT_CONFIG[a.category] || CAT_CONFIG.info;
+    const dateStr = a.startDate ? formatThai(a.startDate) : formatISO(a.createdAt);
+    return `<div class="ann-card ${a.pinned?'pinned':''}" style="animation-delay:${i*.04}s" onclick="openDetail('${a._id}')">
+      <div class="ann-top" style="background:${cfg.top}"></div>
+      <div class="ann-body">
+        <div class="ann-header">
+          <div class="ann-icon">${a.icon||'📢'}</div>
+          <div class="ann-meta">
+            <div class="ann-title">${a.title}</div>
+            ${a.desc?`<div class="ann-desc">${a.desc.substring(0,120)}${a.desc.length>120?'...':''}</div>`:''}
+          </div>
+        </div>
+        <div class="ann-footer">
+          <span class="tag ${cfg.tag}">${cfg.label}</span>
+          ${a.pinned?`<span class="tag tag-pinned">📌 ปักหมุด</span>`:''}
+          ${a.endDate?`<span class="tag" style="background:rgba(255,255,255,.05);color:var(--muted)">ถึง ${formatThai(a.endDate)}</span>`:''}
+          <span class="ann-date">${dateStr}</span>
+          <div class="ann-actions" onclick="event.stopPropagation()">
+            <button class="btn btn-outline btn-sm" data-auth="write" onclick="openEdit('${a._id}')">✏️</button>
+            <button class="btn btn-danger btn-sm" data-auth="write" onclick="confirmDel('${a._id}')">🗑</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── DETAIL ──
+function openDetail(id){
+  const a = ALL.find(x=>x._id===id); if(!a) return;
+  const cfg = CAT_CONFIG[a.category]||CAT_CONFIG.info;
+  document.getElementById('detail-bar').style.background = cfg.top;
+  document.getElementById('detail-content').innerHTML = `
+    <div class="detail-icon">${a.icon||'📢'}</div>
+    <div class="detail-title">${a.title}</div>
+    <div style="text-align:center;margin-bottom:4px">
+      <span class="tag ${cfg.tag}">${cfg.label}</span>
+      ${a.pinned?`<span class="tag tag-pinned">📌 ปักหมุด</span>`:''}
+    </div>
+    ${a.desc?`<div class="detail-desc">${a.desc.replace(/\n/g,'<br/>')}</div>`:''}
+    <div>
+      ${a.startDate?`<div class="detail-row"><span class="detail-key">วันที่เริ่ม</span><span>${formatThai(a.startDate)}</span></div>`:''}
+      ${a.endDate?`<div class="detail-row"><span class="detail-key">วันสิ้นสุด</span><span>${formatThai(a.endDate)}</span></div>`:''}
+      <div class="detail-row"><span class="detail-key">ลงประกาศ</span><span>${formatISO(a.createdAt)}</span></div>
+    </div>`;
+  document.getElementById('detail-edit-btn').onclick = ()=>{ closeModal('detail-modal'); openEdit(id); };
+  openModal('detail-modal');
+}
+
+// ── ADD/EDIT ──
+function openAddModal(){
+  editId = null;
+  document.getElementById('form-title').textContent = '📢 เพิ่มประกาศใหม่';
+  document.getElementById('f-icon').value = '📢';
+  document.getElementById('f-cat').value = 'info';
+  document.getElementById('f-title').value = '';
+  document.getElementById('f-desc').value = '';
+  document.getElementById('f-start').value = new Date().toISOString().split('T')[0];
+  document.getElementById('f-end').value = '';
+  document.getElementById('f-pinned').checked = false;
+  openModal('form-modal');
+}
+function openEdit(id){
+  const a = ALL.find(x=>x._id===id); if(!a) return;
+  editId = id;
+  document.getElementById('form-title').textContent = '✏️ แก้ไขประกาศ';
+  document.getElementById('f-icon').value = a.icon||'📢';
+  document.getElementById('f-cat').value = a.category||'info';
+  document.getElementById('f-title').value = a.title||'';
+  document.getElementById('f-desc').value = a.desc||'';
+  document.getElementById('f-start').value = a.startDate||'';
+  document.getElementById('f-end').value = a.endDate||'';
+  document.getElementById('f-pinned').checked = !!a.pinned;
+  openModal('form-modal');
+}
+async function saveAnnouncement(){
+  const title = document.getElementById('f-title').value.trim();
+  if(!title){ toast('❌ ใส่หัวข้อประกาศ','err'); return; }
+  if(!AuthGuard.requireLogin()) return;
+  const data = {
+    icon: document.getElementById('f-icon').value||'📢',
+    category: document.getElementById('f-cat').value,
+    title,
+    desc: document.getElementById('f-desc').value.trim(),
+    startDate: document.getElementById('f-start').value,
+    endDate: document.getElementById('f-end').value,
+    pinned: document.getElementById('f-pinned').checked,
+    updatedAt: new Date().toISOString()
+  };
+  try{
+    if(editId){ await REF.child(editId).update(data); toast('✅ แก้ไขแล้ว','ok'); }
+    else{ data.createdAt = data.updatedAt; await REF.push(data); toast('✅ เพิ่มประกาศแล้ว','ok'); }
+    closeModal('form-modal');
+  }catch(e){ toast('❌ '+e.message,'err'); }
+}
+function confirmDel(id){
+  const a = ALL.find(x=>x._id===id); if(!a) return;
+  if(!confirm(`ลบประกาศ "${a.title}" ?`)) return;
+  REF.child(id).remove().then(()=>toast('🗑 ลบแล้ว','ok')).catch(e=>toast('❌ '+e.message,'err'));
+}
+
+// ── CALENDAR ──
+function renderCalendar(){
+  const MONTHS_TH=['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+  const DAYS=['อา','จ','อ','พ','พฤ','ศ','ส'];
+  document.getElementById('cal-month-label').textContent = `${MONTHS_TH[calMonth]} ${calYear+543}`;
+  const first = new Date(calYear,calMonth,1);
+  const startDay = first.getDay();
+  const daysInMonth = new Date(calYear,calMonth+1,0).getDate();
+  const today = new Date();
+  const todayStr = today.toISOString().split('T')[0];
+
+  let html = DAYS.map(d=>`<div class="cal-day-name">${d}</div>`).join('');
+
+  // blank cells
+  for(let i=0;i<startDay;i++){
+    const d = new Date(calYear,calMonth,-(startDay-i-1));
+    html+=`<div class="cal-day other-month"><div class="cal-num">${d.getDate()}</div></div>`;
+  }
+
+  for(let d=1;d<=daysInMonth;d++){
+    const dateStr = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const dayAnns = ALL.filter(a => a.startDate<=dateStr && (a.endDate>=dateStr || a.startDate===dateStr));
+    const isToday = dateStr===todayStr;
+    const isHoliday = dayAnns.some(a=>a.category==='holiday');
+    html+=`<div class="cal-day ${isToday?'today':''} ${isHoliday?'holiday':''} ${dayAnns.length?'has-event':''}" onclick="showDayEvents('${dateStr}')">
+      <div class="cal-num">${d}</div>
+      ${dayAnns.slice(0,2).map(a=>{
+        const cfg=CAT_CONFIG[a.category]||CAT_CONFIG.info;
+        return `<div class="cal-event-chip" style="background:${cfg.color}22;color:${cfg.color}">${a.icon||'📢'} ${a.title.substring(0,8)}...</div>`;
+      }).join('')}
+    </div>`;
+  }
+  document.getElementById('cal-grid').innerHTML = html;
+  document.getElementById('cal-events').innerHTML = '';
+}
+
+function showDayEvents(dateStr){
+  const anns = ALL.filter(a => a.startDate<=dateStr && (a.endDate>=dateStr||a.startDate===dateStr));
+  const el = document.getElementById('cal-events');
+  if(!anns.length){ el.innerHTML=''; return; }
+  el.innerHTML = `<div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px">${formatThai(dateStr)}</div>` +
+    anns.map(a=>{
+      const cfg=CAT_CONFIG[a.category]||CAT_CONFIG.info;
+      return `<div class="ann-card" style="cursor:pointer" onclick="openDetail('${a._id}')">
+        <div class="ann-top" style="background:${cfg.top}"></div>
+        <div class="ann-body" style="padding:10px 14px">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:20px">${a.icon||'📢'}</span>
+            <div><div class="ann-title" style="font-size:13px">${a.title}</div>
+            <span class="tag ${cfg.tag}" style="font-size:10px">${cfg.label}</span></div>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+}
+
+function prevMonth(){ calMonth--; if(calMonth<0){calMonth=11;calYear--;} renderCalendar(); }
+function nextMonth(){ calMonth++; if(calMonth>11){calMonth=0;calYear++;} renderCalendar(); }
+
+// ── TABS ──
+function switchTab(t){
+  document.getElementById('tab-ann').classList.toggle('active',t==='ann');
+  document.getElementById('tab-cal').classList.toggle('active',t==='cal');
+  document.getElementById('view-ann').style.display=t==='ann'?'':'none';
+  document.getElementById('view-cal').style.display=t==='cal'?'':'none';
+}
+
+// ── HELPERS ──
+function formatThai(str){
+  if(!str) return '—';
+  const [y,m,d]=str.split('-');
+  const mo=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  return `${+d} ${mo[+m-1]} ${+y+543}`;
+}
+function formatISO(iso){
+  if(!iso) return '—';
+  return new Date(iso).toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'2-digit',hour:'2-digit',minute:'2-digit'});
+}
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+function toast(msg,type=''){
+  const t=document.getElementById('toast');t.textContent=msg;t.className='toast'+(type?' '+type:'');
+  t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);
+}
+document.querySelectorAll('.modal-ov').forEach(el=>el.addEventListener('click',e=>{if(e.target===el)el.classList.remove('open');}));
+AuthGuard.onChange(()=>renderAnnouncements());
+</script>
+</body>
+</html>

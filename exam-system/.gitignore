@@ -1,0 +1,29 @@
+# dependencies
+/node_modules
+
+# Next.js build output
+/.next/
+/out/
+
+# Production
+/build
+
+# Environment variables (NEVER commit these!)
+.env
+.env.local
+.env*.local
+
+# Local database file (only used in development - not needed on Vercel)
+/data.json
+
+# Debug
+npm-debug.log*
+
+# Editor
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db

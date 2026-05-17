@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ตกปลามาตราตัวสะกด — บ้านคำไผ่</title>
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Kanit',sans-serif;background:#0d1117;color:#e6edf3;min-height:100vh;overflow:hidden}
+
+    /* NAV */
+    .nav{position:fixed;top:0;left:0;right:0;z-index:100;
+      background:rgba(13,17,23,.9);backdrop-filter:blur(10px);
+      border-bottom:1px solid #30363d;display:flex;align-items:center;
+      justify-content:space-between;padding:0 16px;height:50px}
+    .back{text-decoration:none;color:#8b949e;font-size:13px;padding:4px 12px;
+      border:1px solid #30363d;border-radius:8px;transition:.2s}
+    .back:hover{color:#e6edf3;border-color:#e53935}
+    .nav-title{font-weight:600;font-size:15px}
+
+    /* GAME AREA */
+    #game-area{position:fixed;top:50px;left:0;right:0;bottom:0;
+      background:linear-gradient(180deg,#0a2744 0%,#0d3b6b 30%,#0a5c8a 60%,#0d7aa8 100%)}
+
+    /* WAVES */
+    .wave{position:absolute;bottom:0;width:200%;height:120px;
+      background:rgba(0,100,200,.2);border-radius:50% 50% 0 0;animation:wave 4s linear infinite}
+    .wave2{animation-delay:2s;opacity:.5}
+    @keyframes wave{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+
+    /* HUD */
+    .hud{position:absolute;top:10px;left:0;right:0;display:flex;
+      align-items:center;justify-content:center;gap:20px;z-index:10;flex-wrap:wrap;padding:0 10px}
+    .hud-box{background:rgba(0,0,0,.45);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.15);
+      border-radius:10px;padding:6px 16px;font-size:14px;font-weight:600}
+    .hud-label{font-size:11px;color:rgba(255,255,255,.6);display:block;margin-bottom:1px}
+
+    /* TARGET */
+    .target-box{position:absolute;top:10px;left:50%;transform:translateX(-50%);
+      background:rgba(229,57,53,.85);border:2px solid #ef9a9a;border-radius:14px;
+      padding:8px 24px;text-align:center;font-size:16px;font-weight:700;
+      box-shadow:0 4px 20px rgba(229,57,53,.5);z-index:10}
+    .target-label{font-size:11px;color:rgba(255,255,255,.8);display:block}
+
+    /* FISH */
+    .fish{position:absolute;cursor:pointer;font-size:1.8rem;
+      display:flex;flex-direction:column;align-items:center;gap:2px;
+      transition:transform .1s;user-select:none}
+    .fish:hover{transform:scale(1.15)}
+    .fish-label{background:rgba(0,0,0,.7);color:#fff;border-radius:8px;
+      padding:3px 10px;font-size:13px;font-weight:600;white-space:nowrap;
+      border:1px solid rgba(255,255,255,.2)}
+    .fish.correct{animation:catch .5s ease forwards}
+    .fish.wrong{animation:shake .4s ease}
+    @keyframes catch{0%{transform:scale(1)}50%{transform:scale(1.5)}100%{opacity:0;transform:scale(0)}}
+    @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+
+    /* HOOK */
+    .hook{position:absolute;left:50%;transform:translateX(-50%);z-index:5;pointer-events:none}
+    .hook-line{width:2px;background:rgba(255,255,255,.5);margin:0 auto}
+    .hook-icon{text-align:center;font-size:20px}
+
+    /* SPLASH */
+    .splash{position:absolute;pointer-events:none;font-size:1.5rem;
+      animation:splashUp .6s ease forwards}
+    @keyframes splashUp{0%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-80px) scale(.5)}}
+
+    /* OVERLAY */
+    .overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;
+      display:flex;align-items:center;justify-content:center;display:none}
+    .overlay.on{display:flex}
+    .panel{background:#1c2128;border:1px solid #30363d;border-radius:20px;
+      padding:32px 40px;text-align:center;max-width:400px;width:90%}
+    .panel h2{font-size:2rem;margin-bottom:8px}
+    .panel p{color:#8b949e;margin-bottom:20px}
+    .panel .score-big{font-size:3rem;font-weight:700;color:#ffd700;margin:10px 0}
+    .btn{background:#e53935;color:#fff;border:none;border-radius:10px;
+      padding:12px 28px;font-family:inherit;font-size:16px;font-weight:600;
+      cursor:pointer;transition:.2s;margin:6px}
+    .btn:hover{background:#b71c1c;transform:translateY(-2px)}
+    .btn-outline{background:transparent;border:2px solid #30363d;color:#e6edf3}
+    .btn-outline:hover{background:#30363d}
+
+    /* COMBO */
+    .combo-fx{position:fixed;top:30%;left:50%;transform:translateX(-50%);
+      font-size:2rem;font-weight:700;color:#ffd700;text-shadow:0 0 20px rgba(255,215,0,.8);
+      pointer-events:none;animation:comboPop .8s ease forwards;z-index:300}
+    @keyframes comboPop{0%{opacity:1;transform:translateX(-50%) scale(1)}100%{opacity:0;transform:translateX(-50%) scale(2)}}
+
+    /* PROGRESS */
+    .prog-bar{position:absolute;top:0;left:0;right:0;height:4px;background:rgba(255,255,255,.15);z-index:20}
+    .prog-fill{height:100%;background:linear-gradient(90deg,#e53935,#ff5722);transition:width .3s}
+  </style>
+</head>
+<body>
+
+<nav class="nav">
+  <a class="back" href="../index.html">← กลับ</a>
+  <span class="nav-title">🎣 ตกปลามาตราตัวสะกด</span>
+  <span style="width:60px"></span>
+</nav>
+
+<div id="game-area">
+  <div class="prog-bar"><div class="prog-fill" id="prog"></div></div>
+  <div class="wave"></div>
+  <div class="wave wave2"></div>
+
+  <!-- HUD -->
+  <div class="hud">
+    <div class="hud-box">
+      <span class="hud-label">คะแนน</span>
+      <span id="score">0</span>
+    </div>
+    <div class="hud-box">
+      <span class="hud-label">ชีวิต</span>
+      <span id="lives">❤️❤️❤️</span>
+    </div>
+    <div class="hud-box">
+      <span class="hud-label">ด่าน</span>
+      <span id="level-hud">1</span>
+    </div>
+  </div>
+
+  <!-- TARGET WORD -->
+  <div class="target-box" id="target-box">
+    <span class="target-label">จับปลาที่มีมาตรา</span>
+    <span id="target-word">กก</span>
+  </div>
+
+  <!-- HOOK -->
+  <div class="hook" id="hook">
+    <div class="hook-line" id="hook-line" style="height:60px"></div>
+    <div class="hook-icon">🪝</div>
+  </div>
+
+  <!-- FISH CONTAINER -->
+  <div id="fish-container"></div>
+</div>
+
+<!-- RESULT OVERLAY -->
+<div class="overlay" id="result-ov">
+  <div class="panel">
+    <h2 id="res-emoji">🎉</h2>
+    <h3 id="res-title" style="font-size:1.4rem;margin-bottom:8px">ยอดเยี่ยม!</h3>
+    <p id="res-msg">คุณตกปลาได้ดีมาก</p>
+    <div class="score-big" id="res-score">0</div>
+    <p style="color:#8b949e;margin-bottom:20px;font-size:13px">คะแนนสุดท้าย</p>
+    <button class="btn" onclick="restartGame()">🔄 เล่นอีกครั้ง</button>
+    <button class="btn btn-outline" onclick="window.location.href='../index.html'">🏠 กลับหน้าหลัก</button>
+  </div>
+</div>
+
+<script>
+// ====== DATA ======
+const ROUNDS = [
+  { target:"กก", label:"มาตรา กก", correct:["รัก","จัก","นัก","หมาก","อาก","ปาก","ยาก","จาก","ตาก","มาก"], wrong:["กาน","ราน","นาม","คาน","บาน","ดาว","ขาว"] },
+  { target:"กน", label:"มาตรา กน", correct:["กน","คน","รน","หน","ดน","บน","ฝน","กิน","วิน","ชิน"], wrong:["กม","คม","ลม","ชม","รม","พม","กก","จัก"] },
+  { target:"กม", label:"มาตรา กม", correct:["ลม","ชม","รม","คม","สม","กม","นม","ยม","จม","ฝม"], wrong:["กน","คน","รน","หน","ดน","บน","ฝน","กิน"] },
+  { target:"กด", label:"มาตรา กด", correct:["กด","รด","จด","บด","ลด","พด","สด","หด","ขด","วด"], wrong:["กน","คน","ลม","ชม","กก","จัก","นัก"] },
+  { target:"กบ", label:"มาตรา กบ", correct:["กบ","รบ","จบ","ครบ","ลบ","ทบ","สบ","ขบ","ชบ","วบ"], wrong:["กด","รด","จด","บด","ลด","กน","คน"] },
+];
+
+let score=0, lives=3, round=0, fishArr=[], spawnTimer=null, combo=0;
+const MAX_FISH=6;
+
+function startGame(){
+  score=0; lives=3; round=0; combo=0; fishArr=[];
+  updateHUD();
+  startRound();
+}
+
+function startRound(){
+  document.getElementById("fish-container").innerHTML="";
+  fishArr=[];
+  const r=ROUNDS[round%ROUNDS.length];
+  document.getElementById("target-word").textContent=r.label;
+  document.getElementById("level-hud").textContent=round+1;
+  document.getElementById("prog").style.width=`${(round/5)*100}%`;
+  clearInterval(spawnTimer);
+  spawnTimer=setInterval(spawnFish,1400+Math.max(0,(3-round)*200));
+  // spawn initial fish
+  for(let i=0;i<3;i++) spawnFish();
+}
+
+function spawnFish(){
+  if(fishArr.length>=MAX_FISH) return;
+  const r=ROUNDS[round%ROUNDS.length];
+  const isCorrect=Math.random()<0.45;
+  const pool=isCorrect?r.correct:r.wrong;
+  const word=pool[Math.floor(Math.random()*pool.length)];
+  const area=document.getElementById("game-area");
+  const w=area.offsetWidth, h=area.offsetHeight;
+
+  const el=document.createElement("div");
+  el.className="fish";
+  el.innerHTML=`${isCorrect?["🐠","🐡","🐟"][Math.floor(Math.random()*3)]:"🦈"}<span class="fish-label">${word}</span>`;
+
+  const x=50+Math.random()*(w-120);
+  const y=100+Math.random()*(h-220);
+  el.style.left=x+"px";
+  el.style.top=y+"px";
+
+  // Drift animation
+  const dir=Math.random()<0.5?1:-1;
+  let dx=dir*(0.4+Math.random()*0.6);
+  el.dataset.dx=dx;
+  el.dataset.correct=isCorrect;
+
+  el.addEventListener("click",()=>clickFish(el,isCorrect,word));
+  document.getElementById("fish-container").appendChild(el);
+  fishArr.push(el);
+
+  // move fish
+  function move(){
+    if(!el.parentNode) return;
+    let cx=parseFloat(el.style.left);
+    cx+=parseFloat(el.dataset.dx);
+    if(cx<0||cx>w-80){el.dataset.dx=-parseFloat(el.dataset.dx)}
+    el.style.left=cx+"px";
+    el.style.transform=parseFloat(el.dataset.dx)>0?"scaleX(1)":"scaleX(-1)";
+    requestAnimationFrame(move);
+  }
+  move();
+
+  // auto remove after a while
+  setTimeout(()=>{if(el.parentNode)el.remove();fishArr=fishArr.filter(f=>f!==el)},8000);
+}
+
+function clickFish(el,correct,word){
+  el.style.pointerEvents="none";
+  if(correct){
+    el.classList.add("correct");
+    score+=10*(combo+1);
+    combo++;
+    if(combo>1) showCombo(`コンボ ${combo}x! +${10*combo}`);
+    setTimeout(()=>{el.remove();fishArr=fishArr.filter(f=>f!==el)},500);
+    // check if enough caught
+    if(score>=(round+1)*40) nextRound();
+  } else {
+    el.classList.add("wrong");
+    combo=0;
+    lives--;
+    updateHUD();
+    setTimeout(()=>{el.classList.remove("wrong")},400);
+    if(lives<=0) endGame(false);
+  }
+  updateHUD();
+}
+
+function showCombo(txt){
+  const d=document.createElement("div");
+  d.className="combo-fx";
+  d.textContent=txt;
+  document.body.appendChild(d);
+  setTimeout(()=>d.remove(),800);
+}
+
+function nextRound(){
+  round++;
+  if(round>=5){endGame(true);return}
+  clearInterval(spawnTimer);
+  document.getElementById("fish-container").innerHTML="";
+  fishArr=[];
+  setTimeout(startRound,600);
+}
+
+function endGame(win){
+  clearInterval(spawnTimer);
+  document.querySelector(".overlay").classList.add("on");
+  document.getElementById("res-emoji").textContent=win?"🏆":"💔";
+  document.getElementById("res-title").textContent=win?"ยอดเยี่ยมมาก!":"พยายามอีกครั้งนะ!";
+  document.getElementById("res-msg").textContent=win?"คุณตกปลาครบทุกมาตราแล้ว!":"ชีวิตหมดแล้ว ลองใหม่อีกครั้ง";
+  document.getElementById("res-score").textContent=score;
+}
+
+function updateHUD(){
+  document.getElementById("score").textContent=score;
+  document.getElementById("lives").textContent="❤️".repeat(Math.max(0,lives));
+}
+
+function restartGame(){
+  document.querySelector(".overlay").classList.remove("on");
+  startGame();
+}
+
+startGame();
+</script>
+</body>
+</html>

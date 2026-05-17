@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>ประวัตินักเรียน — โรงเรียนบ้านคำไผ่</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f8fafc;--bg2:#f1f5f9;--surface:#ffffff;--surface2:#f8fafc;--surface3:#f1f5f9;
+  --border:#e2e8f0;--border2:#cbd5e1;
+  --text:#0f172a;--muted:#64748b;--hint:#94a3b8;
+  --indigo:#4f46e5;--indigo2:#6366f1;--indigo3:#818cf8;
+  --cyan:#0891b2;--cyan2:#06b6d4;--cyan3:#22d3ee;
+  --rose:#e11d48;--rose2:#f43f5e;--rose3:#fb7185;
+  --amber:#d97706;--amber2:#f59e0b;--amber3:#fbbf24;
+  --emerald:#059669;--emerald2:#10b981;--emerald3:#34d399;
+  --r:14px
+}
+body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+
+/* ── BG ── */
+.bg-mesh{position:fixed;inset:0;z-index:0;pointer-events:none;background:var(--bg)}
+
+/* ── LAYOUT ── */
+.page{position:relative;z-index:1;max-width:900px;margin:0 auto;padding:0 16px 80px}
+.nav{display:flex;align-items:center;gap:12px;padding:16px 0 20px;border-bottom:1px solid var(--border);margin-bottom:28px}
+.back-btn{text-decoration:none;color:var(--muted);font-size:13px;font-weight:600;padding:7px 14px;border:1px solid var(--border);border-radius:8px;transition:.2s;display:flex;align-items:center;gap:6px}
+.back-btn:hover{color:var(--indigo3);border-color:var(--indigo2)}
+
+/* ── SEARCH HERO ── */
+.search-hero{text-align:center;padding:20px 0 32px}
+.search-hero h1{font-size:22px;font-weight:900;color:var(--text);margin-bottom:6px}
+.search-hero p{font-size:13px;color:var(--muted);margin-bottom:20px}
+.search-big{position:relative;max-width:480px;margin:0 auto}
+.search-big input{width:100%;background:var(--surface2);border:1.5px solid var(--border2);border-radius:14px;padding:14px 16px 14px 46px;color:var(--text);font-family:'Sarabun',sans-serif;font-size:15px;outline:none;transition:.25s}
+.search-big input:focus{border-color:var(--indigo2);background:var(--surface3);box-shadow:0 0 0 3px rgba(99,102,241,.15)}
+.search-big input::placeholder{color:var(--hint)}
+.search-big .si{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:18px;pointer-events:none}
+.search-results{max-width:480px;margin:6px auto 0;background:var(--surface2);border:1px solid var(--border2);border-radius:12px;overflow:hidden;display:none}
+.search-results.open{display:block}
+.sr-item{display:flex;align-items:center;gap:12px;padding:11px 14px;cursor:pointer;transition:background .15s;border-bottom:1px solid rgba(28,37,64,.5)}
+.sr-item:last-child{border-bottom:none}
+.sr-item:hover{background:rgba(99,102,241,.08)}
+.sr-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--indigo),#3730a3);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;flex-shrink:0;overflow:hidden}
+.sr-avatar img{width:100%;height:100%;object-fit:cover}
+.sr-name{font-size:13px;font-weight:700}
+.sr-class{font-size:11px;color:var(--muted)}
+.sr-empty{padding:16px;text-align:center;font-size:13px;color:var(--hint)}
+
+/* ── PROFILE CARD ── */
+#profile-view{display:none}
+.profile-hero{background:linear-gradient(135deg,rgba(79,70,229,.15),rgba(6,182,212,.08));
+  border:1px solid rgba(99,102,241,.2);border-radius:20px;padding:24px;margin-bottom:20px;
+  display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap;position:relative;overflow:hidden}
+.profile-hero::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%234f46e5' fill-opacity='0.03'%3E%3Ccircle cx='20' cy='20' r='1'/%3E%3C/g%3E%3C/svg%3E");pointer-events:none}
+.ph-avatar{width:100px;height:100px;border-radius:50%;background:linear-gradient(135deg,var(--indigo),#3730a3);display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:900;color:#fff;border:4px solid rgba(99,102,241,.3);overflow:hidden;flex-shrink:0;position:relative}
+.ph-avatar img{width:100%;height:100%;object-fit:cover}
+.ph-info{flex:1;min-width:0}
+.ph-name{font-size:22px;font-weight:900;line-height:1.2;margin-bottom:4px}
+.ph-sub{font-size:13px;color:var(--muted);margin-bottom:10px}
+.ph-tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.ph-tag{display:inline-flex;align-items:center;gap:5px;border-radius:20px;padding:3px 12px;font-size:11px;font-weight:700}
+.tag-class{background:rgba(99,102,241,.15);border:1px solid rgba(99,102,241,.25);color:var(--indigo3)}
+.tag-no{background:rgba(6,182,212,.12);border:1px solid rgba(6,182,212,.2);color:var(--cyan3)}
+.tag-status{background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.2);color:var(--emerald3)}
+.ph-contact{font-size:12px;color:var(--muted);display:flex;flex-direction:column;gap:3px}
+.ph-contact span{display:flex;align-items:center;gap:6px}
+/* ── TABS ── */
+.profile-tabs{display:flex;gap:4px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:3px;margin-bottom:20px}
+.ptab{flex:1;padding:9px;border-radius:9px;border:none;font-family:'Sarabun',sans-serif;font-size:13px;font-weight:700;cursor:pointer;color:var(--muted);background:transparent;transition:.2s;white-space:nowrap}
+.ptab.active{background:rgba(99,102,241,.15);color:var(--indigo3);border:1px solid rgba(99,102,241,.2)}
+/* ── SCORES TAB ── */
+.scores-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+.score-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;position:relative;overflow:hidden;animation:cardIn .3s ease both}
+@keyframes cardIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.score-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--sc-color,var(--indigo2))}
+.sc-subject{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px}
+.sc-score{font-size:28px;font-weight:900;color:var(--text);line-height:1}
+.sc-max{font-size:12px;color:var(--hint);font-weight:400}
+.sc-bar{height:4px;background:var(--surface3);border-radius:2px;margin:8px 0 4px;overflow:hidden}
+.sc-bar-fill{height:100%;border-radius:2px;transition:width .7s ease}
+.sc-grade{font-size:11px;font-weight:700}
+.sc-types{margin-top:10px;display:flex;flex-direction:column;gap:4px}
+.sc-type-row{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);padding:3px 0;border-bottom:1px solid rgba(28,37,64,.4)}
+.sc-type-row:last-child{border-bottom:none}
+.sc-type-val{font-weight:700;color:var(--text)}
+/* ── REWARD TAB ── */
+.reward-summary{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.rw-kpi{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;text-align:center}
+.rw-num{font-size:28px;font-weight:900}
+.rw-lbl{font-size:11px;color:var(--muted);margin-top:4px}
+.reward-history{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.rh-head{padding:12px 14px;background:var(--surface2);border-bottom:1px solid var(--border);font-size:13px;font-weight:800}
+.rh-row{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid rgba(28,37,64,.4);animation:cardIn .25s ease both}
+.rh-row:last-child{border-bottom:none}
+.rh-badge{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.rh-badge.pos{background:rgba(16,185,129,.15);border:1px solid rgba(16,185,129,.25)}
+.rh-badge.neg{background:rgba(244,63,94,.1);border:1px solid rgba(244,63,94,.2)}
+.rh-reason{font-size:12px;flex:1}
+.rh-pts{font-size:14px;font-weight:800}
+.rh-pts.pos{color:var(--emerald2)}
+.rh-pts.neg{color:var(--rose2)}
+.rh-date{font-size:10px;color:var(--hint)}
+/* ── INFO TAB ── */
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:0;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.info-item{padding:12px 16px;border-bottom:1px solid rgba(28,37,64,.4);display:flex;flex-direction:column;gap:3px}
+.info-item:nth-child(even){border-left:1px solid rgba(28,37,64,.4)}
+.info-key{font-size:10px;font-weight:700;color:var(--hint);text-transform:uppercase;letter-spacing:.5px}
+.info-val{font-size:13px;color:var(--text)}
+.info-full{grid-column:1/-1;border-left:none!important}
+/* ── BADGES TAB ── */
+.badges-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px}
+.badge-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;transition:transform .2s,border-color .2s;animation:cardIn .3s ease both}
+.badge-card:hover{transform:translateY(-3px);border-color:rgba(99,102,241,.3)}
+.badge-card.locked{opacity:.35;filter:grayscale(1)}
+.badge-ico{font-size:36px;margin-bottom:8px}
+.badge-name{font-size:12px;font-weight:800;margin-bottom:3px}
+.badge-desc{font-size:10px;color:var(--muted);line-height:1.4}
+/* ── EMPTY / LOADING ── */
+.empty-msg{text-align:center;padding:40px;color:var(--hint);font-size:13px}
+.spinner{display:inline-block;width:28px;height:28px;border:2.5px solid rgba(255,255,255,.08);border-top-color:var(--indigo2);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* ── TOAST ── */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:rgba(8,12,22,.96);border:1px solid var(--border2);color:var(--text);padding:10px 20px;border-radius:20px;font-size:13px;font-weight:700;z-index:999;transition:transform .3s;backdrop-filter:blur(10px);white-space:nowrap}
+.toast.show{transform:translateX(-50%)}
+.toast.ok{border-color:rgba(16,185,129,.4);color:var(--emerald3)}
+.toast.err{border-color:rgba(244,63,94,.4);color:var(--rose3)}
+@media(max-width:500px){
+  .profile-hero{flex-direction:column;align-items:center;text-align:center}
+  .ph-tags,.ph-contact{justify-content:center}
+  .info-grid,.reward-summary{grid-template-columns:1fr}
+  .info-item:nth-child(even){border-left:none}
+  .profile-tabs{flex-wrap:wrap}
+  .ptab{flex:none;font-size:12px;padding:7px 10px}
+}
+</style>
+</head>
+<body>
+<div class="bg-mesh"></div>
+
+<div id="auth-bar"></div>
+
+<div class="page">
+  <div class="nav">
+    <a href="index.html" class="back-btn">← หน้าหลัก</a>
+  </div>
+
+  <!-- ── SEARCH STATE ── -->
+  <div id="search-state">
+    <div class="search-hero">
+      <h1>👤 ประวัตินักเรียน</h1>
+      <p>ค้นหานักเรียนเพื่อดูข้อมูล คะแนน และประวัติ</p>
+      <div class="search-big">
+        <span class="si">🔍</span>
+        <input type="text" id="search-input" placeholder="ชื่อ / นามสกุล / ห้องเรียน / เลขที่..." autocomplete="off" oninput="onSearch()" onfocus="onSearchFocus()"/>
+        <div class="search-results" id="search-results"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PROFILE STATE ── -->
+  <div id="profile-view">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
+      <button onclick="backToSearch()" style="background:none;border:1px solid var(--border);border-radius:8px;padding:7px 14px;color:var(--muted);font-family:'Sarabun',sans-serif;font-size:13px;cursor:pointer;transition:.2s" onmouseover="this.style.borderColor='var(--indigo2)';this.style.color='var(--indigo3)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">← ค้นหาใหม่</button>
+      <span id="profile-breadcrumb" style="font-size:13px;color:var(--muted)"></span>
+    </div>
+
+    <!-- HERO CARD -->
+    <div class="profile-hero" id="profile-hero"></div>
+
+    <!-- TABS -->
+    <div class="profile-tabs">
+      <button class="ptab active" id="tab-scores"   onclick="switchTab('scores')">📊 คะแนนวิชา</button>
+      <button class="ptab"        id="tab-reward"   onclick="switchTab('reward')">⭐ ความดี</button>
+      <button class="ptab"        id="tab-info"     onclick="switchTab('info')">📋 ข้อมูลส่วนตัว</button>
+      <button class="ptab"        id="tab-badges"   onclick="switchTab('badges')">🏅 Badge</button>
+    </div>
+
+    <div id="tab-content"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+<script src="auth-guard.js"></script>
+<script>
+AuthGuard.init('read-only');
+const db = _db;
+
+// ══════════════════════════════════════
+// SUBJECTS
+// ══════════════════════════════════════
+const SUBJECTS = [
+  {id:'thai',   label:'ภาษาไทย',          color:'#f59e0b', max:70},
+  {id:'math',   label:'คณิตศาสตร์',        color:'#14b8a6', max:70},
+  {id:'sci',    label:'วิทยาศาสตร์',       color:'#8b5cf6', max:70},
+  {id:'social', label:'สังคมศึกษา',        color:'#f97316', max:60},
+  {id:'eng',    label:'ภาษาอังกฤษ',       color:'#ef4444', max:65},
+  {id:'pe',     label:'สุขศึกษา/พลศึกษา', color:'#3b82f6', max:60},
+  {id:'art',    label:'ศิลปะ',            color:'#ec4899', max:60},
+  {id:'tech',   label:'เทคโนโลยี',        color:'#14b8a6', max:70},
+];
+
+const BADGES_DEF = [
+  {id:'first_login',  ico:'🌟', name:'ดาวดวงแรก',       desc:'เข้าระบบครั้งแรก',         cond:s=>true},
+  {id:'score_80',     ico:'📈', name:'เรียนเก่ง',        desc:'คะแนนเฉลี่ย ≥ 80%',        cond:s=>avgPct(s)>=80},
+  {id:'score_90',     ico:'🏆', name:'ยอดเยี่ยม',        desc:'คะแนนเฉลี่ย ≥ 90%',        cond:s=>avgPct(s)>=90},
+  {id:'reward_50',    ico:'⭐', name:'ผู้มีความดี',      desc:'คะแนนความดีสะสม ≥ 50',     cond:s=>(s._rewardPts||0)>=50},
+  {id:'reward_100',   ico:'💎', name:'ต้นแบบความดี',     desc:'คะแนนความดีสะสม ≥ 100',    cond:s=>(s._rewardPts||0)>=100},
+  {id:'full_subject',  ico:'🎯', name:'ครบทุกวิชา',      desc:'ส่งคะแนนครบทุกวิชา',        cond:s=>allSubjFilled(s)},
+  {id:'top3',         ico:'🥇', name:'Top 3 ห้อง',       desc:'ติด Top 3 ของห้องเรียน',    cond:s=>s._rank<=3&&s._rank>0},
+  {id:'attendance_perfect', ico:'📅', name:'ไม่ขาดเรียน', desc:'เช็คชื่อสมบูรณ์',          cond:s=>false},
+];
+
+// ══════════════════════════════════════
+// STATE
+// ══════════════════════════════════════
+let ALL_STUDENTS = [];
+let ALL_SCORES   = {};
+let ALL_REWARDS  = [];
+let SCORE_TYPES  = [];
+let currentStudent = null;
+let currentTab     = 'scores';
+let currentTerm    = '1';
+let currentYear    = '2568';
+
+// ══════════════════════════════════════
+// LOAD
+// ══════════════════════════════════════
+db.ref('students').on('value', snap => {
+  ALL_STUDENTS = [];
+  snap.forEach(c => ALL_STUDENTS.push({...c.val(), _id:c.key}));
+  ALL_STUDENTS.sort((a,b) => (classLabel(a)).localeCompare(classLabel(b),'th') || (+a.no||0)-(+b.no||0));
+});
+db.ref('student_scores').on('value', snap => {
+  ALL_SCORES = snap.val() || {};
+  if(currentStudent) renderTab();
+});
+db.ref('reward_records').on('value', snap => {
+  ALL_REWARDS = [];
+  snap.forEach(c => ALL_REWARDS.push({...c.val(), _id:c.key}));
+  if(currentStudent) renderTab();
+});
+db.ref('score_types').on('value', snap => {
+  SCORE_TYPES = [];
+  snap.forEach(c => SCORE_TYPES.push({...c.val(), _id:c.key}));
+  if(currentStudent) renderTab();
+});
+
+// ══════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════
+function classLabel(s){ return s.grade ? (s.room ? `${s.grade}/${s.room}` : s.grade) : ''; }
+function formatDate(str){
+  if(!str) return '—';
+  const [y,m,d] = str.split('-');
+  const mo=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  return `${+d} ${mo[+m-1]} ${+y+543}`;
+}
+function getScore(sid, subj, term, year, tid){
+  try{ return ALL_SCORES[sid]?.[subj]?.[`${term}_${year}`]?.[tid] ?? ''; }catch{ return ''; }
+}
+function subjectTotal(sid, subjId, term, year){
+  const types = SCORE_TYPES.filter(t => t.subject===subjId && String(t.term)===String(term) && String(t.year)===String(year));
+  let total=0; let has=false;
+  types.forEach(t => { const v=getScore(sid,subjId,term,year,t._id); if(v!==''){total+=parseFloat(v)||0;has=true;} });
+  return has ? total : null;
+}
+function avgPct(s){
+  let sum=0; let cnt=0;
+  SUBJECTS.forEach(sub => {
+    const tot=subjectTotal(s._id, sub.id, currentTerm, currentYear);
+    if(tot!==null){ sum+=tot/sub.max*100; cnt++; }
+  });
+  return cnt ? sum/cnt : 0;
+}
+function allSubjFilled(s){
+  return SUBJECTS.every(sub => subjectTotal(s._id,sub.id,currentTerm,currentYear)!==null);
+}
+function rewardPoints(sid){
+  return ALL_REWARDS.filter(r=>r.studentId===sid).reduce((s,r)=>s+(r.type==='pos'?r.pts:-(r.pts||0)),0);
+}
+function gradeLabel(pct){
+  if(pct>=80) return {g:'ดีมาก',c:var_emerald2()};
+  if(pct>=70) return {g:'ดี',c:'#3b82f6'};
+  if(pct>=60) return {g:'พอใช้',c:var_amber2()};
+  return {g:'ต้องปรับปรุง',c:'#ef4444'};
+}
+function var_emerald2(){ return '#10b981'; }
+function var_amber2(){ return '#f59e0b'; }
+
+// ══════════════════════════════════════
+// SEARCH
+// ══════════════════════════════════════
+function onSearch(){
+  const q = (document.getElementById('search-input').value || '').trim().toLowerCase();
+  const res = document.getElementById('search-results');
+  if(!q){ res.classList.remove('open'); return; }
+  const hits = ALL_STUDENTS.filter(s => {
+    const hay = `${s.fname} ${s.lname} ${s.nickname||''} ${classLabel(s)} ${s.no||''} ${s.sid||''}`.toLowerCase();
+    return hay.includes(q);
+  }).slice(0,8);
+  if(!hits.length){ res.classList.add('open'); res.innerHTML=`<div class="sr-empty">ไม่พบนักเรียน</div>`; return; }
+  res.classList.add('open');
+  res.innerHTML = hits.map(s => `
+    <div class="sr-item" onclick="openProfile('${s._id}')">
+      <div class="sr-avatar">${s.photo?`<img src="${s.photo}" alt=""/>`:(s.fname?s.fname[0]:'?')}</div>
+      <div>
+        <div class="sr-name">${s.prefix||''}${s.fname} ${s.lname}${s.nickname?` (${s.nickname})`:''}</div>
+        <div class="sr-class">ชั้น ${classLabel(s)||'—'} • เลขที่ ${s.no||'—'}</div>
+      </div>
+    </div>`).join('');
+}
+
+function onSearchFocus(){
+  if(document.getElementById('search-input').value) onSearch();
+}
+
+document.addEventListener('click', e => {
+  if(!e.target.closest('.search-big')) document.getElementById('search-results').classList.remove('open');
+});
+
+// ══════════════════════════════════════
+// OPEN PROFILE
+// ══════════════════════════════════════
+function openProfile(sid){
+  const s = ALL_STUDENTS.find(x => x._id===sid);
+  if(!s) return;
+  currentStudent = s;
+  document.getElementById('search-state').style.display = 'none';
+  document.getElementById('profile-view').style.display = 'block';
+  document.getElementById('search-results').classList.remove('open');
+  document.getElementById('profile-breadcrumb').textContent = `${s.fname} ${s.lname}`;
+
+  // เช็ค rank ในห้อง
+  const cls = classLabel(s);
+  const classmates = ALL_STUDENTS.filter(x => classLabel(x)===cls);
+  const ranked = classmates.map(x => ({id:x._id, pts:rewardPoints(x._id)})).sort((a,b)=>b.pts-a.pts);
+  const rank = ranked.findIndex(x=>x.id===sid)+1;
+  s._rank = rank;
+  s._rewardPts = rewardPoints(sid);
+
+  renderHero(s);
+  switchTab('scores');
+}
+
+function backToSearch(){
+  currentStudent = null;
+  document.getElementById('search-state').style.display = '';
+  document.getElementById('profile-view').style.display = 'none';
+  document.getElementById('search-input').value = '';
+}
+
+// ══════════════════════════════════════
+// RENDER HERO
+// ══════════════════════════════════════
+function renderHero(s){
+  const ini = s.fname ? s.fname[0] : '?';
+  const pts = rewardPoints(s._id);
+  const avg = avgPct(s);
+  document.getElementById('profile-hero').innerHTML = `
+    <div class="ph-avatar">${s.photo?`<img src="${s.photo}" alt=""/>`:`<span>${ini}</span>`}</div>
+    <div class="ph-info">
+      <div class="ph-name">${s.prefix||''}${s.fname||''} ${s.lname||''}</div>
+      <div class="ph-sub">${s.nickname?`"${s.nickname}" • `:''}เลขประจำตัว ${s.sid||'—'}</div>
+      <div class="ph-tags">
+        <span class="ph-tag tag-class">🏫 ${classLabel(s)||'—'}</span>
+        <span class="ph-tag tag-no">เลขที่ ${s.no||'—'}</span>
+        <span class="ph-tag tag-status">${s.status||'กำลังศึกษา'}</span>
+      </div>
+      <div class="ph-contact">
+        ${AuthGuard.isLoggedIn ? `<span>👨‍👩‍👧 ${s.parent||'—'} (${s.relation||'ผู้ปกครอง'}) ${s.phone?'• 📱 '+s.phone:''}</span>` : `<span style="color:var(--hint)">🔒 ข้อมูลผู้ปกครอง — เฉพาะครู/ธุรการ</span>`}
+        ${AuthGuard.isLoggedIn && s.birthday?`<span>🎂 ${formatDate(s.birthday)}</span>`:''}
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;min-width:110px">
+      <div style="text-align:center;background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.2);border-radius:12px;padding:10px 14px">
+        <div style="font-size:22px;font-weight:900;color:#a5b4fc">${avg.toFixed(1)}<span style="font-size:11px;font-weight:400;color:var(--muted)">%</span></div>
+        <div style="font-size:10px;color:var(--muted);margin-top:2px">เฉลี่ยทุกวิชา</div>
+      </div>
+      <div style="text-align:center;background:rgba(245,197,24,.08);border:1px solid rgba(245,197,24,.15);border-radius:12px;padding:10px 14px">
+        <div style="font-size:22px;font-weight:900;color:#fcd34d">${pts}</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:2px">คะแนนความดี</div>
+      </div>
+    </div>`;
+}
+
+// ══════════════════════════════════════
+// TABS
+// ══════════════════════════════════════
+function switchTab(t){
+  currentTab = t;
+  ['scores','reward','info','badges'].forEach(id => {
+    document.getElementById('tab-'+id)?.classList.toggle('active', id===t);
+  });
+  renderTab();
+}
+function renderTab(){
+  if(!currentStudent) return;
+  if(currentTab==='scores')  renderScores();
+  else if(currentTab==='reward') renderReward();
+  else if(currentTab==='info')   renderInfo();
+  else if(currentTab==='badges') renderBadges();
+}
+
+// ── TAB: SCORES ──
+function renderScores(){
+  const s = currentStudent;
+  const content = document.getElementById('tab-content');
+  // term/year selector
+  let html = `<div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+    <select onchange="currentTerm=this.value;renderScores()" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:7px 12px;color:var(--text);font-family:'Sarabun',sans-serif;font-size:13px;outline:none">
+      <option value="1" ${currentTerm==='1'?'selected':''}>ภาคเรียนที่ 1</option>
+      <option value="2" ${currentTerm==='2'?'selected':''}>ภาคเรียนที่ 2</option>
+    </select>
+    <select onchange="currentYear=this.value;renderScores()" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:7px 12px;color:var(--text);font-family:'Sarabun',sans-serif;font-size:13px;outline:none">
+      <option value="2568" ${currentYear==='2568'?'selected':''}>2568</option>
+      <option value="2567" ${currentYear==='2567'?'selected':''}>2567</option>
+    </select>
+  </div><div class="scores-grid">`;
+
+  SUBJECTS.forEach((sub, i) => {
+    const types = SCORE_TYPES.filter(t => t.subject===sub.id && String(t.term)===String(currentTerm) && String(t.year)===String(currentYear));
+    const tot   = subjectTotal(s._id, sub.id, currentTerm, currentYear);
+    const pct   = tot !== null ? Math.min(100, tot/sub.max*100) : 0;
+    const {g,c} = tot !== null ? gradeLabel(pct) : {g:'—',c:'var(--hint)'};
+    const barColor = pct>=80 ? '#10b981' : pct>=60 ? '#f59e0b' : '#ef4444';
+    const typeRows = types.map(t => {
+      const v = getScore(s._id, sub.id, currentTerm, currentYear, t._id);
+      return `<div class="sc-type-row"><span>${t.name}</span><span class="sc-type-val">${v===''?'—':v}/${t.max}</span></div>`;
+    }).join('');
+    html += `
+      <div class="sc-card" style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;position:relative;overflow:hidden;animation:cardIn .3s ease ${i*.05}s both">
+        <div style="position:absolute;top:0;left:0;right:0;height:3px;background:${sub.color}"></div>
+        <div class="sc-subject" style="color:${sub.color}">${sub.label}</div>
+        <div class="sc-score">${tot !== null ? tot.toFixed(tot%1?1:0) : '—'}<span class="sc-max">/${sub.max}</span></div>
+        <div class="sc-bar"><div class="sc-bar-fill" style="width:${pct}%;background:${barColor}"></div></div>
+        <div class="sc-grade" style="color:${c}">${g}${tot!==null?` (${pct.toFixed(0)}%)`:''}</div>
+        ${types.length?`<div class="sc-types">${typeRows}</div>`:''}
+      </div>`;
+  });
+  html += `</div>`;
+  content.innerHTML = html;
+}
+
+// ── TAB: REWARD ──
+function renderReward(){
+  const s = currentStudent;
+  const recs = ALL_REWARDS.filter(r => r.studentId===s._id).sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
+  const pos = recs.filter(r=>r.type==='pos').reduce((t,r)=>t+r.pts,0);
+  const neg = recs.filter(r=>r.type==='neg').reduce((t,r)=>t+r.pts,0);
+  const net = pos - neg;
+  document.getElementById('tab-content').innerHTML = `
+    <div class="reward-summary">
+      <div class="rw-kpi">
+        <div class="rw-num" style="color:#fcd34d">${net}</div>
+        <div class="rw-lbl">คะแนนสุทธิ</div>
+      </div>
+      <div class="rw-kpi">
+        <div class="rw-num" style="color:#6ee7b7">+${pos}</div>
+        <div class="rw-lbl">คะแนนที่ได้รับ</div>
+      </div>
+    </div>
+    <div class="reward-history">
+      <div class="rh-head">📋 ประวัติ ${recs.length} รายการ</div>
+      ${recs.length ? recs.slice(0,30).map((r,i)=>`
+        <div class="rh-row" style="animation-delay:${i*.03}s">
+          <div class="rh-badge ${r.type==='pos'?'pos':'neg'}">${r.type==='pos'?'⬆':'⬇'}</div>
+          <div class="rh-reason">${r.reason||'—'}${r.by?`<span style="font-size:10px;color:var(--hint)"> • ${r.by}</span>`:''}</div>
+          <div style="text-align:right">
+            <div class="rh-pts ${r.type==='pos'?'pos':'neg'}">${r.type==='pos'?'+':'–'}${r.pts}</div>
+            <div class="rh-date">${r.createdAt?new Date(r.createdAt).toLocaleDateString('th-TH',{day:'numeric',month:'short'}):'—'}</div>
+          </div>
+        </div>`).join('') : '<div class="empty-msg">ยังไม่มีการบันทึกความดี</div>'}
+    </div>`;
+}
+
+// ── TAB: INFO ──
+function renderInfo(){
+  const s = currentStudent;
+  const isLogin = AuthGuard.isLoggedIn;
+
+  // ── ฟิลด์สาธารณะ (ทุกคนดูได้) ──
+  const publicFields = [
+    ['คำนำหน้า', s.prefix||'—'],
+    ['ชื่อ-นามสกุล', `${s.fname||''} ${s.lname||''}`],
+    ['ชื่อเล่น', s.nickname||'—'],
+    ['เพศ', s.gender||'—'],
+    ['ระดับชั้น', s.grade||'—'],
+    ['ห้อง', s.room||'—'],
+    ['เลขที่', s.no||'—'],
+    ['เลขประจำตัวนักเรียน', s.sid||'—'],
+    ['ปีการศึกษา', s.year||'—'],
+    ['สถานะ', s.status||'กำลังศึกษา'],
+  ];
+
+  // ── ฟิลด์อ่อนไหว (เฉพาะ login เท่านั้น) ──
+  const sensitiveFields = [
+    ['วันเกิด', formatDate(s.birthday)],
+    ['เลขบัตรประชาชน', s.idcard||'—'],
+    ['ชื่อผู้ปกครอง', s.parent||'—'],
+    ['ความสัมพันธ์', s.relation||'—'],
+    ['เบอร์โทรผู้ปกครอง', s.phone||'—'],
+    ['Line / อีเมล', s.contact||'—'],
+    ['ที่อยู่', s.address||'—'],
+    ['หมายเหตุ', s.note||'—'],
+  ];
+
+  const renderFields = (fields) => fields.map(([k,v])=>
+    `<div class="info-item"><div class="info-key">${k}</div><div class="info-val">${v}</div></div>`
+  ).join('');
+
+  const lockedBlock = `
+    <div class="info-locked-block">
+      <div class="info-locked-ico">🔒</div>
+      <div class="info-locked-txt">ข้อมูลส่วนตัว / ผู้ปกครอง</div>
+      <div class="info-locked-sub">เฉพาะครูและเจ้าหน้าที่เท่านั้น</div>
+      <button class="info-locked-btn" onclick="AuthGuard.showLogin()">เข้าสู่ระบบเพื่อดู</button>
+    </div>`;
+
+  document.getElementById('tab-content').innerHTML = `
+    <div style="margin-bottom:10px">
+      <div class="info-section-label">📋 ข้อมูลทั่วไป</div>
+      <div class="info-grid">${renderFields(publicFields)}</div>
+    </div>
+    <div>
+      <div class="info-section-label">
+        ${isLogin ? '🔓 ข้อมูลส่วนตัว / ผู้ปกครอง' : '🔒 ข้อมูลส่วนตัว / ผู้ปกครอง'}
+        ${isLogin ? '<span class="info-section-badge">ครู/ธุรการ</span>' : ''}
+      </div>
+      ${isLogin
+        ? `<div class="info-grid">${renderFields(sensitiveFields)}</div>
+           <div style="margin-top:12px;display:flex;gap:8px">
+             <a href="student-register.html" class="info-edit-link">✏️ แก้ไขข้อมูล</a>
+           </div>`
+        : lockedBlock}
+    </div>`;
+}
+
+// ── TAB: BADGES ──
+function renderBadges(){
+  const s = currentStudent;
+  s._rewardPts = rewardPoints(s._id);
+  s._rank = currentStudent._rank || 99;
+  document.getElementById('tab-content').innerHTML = `
+    <div class="badges-grid">
+      ${BADGES_DEF.map((b,i)=>{
+        const earned = b.cond(s);
+        return `<div class="badge-card ${earned?'':'locked'}" style="animation-delay:${i*.05}s">
+          <div class="badge-ico">${b.ico}</div>
+          <div class="badge-name">${b.name}</div>
+          <div class="badge-desc">${b.desc}</div>
+          ${earned?'<div style="font-size:10px;color:#10b981;margin-top:6px;font-weight:700">✅ ได้รับแล้ว</div>':'<div style="font-size:10px;color:var(--hint);margin-top:6px">🔒 ยังไม่ได้รับ</div>'}
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+
+// ══════════════════════════════════════
+// URL PARAM — รองรับ ?id=xxx เปิดตรงได้
+// ══════════════════════════════════════
+// Re-render เมื่อ auth state เปลี่ยน (login/logout) ขณะอยู่ในหน้า
+AuthGuard.onChange(user => {
+  if(currentStudent) {
+    renderHero(currentStudent);
+    if(currentTab === 'info') renderInfo();
+  }
+});
+
+function checkURLParam(){
+  const params = new URLSearchParams(location.search);
+  const sid = params.get('id');
+  if(sid){
+    // รอให้ students โหลดก่อน
+    const wait = setInterval(()=>{
+      if(ALL_STUDENTS.length){
+        clearInterval(wait);
+        openProfile(sid);
+      }
+    },100);
+    setTimeout(()=>clearInterval(wait),5000);
+  }
+}
+checkURLParam();
+
+function toast(msg,type=''){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.className='toast'+(type?' '+type:'');
+  t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,64 @@
+{
+    "name": "Super App บ้านคำไผ่",
+    "short_name": "คำไผ่",
+    "description": "ระบบบริหารจัดการโรงเรียนออนไลน์ โรงเรียนบ้านคำไผ่",
+    "start_url": "/index.html",
+    "scope": "/",
+    "display": "standalone",
+    "orientation": "portrait-primary",
+    "background_color": "#020b18",
+    "theme_color": "#0891b2",
+    "lang": "th",
+    "categories": [
+        "education"
+    ],
+    "icons": [
+        {
+            "src": "icons/icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "icons/icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ],
+    "shortcuts": [
+        {
+            "name": "ทะเบียนนักเรียน",
+            "short_name": "ทะเบียน",
+            "url": "/student-register.html",
+            "icons": [
+                {
+                    "src": "icons/icon-192.png",
+                    "sizes": "192x192"
+                }
+            ]
+        },
+        {
+            "name": "เกมส์การเรียนรู้",
+            "short_name": "เกม",
+            "url": "/games/index.html",
+            "icons": [
+                {
+                    "src": "icons/icon-192.png",
+                    "sizes": "192x192"
+                }
+            ]
+        },
+        {
+            "name": "เช็คชื่อนักเรียน",
+            "short_name": "เช็คชื่อ",
+            "url": "/attendance.html",
+            "icons": [
+                {
+                    "src": "icons/icon-192.png",
+                    "sizes": "192x192"
+                }
+            ]
+        }
+    ]
+}

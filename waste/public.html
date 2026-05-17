@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>🏆 อันดับคะแนน • บ้านคำไผ่</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700;800;900&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d1117;--surface:rgba(255,255,255,.05);--border:rgba(255,255,255,.1);
+  --text:#f1f5f9;--muted:#64748b;--accent:#4ade80;
+  --green:#16a34a;--blue:#3b82f6;--yellow:#fbbf24;--orange:#f97316;
+}
+body{font-family:Sarabun,sans-serif;min-height:100vh;overflow-x:hidden;background:var(--bg);color:var(--text)}
+
+.bg-layer{position:fixed;inset:0;z-index:0;background:linear-gradient(160deg,#0d1117 0%,#0f2027 40%,#1a1a2e 100%);pointer-events:none}
+.glow-wrap{position:fixed;inset:0;z-index:0;pointer-events:none}
+.glow{position:absolute;border-radius:50%;filter:blur(90px);opacity:.15;animation:gMove 9s ease-in-out infinite}
+.g1{width:520px;height:520px;background:#16a34a;top:-120px;left:-120px}
+.g2{width:420px;height:420px;background:#3b82f6;bottom:-100px;right:-100px;animation-delay:3s}
+.g3{width:320px;height:320px;background:#f97316;top:45%;left:42%;animation-delay:5.5s}
+@keyframes gMove{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(28px,-18px) scale(1.1)}}
+.ptcl{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.pt{position:absolute;animation:ptFloat linear infinite;opacity:0}
+@keyframes ptFloat{0%{transform:translateY(110vh) rotate(0deg);opacity:0}10%{opacity:.5}90%{opacity:.4}100%{transform:translateY(-80px) rotate(360deg);opacity:0}}
+
+.wrap{position:relative;z-index:1;max-width:700px;margin:0 auto;padding:20px 16px 60px}
+
+.back-btn{display:inline-flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);color:#94a3b8;border-radius:14px;padding:8px 16px;font-size:13px;font-weight:700;text-decoration:none;margin-bottom:16px;transition:all .2s;font-family:Sarabun,sans-serif;cursor:pointer}
+.back-btn:hover{background:rgba(255,255,255,.1);color:var(--text)}
+
+.hero{text-align:center;padding:20px 16px 24px}
+.hero-icon{font-size:52px;display:block;animation:lBounce 3s ease-in-out infinite;filter:drop-shadow(0 8px 20px rgba(251,191,36,.3))}
+@keyframes lBounce{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-8px) rotate(2deg)}}
+.hero h1{font-size:26px;font-weight:900;background:linear-gradient(135deg,#4ade80,#86efac,#fbbf24);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin:10px 0 4px;line-height:1.2}
+.hero-sub{color:var(--muted);font-size:14px}
+.live-pill{display:inline-flex;align-items:center;gap:7px;background:rgba(22,163,74,.12);border:1px solid rgba(22,163,74,.3);border-radius:20px;padding:5px 14px;font-size:12px;color:#4ade80;margin-top:10px;font-weight:700}
+.live-dot{width:8px;height:8px;border-radius:50%;background:#4ade80;animation:blink 1.5s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+
+.view-toggle{display:flex;gap:6px;background:rgba(255,255,255,.04);border-radius:14px;padding:4px;margin-bottom:20px}
+.vtab{flex:1;padding:9px;text-align:center;border-radius:10px;cursor:pointer;font-size:13px;font-weight:700;color:var(--muted);transition:all .2s}
+.vtab.active{background:rgba(74,222,128,.15);color:#4ade80;border:1px solid rgba(74,222,128,.25)}
+
+.grand-card{background:linear-gradient(135deg,rgba(22,163,74,.22),rgba(16,128,58,.12));border:1px solid rgba(22,163,74,.35);border-radius:20px;padding:22px 20px;text-align:center;margin-bottom:20px;backdrop-filter:blur(10px);position:relative;overflow:hidden}
+.grand-card::after{content:'♻️';position:absolute;font-size:100px;opacity:.06;right:-10px;top:-10px;pointer-events:none}
+.grand-label{color:#86efac;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:4px}
+.grand-num{font-size:60px;font-weight:900;background:linear-gradient(135deg,#4ade80,#86efac);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.1}
+.grand-sub{color:var(--muted);font-size:13px;margin-top:4px}
+.mini-stats{display:flex;justify-content:center;gap:10px;margin-top:16px;flex-wrap:wrap}
+.mini-chip{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:9px 14px;text-align:center;min-width:76px}
+.mini-num{font-size:18px;font-weight:800;color:var(--text)}
+.mini-lbl{font-size:11px;color:var(--muted);margin-top:2px}
+
+.sec-title{font-size:12px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:1.2px;margin:20px 0 12px;display:flex;align-items:center;gap:8px}
+.sec-title::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.06)}
+
+.class-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.class-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px;text-align:center;transition:transform .2s,box-shadow .2s;position:relative;overflow:hidden}
+.class-card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.3)}
+.class-card::before{content:'';position:absolute;inset:0;border-radius:16px;padding:1.5px;background:var(--cc-border);-webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
+.class-rank-ico{font-size:24px;display:block;margin-bottom:6px}
+.class-name{font-weight:800;font-size:14px;color:var(--text);margin-bottom:8px}
+.class-pts{font-size:28px;font-weight:900;margin-bottom:2px}
+.class-cnt{font-size:11px;color:var(--muted)}
+.class-bar-bg{background:rgba(255,255,255,.07);border-radius:99px;height:5px;margin-top:10px;overflow:hidden}
+.class-bar-fill{height:5px;border-radius:99px;transition:width 1s ease}
+
+.podium-wrap{display:flex;align-items:flex-end;justify-content:center;gap:10px;margin-bottom:24px;padding:0 4px}
+.podium-col{display:flex;flex-direction:column;align-items:center;flex:1;max-width:200px}
+.podium-av-wrap{position:relative;margin-bottom:8px}
+.p-crown{position:absolute;top:-20px;left:50%;transform:translateX(-50%);font-size:22px;animation:crownFloat 1.8s ease-in-out infinite}
+@keyframes crownFloat{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-5px)}}
+.p-ring1{box-shadow:0 0 0 3px #fbbf24,0 0 18px rgba(251,191,36,.45)}
+.p-ring2{box-shadow:0 0 0 3px #94a3b8,0 0 14px rgba(148,163,184,.3)}
+.p-ring3{box-shadow:0 0 0 3px #b45309,0 0 12px rgba(180,83,9,.25)}
+.p-name{font-weight:800;font-size:13px;color:var(--text);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;padding:0 4px;margin-bottom:3px}
+.p-pts{text-align:center;font-weight:800;font-size:15px}
+.p-badge{font-size:11px;color:var(--muted);text-align:center;margin-top:2px;margin-bottom:6px}
+.p-base{border-radius:12px 12px 0 0;width:100%;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:900;color:rgba(255,255,255,.35)}
+.pb1{background:linear-gradient(180deg,rgba(251,191,36,.3),rgba(245,158,11,.1));border:1px solid rgba(251,191,36,.4);border-bottom:none;height:80px}
+.pb2{background:linear-gradient(180deg,rgba(148,163,184,.2),rgba(100,116,139,.08));border:1px solid rgba(148,163,184,.25);border-bottom:none;height:60px}
+.pb3{background:linear-gradient(180deg,rgba(180,83,9,.2),rgba(146,64,14,.08));border:1px solid rgba(180,83,9,.25);border-bottom:none;height:44px}
+
+.lb-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:8px;transition:transform .2s,box-shadow .2s}
+.lb-card:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.25)}
+.lb-inner{display:flex;align-items:center;gap:12px;padding:13px 16px}
+.rank-num{width:28px;text-align:center;font-size:15px;font-weight:800;color:var(--muted);flex-shrink:0}
+.lb-info{flex:1;min-width:0}
+.lb-name{font-weight:700;font-size:15px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lb-meta{display:flex;gap:6px;margin-top:3px;flex-wrap:wrap;align-items:center}
+.lb-pts-wrap{text-align:right;flex-shrink:0}
+.pts-num{font-size:22px;font-weight:800}
+.pts-lbl{font-size:11px;color:var(--muted)}
+.prog-wrap{padding:0 16px 12px}
+.prog-bg{background:rgba(255,255,255,.07);border-radius:99px;height:5px;overflow:hidden}
+.prog-fill{height:5px;border-radius:99px;transition:width 1s ease}
+.prog-hint{font-size:10px;color:#475569;margin-top:3px}
+
+.badge-pill{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700}
+.bp-rank{background:rgba(251,191,36,.12);color:#fcd34d;border:1px solid rgba(251,191,36,.25)}
+.bp-class{background:rgba(59,130,246,.15);color:#93c5fd;border:1px solid rgba(59,130,246,.25)}
+
+.av{border-radius:50%;object-fit:cover;flex-shrink:0}
+.av-ph{border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0}
+
+.chart-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px;margin-bottom:16px}
+.chart-title{font-size:13px;font-weight:700;color:var(--muted);margin-bottom:16px;text-transform:uppercase;letter-spacing:.8px}
+.bar-chart{display:flex;align-items:flex-end;gap:6px;height:100px}
+.bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px}
+.bar-fill{width:100%;border-radius:6px 6px 0 0;background:linear-gradient(180deg,#4ade80,#16a34a);transition:height .8s ease;min-height:2px}
+.bar-day{font-size:10px;color:var(--muted);text-align:center}
+.bar-val{font-size:10px;color:#4ade80;font-weight:700}
+
+.update-time{text-align:center;color:#2d3748;font-size:12px;padding:20px 0 8px}
+
+.view-sec{display:none}
+.view-sec.active{display:block}
+
+.skeleton{background:linear-gradient(90deg,rgba(255,255,255,.04) 25%,rgba(255,255,255,.09) 50%,rgba(255,255,255,.04) 75%);background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:12px;height:70px;margin-bottom:8px}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+/* ── room tag ── */
+.room-tag{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px}
+
+@media(max-width:480px){
+  .class-grid{grid-template-columns:1fr}
+  .grand-num{font-size:48px}
+  .hero h1{font-size:22px}
+}
+</style>
+</head>
+<body>
+<div class="bg-layer"></div>
+<div class="glow-wrap"><div class="glow g1"></div><div class="glow g2"></div><div class="glow g3"></div></div>
+<div class="ptcl" id="ptcl"></div>
+
+<div class="wrap">
+
+  <a class="back-btn" href="index.html">← กลับหน้าหลัก</a>
+
+  <div class="hero">
+    <span class="hero-icon">🏆</span>
+    <h1>อันดับคะแนน บ้านคำไผ่</h1>
+    <div class="hero-sub">ร่วมกันรักษาสิ่งแวดล้อม 🌱</div>
+    <div class="live-pill"><span class="live-dot"></span>LIVE อัปเดตเรียลไทม์</div>
+  </div>
+
+  <div class="view-toggle">
+    <div class="vtab active" onclick="switchView('students')">🏆 นักเรียน</div>
+    <div class="vtab" onclick="switchView('classes')">🏫 ห้องเรียน</div>
+    <div class="vtab" onclick="switchView('stats')">📊 สถิติ</div>
+  </div>
+
+  <div class="grand-card">
+    <div class="grand-label">🌍 ขยะที่เก็บได้ทั้งหมด</div>
+    <div class="grand-num" id="grand-total">0</div>
+    <div class="grand-sub" id="grand-sub">ชิ้น</div>
+    <div class="mini-stats">
+      <div class="mini-chip"><div class="mini-num" id="s-plastic">0</div><div class="mini-lbl">🍶 ขวด</div></div>
+      <div class="mini-chip"><div class="mini-num" id="s-can">0</div><div class="mini-lbl">🥫 กระป๋อง</div></div>
+      <div class="mini-chip"><div class="mini-num" id="s-paper">0</div><div class="mini-lbl">📄 กระดาษ</div></div>
+      <div class="mini-chip"><div class="mini-num" id="s-other">0</div><div class="mini-lbl">🗑️ อื่นๆ</div></div>
+    </div>
+  </div>
+
+  <!-- ══ VIEW: STUDENTS ══ -->
+  <div class="view-sec active" id="view-students">
+    <div class="sec-title">🥇 Top 3</div>
+    <div class="podium-wrap" id="podium"></div>
+    <div class="sec-title">อันดับที่เหลือ</div>
+    <div id="lb-rest">
+      <div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>
+    </div>
+  </div>
+
+  <!-- ══ VIEW: CLASSES ══ -->
+  <div class="view-sec" id="view-classes">
+    <div class="sec-title">🏫 อันดับห้องเรียน</div>
+    <div class="class-grid" id="class-grid">
+      <div class="skeleton" style="height:130px"></div>
+      <div class="skeleton" style="height:130px"></div>
+    </div>
+  </div>
+
+  <!-- ══ VIEW: STATS ══ -->
+  <div class="view-sec" id="view-stats">
+    <div class="sec-title">📅 7 วันย้อนหลัง</div>
+    <div class="chart-card">
+      <div class="chart-title">จำนวนขยะที่เก็บได้ (ชิ้น)</div>
+      <div class="bar-chart" id="bar-chart"></div>
+    </div>
+    <div class="sec-title">📋 สรุปรวม</div>
+    <div id="stats-summary"></div>
+  </div>
+
+  <div class="update-time" id="update-time">กำลังโหลด...</div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+<script>
+// ─── Firebase ───
+const fbConfig={
+  apiKey:"AIzaSyDML31kfyPiZtWz6s9ebf7T02W7r2Y5CvA",
+  authDomain:"school-waste-tracker.firebaseapp.com",
+  databaseURL:"https://school-waste-tracker-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId:"school-waste-tracker",
+  storageBucket:"school-waste-tracker.firebasestorage.app",
+  messagingSenderId:"158534396656",
+  appId:"1:158534396656:web:0bea4a9fe7bff32494b035"
+};
+firebase.initializeApp(fbConfig);
+const db=firebase.database();
+
+// ─── State ───
+let records=[], members=[], currentView='students';
+
+// ─── Constants ───
+const ROOMS=['อนุบาล','ป.1','ป.2','ป.3','ป.4','ป.5','ป.6'];
+const ROOM_COLORS={'อนุบาล':'#ec4899','ป.1':'#3b82f6','ป.2':'#8b5cf6','ป.3':'#14b8a6','ป.4':'#16a34a','ป.5':'#f43f5e','ป.6':'#6366f1'};
+const BADGES=[
+  {pts:500,icon:'👑',label:'ราชาขยะ',color:'#f472b6'},
+  {pts:300,icon:'🏆',label:'แชมป์',color:'#fbbf24'},
+  {pts:100,icon:'🌳',label:'เพชรเขียว',color:'#22d3ee'},
+  {pts:50, icon:'🌿',label:'นักเก็บ',color:'#34d399'},
+  {pts:10, icon:'🌱',label:'มือใหม่',color:'#4ade80'},
+];
+const COLORS=['#4ade80','#60a5fa','#fbbf24','#f87171','#a78bfa','#34d399','#fb923c','#e879f9'];
+const CLASS_BORDERS=[
+  'linear-gradient(135deg,rgba(251,191,36,.6),rgba(245,158,11,.2))',
+  'linear-gradient(135deg,rgba(148,163,184,.5),rgba(100,116,139,.2))',
+  'linear-gradient(135deg,rgba(180,83,9,.5),rgba(146,64,14,.2))',
+  'linear-gradient(135deg,rgba(74,222,128,.4),rgba(22,163,74,.2))',
+  'linear-gradient(135deg,rgba(96,165,250,.4),rgba(59,130,246,.2))',
+  'linear-gradient(135deg,rgba(244,63,94,.4),rgba(225,29,72,.2))',
+  'linear-gradient(135deg,rgba(99,102,241,.4),rgba(79,70,229,.2))',
+];
+const RANK_ICO=['🥇','🥈','🥉','4️⃣','5️⃣','6️⃣','7️⃣','8️⃣'];
+
+// ─── Realtime listeners ───
+db.ref('records').on('value',snap=>{
+  const v=snap.val();
+  records=v?Object.entries(v).map(([k,r])=>({...r,fbKey:k})):[];
+  render();
+});
+db.ref('members').on('value',snap=>{
+  const v=snap.val();
+  members=v?Object.entries(v).map(([k,m])=>({...m,fbKey:k})):[];
+  render();
+});
+
+// ─── View toggle ───
+function switchView(v){
+  currentView=v;
+  document.querySelectorAll('.vtab').forEach((t,i)=>{
+    t.classList.toggle('active',['students','classes','stats'][i]===v);
+  });
+  document.querySelectorAll('.view-sec').forEach(s=>{
+    s.classList.toggle('active',s.id==='view-'+v);
+  });
+}
+
+// ─── Main render ───
+function render(){
+  renderGrand();
+  renderStudents();
+  renderClasses();
+  renderStats();
+  document.getElementById('update-time').textContent='อัปเดตล่าสุด: '+new Date().toLocaleTimeString('th-TH');
+}
+
+// ─── Grand total ───
+function renderGrand(){
+  const total=records.reduce((s,r)=>s+(r.total||0),0);
+  animNum('grand-total',total);
+  animNum('s-plastic',records.reduce((s,r)=>s+(r.plastic||0),0));
+  animNum('s-can',records.reduce((s,r)=>s+(r.can||0),0));
+  animNum('s-paper',records.reduce((s,r)=>s+(r.paper||0),0));
+  animNum('s-other',records.reduce((s,r)=>s+(r.other||0),0));
+  document.getElementById('grand-sub').textContent=`ชิ้น จาก ${records.length} ครั้งที่บันทึก`;
+}
+
+// ─── Students ───
+// ✅ แก้ไข: ใช้ s.room แทน class_id
+function renderStudents(){
+  const studs=members.filter(m=>m.type==='student');
+
+  const ranked=studs.map(s=>({
+    ...s,
+    pts:s.points||0,
+    recCount:records.filter(r=>r.member_id===s.fbKey).length,
+  })).sort((a,b)=>b.pts-a.pts);
+
+  const maxPts=Math.max(1,...ranked.map(s=>s.pts));
+
+  if(!ranked.length){
+    document.getElementById('podium').innerHTML='';
+    document.getElementById('lb-rest').innerHTML='<p style="color:var(--muted);text-align:center;padding:24px;font-size:13px">ยังไม่มีนักเรียนในระบบ</p>';
+    return;
+  }
+
+  // ── Podium (order: 2nd | 1st | 3rd) ──
+  const podium3=[
+    [ranked[1],2,'p-ring2','pb2','🥈',60,'#94a3b8',false],
+    [ranked[0],1,'p-ring1','pb1','🥇',80,'#fbbf24',true],
+    [ranked[2],3,'p-ring3','pb3','🥉',44,'#b45309',false]
+  ];
+
+  document.getElementById('podium').innerHTML=podium3.map(([s,rank,ring,baseClass,ico,baseH,ptColor,crown])=>{
+    if(!s) return `<div class="podium-col" style="flex:1"></div>`;
+    const sz=rank===1?64:50;
+    const badge=BADGES.find(b=>s.pts>=b.pts)||null;
+    const rc=ROOM_COLORS[s.room]||'#64748b';
+    return `<div class="podium-col">
+      <div class="podium-av-wrap">
+        ${crown?'<div class="p-crown">👑</div>':''}
+        ${avHTML(s.img,s.name,sz,ring)}
+      </div>
+      <div class="p-name">${s.name}</div>
+      ${s.room?`<div style="margin-bottom:4px"><span class="room-tag" style="background:${rc}33;color:${rc};border:1px solid ${rc}55">${s.room}</span></div>`:''}
+      <div class="p-pts" style="color:${ptColor}">${s.pts.toLocaleString()} แต้ม</div>
+      <div class="p-badge">${badge?badge.icon+' '+badge.label:''}</div>
+      <div class="p-base ${baseClass}" style="height:${baseH}px">${ico}</div>
+    </div>`;
+  }).join('');
+
+  // ── อันดับที่เหลือ (4+) ──
+  document.getElementById('lb-rest').innerHTML=ranked.slice(3).map((s,i)=>{
+    const rank=i+4;
+    const badge=BADGES.find(b=>s.pts>=b.pts)||null;
+    const nextBadge=BADGES.slice().reverse().find(b=>s.pts<b.pts)||null;
+    const pct=(s.pts/maxPts*100).toFixed(1);
+    const col=COLORS[(rank-1)%COLORS.length];
+    // ✅ แก้ไข: ใช้ s.room แทน class_id/classMap
+    const rc=ROOM_COLORS[s.room]||'#64748b';
+    return `<div class="lb-card">
+      <div class="lb-inner">
+        <div class="rank-num">${rank}</div>
+        ${avHTML(s.img,s.name,44,'')}
+        <div class="lb-info">
+          <div class="lb-name">${s.name}</div>
+          <div class="lb-meta">
+            ${badge?`<span class="badge-pill bp-rank">${badge.icon} ${badge.label}</span>`:''}
+            ${s.room?`<span class="room-tag" style="background:${rc}33;color:${rc};border:1px solid ${rc}55">${s.room}</span>`:''}
+            <span style="font-size:11px;color:var(--muted)">${s.recCount} ครั้ง</span>
+          </div>
+        </div>
+        <div class="lb-pts-wrap">
+          <div class="pts-num" style="color:${col}">${s.pts.toLocaleString()}</div>
+          <div class="pts-lbl">แต้ม</div>
+        </div>
+      </div>
+      <div class="prog-wrap">
+        <div class="prog-bg"><div class="prog-fill" style="width:${pct}%;background:${col}"></div></div>
+        <div class="prog-hint">${nextBadge?`ถัดไป: ${nextBadge.icon}${nextBadge.label} (${s.pts}/${nextBadge.pts} แต้ม)`:'🏆 ระดับสูงสุดแล้ว!'}</div>
+      </div>
+    </div>`;
+  }).join('')||'<p style="color:var(--muted);text-align:center;padding:16px;font-size:13px">มีผู้เข้าร่วมน้อยกว่า 4 คน</p>';
+}
+
+// ─── Classes ───
+// ✅ แก้ไขใหม่ทั้งหมด: ใช้ room field จาก members แทน type='class'
+function renderClasses(){
+  const studs=members.filter(m=>m.type==='student');
+
+  if(!studs.length){
+    document.getElementById('class-grid').innerHTML=
+      '<p style="color:var(--muted);font-size:13px;grid-column:1/-1;text-align:center;padding:24px">ยังไม่มีนักเรียน</p>';
+    return;
+  }
+
+  const ranked=ROOMS
+    .map(room=>{
+      const roomStuds=studs.filter(s=>s.room===room);
+      const roomRecs=records.filter(r=>r.member_room===room);
+      return{
+        name:room,
+        total:roomRecs.reduce((s,r)=>s+(r.total||0),0),
+        count:roomRecs.length,
+        students:roomStuds.length,
+      };
+    })
+    .filter(c=>c.total>0)
+    .sort((a,b)=>b.total-a.total);
+
+  if(!ranked.length){
+    document.getElementById('class-grid').innerHTML=
+      '<p style="color:var(--muted);font-size:13px;grid-column:1/-1;text-align:center;padding:24px">ยังไม่มีข้อมูลการบันทึก</p>';
+    return;
+  }
+
+  const maxT=Math.max(1,...ranked.map(c=>c.total));
+
+  document.getElementById('class-grid').innerHTML=ranked.map((c,i)=>{
+    const col=ROOM_COLORS[c.name]||COLORS[i%COLORS.length];
+    const pct=(c.total/maxT*100).toFixed(1);
+    const border=CLASS_BORDERS[i]||CLASS_BORDERS[CLASS_BORDERS.length-1];
+    return `<div class="class-card" style="--cc-border:${border}">
+      <span class="class-rank-ico">${RANK_ICO[i]||'🎖️'}</span>
+      <div class="class-name">${c.name}</div>
+      <div class="class-pts" style="color:${col}">${c.total.toLocaleString()}</div>
+      <div class="class-cnt">${c.students} คน • ${c.count} ครั้ง</div>
+      <div class="class-bar-bg">
+        <div class="class-bar-fill" style="width:${pct}%;background:${col}"></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ─── Stats / 7-day chart ───
+function renderStats(){
+  const days=[];
+  for(let i=6;i>=0;i--){
+    const d=new Date(); d.setDate(d.getDate()-i);
+    days.push(d.toISOString().slice(0,10));
+  }
+  const dayTotals=days.map(d=>({
+    day:d,
+    total:records.filter(r=>(r.date||'').slice(0,10)===d).reduce((s,r)=>s+(r.total||0),0),
+  }));
+  const maxD=Math.max(1,...dayTotals.map(d=>d.total));
+  const thLabels=['อา','จ','อ','พ','พฤ','ศ','ส'];
+
+  document.getElementById('bar-chart').innerHTML=dayTotals.map(d=>{
+    const pct=Math.max(4,(d.total/maxD*100));
+    const dow=new Date(d.day+'T12:00:00').getDay();
+    return `<div class="bar-col">
+      <div class="bar-val">${d.total||''}</div>
+      <div class="bar-fill" style="height:${pct}%"></div>
+      <div class="bar-day">${thLabels[dow]}<br/><span style="font-size:9px;color:#334155">${d.day.slice(5)}</span></div>
+    </div>`;
+  }).join('');
+
+  // ── สรุปรวม ──
+  const totalAll=records.reduce((s,r)=>s+(r.total||0),0);
+  const studsRanked=members.filter(m=>m.type==='student')
+    .map(s=>({...s,pts:s.points||0}))
+    .sort((a,b)=>b.pts-a.pts);
+  const topStudent=studsRanked[0];
+
+  // ✅ แก้ไข: คำนวณ top class จาก room แทน type='class'
+  const classRanked=ROOMS
+    .map(room=>({
+      name:room,
+      total:records.filter(r=>r.member_room===room).reduce((s,r)=>s+(r.total||0),0),
+    }))
+    .filter(c=>c.total>0)
+    .sort((a,b)=>b.total-a.total);
+  const topClass=classRanked[0];
+
+  const todayStr=new Date().toISOString().slice(0,10);
+  const todayTotal=records.filter(r=>(r.date||'').slice(0,10)===todayStr).reduce((s,r)=>s+(r.total||0),0);
+
+  const rows=[
+    ['🌍','ขยะทั้งหมด',totalAll.toLocaleString()+' ชิ้น'],
+    ['📅','วันนี้',todayTotal.toLocaleString()+' ชิ้น'],
+    ['📋','จำนวนครั้งบันทึก',records.length.toLocaleString()],
+    ['👤','จำนวนนักเรียน',studsRanked.length.toLocaleString()],
+    ['🏆','นักเรียนอันดับ 1',topStudent?topStudent.name+' ('+topStudent.pts+' แต้ม)':'—'],
+    ['🏫','ห้องอันดับ 1',topClass?topClass.name+' ('+topClass.total+' ชิ้น)':'—'],
+  ];
+  document.getElementById('stats-summary').innerHTML=rows.map(([ico,lbl,val])=>`
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:13px 16px;display:flex;align-items:center;gap:12px;margin-bottom:8px">
+      <span style="font-size:22px;flex-shrink:0">${ico}</span>
+      <div style="flex:1;font-size:13px;color:var(--muted)">${lbl}</div>
+      <div style="font-size:14px;font-weight:800;color:var(--text)">${val}</div>
+    </div>`).join('');
+}
+
+// ─── Avatar helper ───
+function avHTML(img,name,sz,ringClass){
+  const cols=['#16a34a','#3b82f6','#f59e0b','#ec4899','#8b5cf6','#14b8a6','#f97316'];
+  const col=cols[(name||'?').charCodeAt(0)%cols.length];
+  const style=`width:${sz}px;height:${sz}px;font-size:${Math.round(sz*.38)}px;border:2px solid rgba(255,255,255,.12)`;
+  if(img&&img.length>5) return `<img src="${img}" class="av ${ringClass}" style="${style}"/>`;
+  return `<div class="av-ph ${ringClass}" style="${style};background:${col}">${(name||'?')[0]}</div>`;
+}
+
+// ─── Animate number ───
+function animNum(id,target){
+  const el=document.getElementById(id); if(!el) return;
+  const start=parseInt(el.textContent.replace(/,/g,''))||0;
+  if(start===target){el.textContent=target.toLocaleString();return;}
+  const dur=700,step=16,steps=dur/step;
+  let cur=0;
+  const iv=setInterval(()=>{
+    cur++;
+    el.textContent=Math.round(start+(target-start)*(cur/steps)).toLocaleString();
+    if(cur>=steps){el.textContent=target.toLocaleString();clearInterval(iv);}
+  },step);
+}
+
+// ─── Particles ───
+const emojis=['🍃','⭐','✨','🌟','♻️','🌱','💫','🌸'];
+const pw=document.getElementById('ptcl');
+for(let i=0;i<18;i++){
+  const p=document.createElement('div'); p.className='pt';
+  p.textContent=emojis[~~(Math.random()*emojis.length)];
+  p.style.cssText=`left:${Math.random()*100}%;font-size:${12+Math.random()*14}px;animation-duration:${10+Math.random()*14}s;animation-delay:${Math.random()*12}s`;
+  pw.appendChild(p);
+}
+</script>
+</body>
+</html>

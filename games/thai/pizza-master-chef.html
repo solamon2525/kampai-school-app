@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Pizza Master Chef - Mega Deluxe (Bug Fixed)</title>
+    <style>
+        /* --- CSS Styles --- */
+        @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@400;700&family=Chewy&display=swap');
+
+        :root {
+            --primary-red: #D32F2F;
+            --cheese-yellow: #FFC107;
+            --crust-brown: #E67E22;
+            --veggie-green: #4CAF50;
+            --text-dark: #3E2723;
+            --gold-color: #FFD700;
+        }
+
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Kanit', sans-serif;
+            background-color: #FFF;
+            background-image: 
+                linear-gradient(90deg, rgba(200, 0, 0, 0.05) 50%, transparent 50%),
+                linear-gradient(rgba(200, 0, 0, 0.05) 50%, transparent 50%);
+            background-size: 60px 60px;
+            color: var(--text-dark);
+            touch-action: none;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            transition: background-image 0.5s, background-color 0.5s;
+        }
+
+        /* ปลดล็อกลายพื้นหลัง */
+        body.bg-level-2 {
+            background-image: radial-gradient(#4CAF50 15%, transparent 16%), radial-gradient(#4CAF50 15%, transparent 16%);
+            background-color: #e8f5e9;
+            background-size: 30px 30px;
+            background-position: 0 0, 15px 15px;
+        }
+        body.bg-level-3 {
+            background-image: repeating-linear-gradient(45deg, #3F51B5 0, #3F51B5 1px, transparent 0, transparent 50%);
+            background-color: #e8eaf6;
+            background-size: 20px 20px;
+        }
+
+        #game-container { position: relative; width: 100vw; height: 100vh; }
+        canvas { position: absolute; top: 0; left: 0; z-index: 1; }
+
+        #ui-layer { position: absolute; width: 100%; height: 100%; z-index: 10; pointer-events: none; }
+
+        .top-bar {
+            position: absolute; top: 0; left: 0; width: 100%; padding: 15px 20px;
+            box-sizing: border-box; display: flex; justify-content: space-between;
+            align-items: flex-start; z-index: 20;
+        }
+
+        .stats-box {
+            background: white; padding: 8px 15px; border-radius: 12px;
+            border: 3px solid var(--primary-red); box-shadow: 0 3px 0 rgba(0,0,0,0.1);
+            font-size: 1.2rem; font-weight: bold; color: var(--primary-red);
+            display: flex; flex-direction: column; align-items: center;
+        }
+
+        .mode-badge {
+            font-size: 0.8rem; background: var(--cheese-yellow); color: var(--text-dark);
+            padding: 2px 8px; border-radius: 10px; margin-bottom: 2px; text-transform: uppercase;
+        }
+
+        .combo-meter { display: flex; gap: 2px; margin-top: 3px; }
+        .combo-dot { width: 10px; height: 10px; background: #eee; border-radius: 50%; border: 1px solid #ccc; }
+        .combo-dot.active { background: var(--veggie-green); box-shadow: 0 0 5px var(--veggie-green); }
+        .combo-dot.fever { background: #FF5722; animation: blink 0.5s infinite; }
+
+        .timer-container {
+            width: 150px; background: white; border-radius: 15px;
+            border: 3px solid var(--primary-red); padding: 4px;
+        }
+        #timer-bar { width: 100%; height: 12px; background: var(--veggie-green); border-radius: 8px; transition: width 0.1s linear, background-color 0.3s; }
+
+        .player-area { position: absolute; width: 100%; height: 100%; left: 0; top: 0; }
+        .order-area { position: absolute; display: flex; align-items: center; justify-content: center; pointer-events: none; transition: all 0.5s ease; z-index: 15; }
+        
+        .customer-container { position: relative; width: 120px; height: 120px; display: flex; justify-content: center; align-items: center; pointer-events: auto; animation: floatCustomer 3s ease-in-out infinite; filter: drop-shadow(0 10px 5px rgba(0,0,0,0.1)); }
+        .customer-emoji { font-size: 100px; line-height: 1; transition: transform 0.2s; display: block; }
+        
+        .order-bubble { position: relative; background: white; padding: 10px 25px; border-radius: 25px; border: 4px solid var(--crust-brown); box-shadow: 0 8px 15px rgba(0,0,0,0.15); text-align: center; pointer-events: auto; min-width: 140px; margin: 0 10px; }
+        .order-fraction { font-family: 'Chewy', cursive; font-size: 4rem; color: var(--primary-red); line-height: 1; text-shadow: 2px 2px 0 #fff; }
+        
+        /* สไตล์เศษส่วนให้สวยงาม */
+        .fraction-display-box { display: inline-block; vertical-align: middle; font-size: 0.6em; text-align: center; line-height: 1.1; margin-left: 5px; }
+        .fraction-num { padding-bottom: 2px; }
+        .fraction-den { border-top: 5px solid var(--primary-red); padding-top: 2px; }
+
+        .btn-serve { position: absolute; pointer-events: auto; background: linear-gradient(to bottom, #4CAF50, #388E3C); color: white; border: none; padding: 12px 50px; font-size: 2rem; font-family: 'Chewy', cursive; border-radius: 50px; border-bottom: 6px solid #1B5E20; cursor: pointer; box-shadow: 0 8px 15px rgba(0,0,0,0.2); transition: transform 0.1s; text-transform: uppercase; z-index: 20; }
+        .btn-serve:active { transform: translateX(-50%) translateY(4px) !important; border-bottom-width: 3px; }
+
+        .portrait .player-area .order-area { top: 12%; left: 50%; transform: translateX(-50%); flex-direction: row; width: 100%; }
+        .portrait .order-bubble::before { content: ''; position: absolute; left: -18px; top: 50%; transform: translateY(-50%); border-width: 10px 18px 10px 0; border-style: solid; border-color: transparent var(--crust-brown) transparent transparent; }
+        .portrait .order-bubble::after { content: ''; position: absolute; left: -12px; top: 50%; transform: translateY(-50%); border-width: 7px 13px 7px 0; border-style: solid; border-color: transparent white transparent transparent; }
+        .portrait .player-area .btn-serve { bottom: 30px; left: 50%; transform: translateX(-50%); }
+
+        .landscape .player-area .order-area { top: 40%; left: 20%; transform: translate(-50%, -50%); flex-direction: column; gap: 10px; }
+        .landscape .order-bubble::before { content: ''; position: absolute; top: -18px; left: 50%; transform: translateX(-50%); border-width: 0 10px 18px 10px; border-style: solid; border-color: transparent transparent var(--crust-brown) transparent; }
+        .landscape .order-bubble::after { content: ''; position: absolute; top: -12px; left: 50%; transform: translateX(-50%); border-width: 0 7px 13px 7px; border-style: solid; border-color: transparent transparent white transparent; }
+        .landscape .player-area .btn-serve { bottom: 15%; left: 20%; transform: translateX(-50%); }
+
+        .screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; text-align: center; pointer-events: auto; overflow-y: auto; }
+        .hidden { display: none !important; }
+
+        h1 { font-family: 'Chewy', cursive; font-size: 4rem; color: var(--primary-red); text-shadow: 3px 3px 0 #FFC107; margin: 0; }
+        .pizza-logo { font-size: 5rem; margin: 5px; animation: spin 10s linear infinite; }
+
+        .name-input { padding: 10px 20px; font-size: 1.5rem; font-family: 'Kanit', sans-serif; border: 3px solid var(--crust-brown); border-radius: 15px; text-align: center; color: var(--text-dark); background: #FFF8E1; width: 250px; margin: 15px 0; }
+        
+        .leaderboard-box { background: #FFF; border: 4px solid var(--primary-red); border-radius: 20px; padding: 15px; width: 80%; max-width: 350px; margin-top: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .leaderboard-title { font-size: 1.2rem; font-weight: bold; color: var(--primary-red); margin-bottom: 10px; border-bottom: 2px dashed #eee; padding-bottom: 5px; }
+        .leaderboard-list { list-style: none; padding: 0; margin: 0; text-align: left; }
+        .leaderboard-item { display: flex; justify-content: space-between; padding: 5px 0; font-size: 1.1rem; color: #555; }
+        .rank-num { font-weight: bold; width: 25px; }
+
+        .mode-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 15px; width: 95%; max-width: 600px; }
+        @media (min-width: 768px) { .mode-container { grid-template-columns: repeat(3, 1fr); } }
+        
+        .btn-mode { padding: 10px; font-size: 1.2rem; color: white; border: none; border-radius: 15px; cursor: pointer; font-family: 'Kanit', sans-serif; font-weight: bold; display: flex; flex-direction: column; align-items: center; box-shadow: 0 5px 0 rgba(0,0,0,0.2); }
+        .btn-mode:active { transform: translateY(4px); box-shadow: 0 2px 0 rgba(0,0,0,0.2); }
+        .btn-mode span { font-size: 0.8rem; font-weight: normal; opacity: 0.9; margin-top: 2px; }
+        
+        .btn-mode.classic { background: #FF9800; border-bottom-color: #E65100; }
+        .btn-mode.half { background: #E91E63; border-bottom-color: #880E4F; }
+        .btn-mode.delivery { background: #00BCD4; border-bottom-color: #006064; }
+        .btn-mode.speed { background: #F44336; border-bottom-color: #B71C1C; }
+        .btn-mode.mixed { background: #9C27B0; border-bottom-color: #4A148C; }
+
+        #btn-sound { position: absolute; top: 20px; right: 20px; z-index: 110; background: white; border: 2px solid #ccc; border-radius: 50%; width: 40px; height: 40px; cursor: pointer; font-size: 1.2rem; }
+
+        @keyframes floatCustomer { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .shake { animation: shake 0.5s; }
+        @keyframes shake { 0%, 100% {transform:translateX(0);} 25% {transform:translateX(-5px);} 75% {transform:translateX(5px);} }
+        .angry { filter: hue-rotate(-50deg) contrast(1.2) drop-shadow(0 0 10px red); transform: scale(1.1); }
+        @keyframes floatUp { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-50px); opacity: 0; } }
+        .gold-effect { animation: goldGlow 1s infinite alternate; }
+        @keyframes goldGlow { from { filter: drop-shadow(0 0 5px gold); } to { filter: drop-shadow(0 0 20px gold); } }
+
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+        <canvas id="gameCanvas"></canvas>
+        <button id="btn-sound" onclick="game.sound.toggle()">🔊</button>
+
+        <div id="ui-layer">
+            <div class="top-bar">
+                <div class="stats-box" id="stats-0">
+                    <div class="mode-badge" id="mode-badge">คลาสสิก</div>
+                    <div>คะแนน: <span id="score-0">0</span></div>
+                    <div class="combo-meter">
+                        <div class="combo-dot-0 combo-dot"></div><div class="combo-dot-0 combo-dot"></div><div class="combo-dot-0 combo-dot"></div><div class="combo-dot-0 combo-dot"></div><div class="combo-dot-0 combo-dot"></div>
+                    </div>
+                </div>
+                
+                <div class="timer-container">
+                    <div id="timer-bar"></div>
+                    <div style="font-size: 0.8rem; font-weight: bold; color: #D32F2F; text-align: center;">เวลา</div>
+                </div>
+            </div>
+
+            <div id="p1-area" class="player-area hidden">
+                <div class="order-area">
+                    <div id="customer-container-0" class="customer-container">
+                        <span id="customer-emoji-0" class="customer-emoji">👨‍🍳</span>
+                    </div>
+                    <div id="order-bubble-0" class="order-bubble">
+                        <div style="font-weight: bold; color: #555; font-size: 0.9rem;">ออเดอร์</div>
+                        <div class="order-fraction" id="fraction-display-0">1/2</div>
+                        <div id="topping-label-0" style="font-size: 1.1rem; font-weight: bold; color: var(--veggie-green); margin-top: 5px;"></div>
+                    </div>
+                </div>
+                <button id="btn-serve-0" class="btn-serve">เสิร์ฟ!</button>
+            </div>
+        </div>
+
+        <!-- หน้าเมนู -->
+        <div id="start-screen" class="screen">
+            <div class="pizza-logo">🍕</div>
+            <h1>พิซซ่ามาสเตอร์</h1>
+            
+            <input type="text" id="player-name" class="name-input" placeholder="ใส่ชื่อเชฟที่นี่..." maxlength="10">
+
+            <p style="font-size: 1rem; color: #666; margin: 0;">เลือกโหมดเพื่อเริ่มเปิดร้าน!</p>
+            
+            <div class="mode-container">
+                <button class="btn-mode classic" onclick="game.start('classic')">คลาสสิก 🍕<span>โหมดฝึกฝนปกติ</span></button>
+                <button class="btn-mode half" onclick="game.start('half')">หน้าฮาล์ฟ 🌽<span>เล็งหน้าให้ถูกด้วย!</span></button>
+                <button class="btn-mode delivery" onclick="game.start('delivery')">ส่งด่วน 📦<span>ทำถูก 3 ถาดรับโบนัส</span></button>
+                <button class="btn-mode speed" onclick="game.start('speed')">สปีดรัน ⚡<span>หมุนเร็ว เวลาน้อย!</span></button>
+                <button class="btn-mode mixed" onclick="game.start('mixed')">จำนวนคละ 🐷<span>สั่งเยอะ 2 ถาด!</span></button>
+            </div>
+
+            <div class="leaderboard-box">
+                <div class="leaderboard-title">🏆 5 อันดับสุดยอดเชฟ</div>
+                <ul id="leaderboard-list" class="leaderboard-list"></ul>
+            </div>
+        </div>
+
+        <div id="gameover-screen" class="screen hidden">
+            <h1 style="margin-bottom: 5px;">ร้านปิดแล้ว!</h1>
+            <div style="font-size: 5rem;">🥡</div>
+            <p style="font-size: 2rem;" id="end-text">คะแนนรวม: <span id="final-score" style="color: #D32F2F;">0</span></p>
+            <button class="btn-mode classic" style="margin-top: 20px; padding: 10px 40px;" onclick="game.showStartScreen()">กลับไปหน้าเมนู</button>
+        </div>
+    </div>
+
+    <script>
+        /** ระบบบันทึกคะแนน */
+        class HighScoreManager {
+            constructor() { this.key = 'pizza_master_scores_deluxe_v3'; }
+            getScores() { const s = localStorage.getItem(this.key); return s ? JSON.parse(s) : []; }
+            saveScore(name, score) {
+                let scores = this.getScores();
+                scores.push({ name: name || 'เชฟนิรนาม', score: score });
+                scores.sort((a, b) => b.score - a.score);
+                localStorage.setItem(this.key, JSON.stringify(scores.slice(0, 5)));
+            }
+            display(elementId) {
+                const list = document.getElementById(elementId);
+                list.innerHTML = '';
+                const scores = this.getScores();
+                if (scores.length === 0) { list.innerHTML = '<li class="leaderboard-item" style="justify-content:center;">ยังไม่มีคะแนน</li>'; return; }
+                scores.forEach((s, i) => {
+                    list.innerHTML += `<li class="leaderboard-item"><span class="rank-num">${i + 1}</span> <span>${s.name}</span> <span>${s.score}</span></li>`;
+                });
+            }
+        }
+
+        /** ระบบเสียง */
+        class SoundManager {
+            constructor() {
+                this.ctx = null; this.enabled = true; this.masterGain = null;
+                this.bgmTimer = null; this.bgmNoteIndex = 0; this.tempo = 120;
+                this.melody = [ 261.63, 329.63, 392.00, 329.63, 440.00, 392.00, 329.63, 293.66, 261.63, 261.63, 329.63, 329.63, 293.66, 293.66, 261.63, 0 ];
+            }
+            init() {
+                if (!this.ctx && (window.AudioContext || window.webkitAudioContext)) {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                    this.masterGain = this.ctx.createGain();
+                    this.masterGain.connect(this.ctx.destination);
+                    this.masterGain.gain.value = 0.2;
+                }
+                if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume();
+            }
+            toggle() {
+                this.enabled = !this.enabled;
+                document.getElementById('btn-sound').innerText = this.enabled ? '🔊' : '🔇';
+                if (this.enabled) { this.init(); this.startBGM(); } else this.stopBGM();
+            }
+            playTone(freq, type, duration, start = 0, vol = 0.1) {
+                if (!this.enabled || !this.ctx) return;
+                try {
+                    const osc = this.ctx.createOscillator(); const gain = this.ctx.createGain();
+                    osc.type = type; osc.frequency.setValueAtTime(freq, this.ctx.currentTime + start);
+                    gain.gain.setValueAtTime(vol, this.ctx.currentTime + start);
+                    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + start + duration);
+                    osc.connect(gain); gain.connect(this.masterGain);
+                    osc.start(this.ctx.currentTime + start); osc.stop(this.ctx.currentTime + start + duration);
+                } catch(e) {}
+            }
+            playSelect() { this.playTone(800, 'sine', 0.1, 0, 0.1); }
+            playCorrect() { this.playTone(523.25, 'sine', 0.2, 0, 0.1); this.playTone(659.25, 'sine', 0.2, 0.1, 0.1); this.playTone(783.99, 'sine', 0.4, 0.2, 0.1); }
+            playWrong() { this.playTone(150, 'sawtooth', 0.3, 0, 0.2); }
+            playTick() { if (!this.enabled || !this.ctx) return; const osc = this.ctx.createOscillator(); const gain = this.ctx.createGain(); osc.type = 'triangle'; osc.frequency.setValueAtTime(800, this.ctx.currentTime); gain.gain.setValueAtTime(0.05, this.ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.05); osc.connect(gain); gain.connect(this.masterGain); osc.start(); osc.stop(this.ctx.currentTime + 0.05); }
+            startBGM() { if (!this.enabled || !this.ctx || this.bgmTimer) return; this.bgmNoteIndex = 0; this.scheduleNote(); }
+            stopBGM() { clearTimeout(this.bgmTimer); this.bgmTimer = null; }
+            scheduleNote() {
+                if (!this.enabled) return;
+                const freq = this.melody[this.bgmNoteIndex];
+                if (freq > 0) this.playTone(freq, 'triangle', 0.3, 0, 0.03); 
+                this.bgmNoteIndex = (this.bgmNoteIndex + 1) % this.melody.length;
+                this.bgmTimer = setTimeout(() => this.scheduleNote(), (60 / this.tempo) * 1000);
+            }
+            setTempo(bpm) { this.tempo = bpm; }
+        }
+
+        const CONFIG = {
+            comboThreshold: 5,
+            colors: { crust: '#E6A15C', crustDark: '#D35400', cheese: '#F4D03F', sauce: '#C0392B', pepperoni: '#A93226', basil: '#2ECC71', mushroom: '#9E9E9E' },
+            customers: ['🐰', '🐹', '🐱', '🐶', '🦄', '🐥', '🦊', '🐼', '🐨', '🐷'],
+            compliments: ["อร่อยมาก!", "เยี่ยมไปเลย!", "เพอร์เฟกต์!", "สุดยอดเชฟ!", "หิวเลย!"],
+            modes: {
+                classic:  { time: 60, name: "คลาสสิก", points: 10, bonus: 5, rotSpeed: 0.1 },
+                half:     { time: 60, name: "หน้าฮาล์ฟ", points: 15, bonus: 6, rotSpeed: 0.1 },
+                delivery: { time: 60, name: "ส่งด่วน", points: 10, bonus: 0, rotSpeed: 0.05 },
+                speed:    { time: 30, name: "โหมดสปีด", points: 10, bonus: 8, rotSpeed: 0.8 },
+                mixed:    { time: 60, name: "จำนวนคละ", points: 25, bonus: 8, rotSpeed: 0.1 }
+            }
+        };
+
+        class PizzaGame {
+            constructor() {
+                this.canvas = document.getElementById('gameCanvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.sound = new SoundManager();
+                this.highScoreManager = new HighScoreManager();
+                
+                this.player = { score: 0, combo: 0, level: null, isServing: false, deliveryStreak: 0, isFever: false };
+                this.state = { timeLeft: 0, isPlaying: false, mode: 'classic', playerName: '' };
+                
+                this.floatingFractions = [];
+                this.effects = [];
+                this.fly = { active: false, x: 0, y: 0, timer: 0, nextSpawn: 5 }; 
+                this.lastSecond = 0;
+                this.pizzaLayouts = [];
+
+                for(let i=0; i<8; i++) {
+                    this.floatingFractions.push({
+                        x: Math.random() * window.innerWidth, y: Math.random() * window.innerHeight,
+                        n: Math.floor(Math.random()*3)+1, d: [2,4,8][Math.floor(Math.random()*3)],
+                        vx: (Math.random()-0.5)*1, vy: (Math.random()-0.5)*1, rot: Math.random() * Math.PI
+                    });
+                }
+
+                window.addEventListener('resize', () => this.resize());
+                this.canvas.addEventListener('pointerdown', (e) => this.handleInput(e));
+                document.getElementById('btn-serve-0').addEventListener('click', () => this.checkOrder());
+                
+                this.highScoreManager.display('leaderboard-list');
+                this.resize();
+                requestAnimationFrame((t) => this.loop(t));
+            }
+
+            resize() {
+                this.width = window.innerWidth; this.height = window.innerHeight;
+                this.canvas.width = this.width; this.canvas.height = this.height;
+                const container = document.getElementById('game-container');
+                if (this.width > this.height) { container.classList.add('landscape'); container.classList.remove('portrait'); }
+                else { container.classList.add('portrait'); container.classList.remove('landscape'); }
+                this.updatePizzaLayout();
+            }
+
+            updatePizzaLayout() {
+                this.pizzaLayouts = [];
+                const pCount = (this.state.mode === 'mixed') ? 2 : 1;
+                for(let p=0; p<pCount; p++) {
+                    let cx, cy, r;
+                    if (pCount === 1) {
+                        cx = this.width * (this.width > this.height ? 0.7 : 0.5);
+                        cy = this.height * (this.width > this.height ? 0.55 : 0.65);
+                        r = Math.min(this.width*0.35, this.height*0.4);
+                    } else {
+                        if (this.width > this.height) {
+                            cx = this.width * (p === 0 ? 0.55 : 0.85);
+                            cy = this.height * 0.55;
+                            r = Math.min(this.width*0.15, this.height*0.25);
+                        } else {
+                            cx = this.width * 0.5;
+                            cy = this.height * (p === 0 ? 0.45 : 0.8);
+                            r = Math.min(this.width*0.25, this.height*0.15);
+                        }
+                    }
+                    this.pizzaLayouts.push({cx, cy, r});
+                }
+            }
+
+            showStartScreen() {
+                this.state.isPlaying = false;
+                document.getElementById('gameover-screen').classList.add('hidden');
+                document.getElementById('start-screen').classList.remove('hidden');
+                document.getElementById('p1-area').classList.add('hidden');
+                this.highScoreManager.display('leaderboard-list');
+                this.sound.setTempo(120); this.sound.startBGM();
+            }
+
+            start(modeName) {
+                this.sound.init(); this.sound.setTempo(120); this.sound.startBGM();
+                this.state.playerName = document.getElementById('player-name').value.trim() || "เชฟนิรนาม";
+                this.state.mode = modeName;
+                const modeConfig = CONFIG.modes[modeName];
+                this.state.timeLeft = modeConfig.time;
+                this.state.isPlaying = true;
+                this.player = { score: 0, combo: 0, level: null, isServing: false, deliveryStreak: 0, isFever: false };
+                this.effects = [];
+                
+                document.getElementById('mode-badge').innerText = modeConfig.name;
+                document.getElementById('start-screen').classList.add('hidden');
+                document.getElementById('p1-area').classList.remove('hidden');
+                this.resize();
+                this.nextOrder();
+                this.updateUI();
+            }
+
+            gameOver() {
+                this.state.isPlaying = false;
+                this.sound.stopBGM();
+                this.highScoreManager.saveScore(this.state.playerName, this.player.score);
+                document.getElementById('final-score').innerText = this.player.score;
+                document.getElementById('gameover-screen').classList.remove('hidden');
+            }
+
+            getFractionHTML(num, den) {
+                return `<div class="fraction-display-box"><div class="fraction-num">${num}</div><div class="fraction-den">${den}</div></div>`;
+            }
+
+            nextOrder() {
+                const fractionText = document.getElementById('fraction-display-0');
+                const toppingLabel = document.getElementById('topping-label-0');
+                const emoji = document.getElementById('customer-emoji-0');
+                const container = document.getElementById('customer-container-0');
+                emoji.classList.remove('angry');
+                toppingLabel.innerHTML = "";
+
+                let pizzaSlices = [2, 4, 6, 8][Math.floor(Math.random() * 4)];
+                let orderNumerator, orderDenominator;
+                let isGolden = Math.random() < 0.15;
+
+                if (this.state.mode === 'mixed') {
+                    orderDenominator = pizzaSlices;
+                    orderNumerator = pizzaSlices + (Math.floor(Math.random() * (pizzaSlices - 1)) + 1);
+                    fractionText.innerHTML = `1 ${this.getFractionHTML(orderNumerator - pizzaSlices, orderDenominator)}`;
+                } else {
+                    orderDenominator = pizzaSlices;
+                    orderNumerator = Math.floor(Math.random() * (pizzaSlices - 1)) + 1;
+                    fractionText.innerHTML = this.getFractionHTML(orderNumerator, orderDenominator);
+                }
+
+                this.player.level = {
+                    numerator: orderNumerator,
+                    denominator: orderDenominator,
+                    sliceCount: pizzaSlices,
+                    totalSlices: (this.state.mode === 'mixed') ? pizzaSlices * 2 : pizzaSlices,
+                    selected: new Array((this.state.mode === 'mixed') ? pizzaSlices * 2 : pizzaSlices).fill(false),
+                    rotation: -Math.PI / 2,
+                    isGolden: isGolden
+                };
+
+                const toppingTypes = ['pepperoni', 'basil', 'mushroom', 'shrimp', 'crabstick', 'pineapple', 'bacon', 'corn'];
+                const tMap = { pepperoni: '🌭', basil: '🍃', mushroom: '🍄', shrimp: '🦐', crabstick: '🦀', pineapple: '🍍', bacon: '🥓', corn: '🌽' };
+                const tNames = { pepperoni: 'ไส้กรอก', basil: 'ใบโหระพา', mushroom: 'เห็ด', shrimp: 'กุ้ง', crabstick: 'ปูอัด', pineapple: 'สับปะรด', bacon: 'เบคอน', corn: 'ข้าวโพด' };
+
+                if (this.state.mode === 'half') {
+                    const targetTopping = toppingTypes[Math.floor(Math.random() * toppingTypes.length)];
+                    this.player.level.targetTopping = targetTopping;
+                    this.player.level.sliceToppings = new Array(this.player.level.totalSlices).fill('');
+                    
+                    let indices = [...Array(this.player.level.totalSlices).keys()].sort(() => Math.random() - 0.5);
+                    let requiredSlices = Math.round((orderNumerator / orderDenominator) * this.player.level.totalSlices);
+                    let totalTargetSlices = requiredSlices;
+                    
+                    if (this.player.level.totalSlices > requiredSlices && Math.random() < 0.75) {
+                        const extra = Math.floor(Math.random() * (this.player.level.totalSlices - requiredSlices)) + 1;
+                        totalTargetSlices += extra;
+                    }
+
+                    for(let i=0; i<totalTargetSlices; i++) this.player.level.sliceToppings[indices[i]] = targetTopping;
+                    for(let i=totalTargetSlices; i<this.player.level.totalSlices; i++) {
+                        let others = toppingTypes.filter(t => t !== targetTopping);
+                        this.player.level.sliceToppings[indices[i]] = others[Math.floor(Math.random() * others.length)];
+                    }
+                    this.player.level.toppingType = 'custom';
+                    
+                    toppingLabel.innerHTML = `หน้า${tNames[targetTopping]} ${tMap[targetTopping]}`;
+                } else {
+                    this.player.level.toppingType = toppingTypes[Math.floor(Math.random() * toppingTypes.length)];
+                }
+
+                emoji.innerText = CONFIG.customers[Math.floor(Math.random() * CONFIG.customers.length)];
+                container.className = "customer-container" + (isGolden ? " gold-effect" : "");
+                
+                container.style.transform = "scale(0.1)";
+                setTimeout(() => container.style.transform = "scale(1)", 50);
+            }
+
+            checkOrder() {
+                if (!this.state.isPlaying || this.player.isServing) return;
+                this.player.isServing = true;
+
+                try {
+                    const lvl = this.player.level;
+                    const selectedCount = lvl.selected.filter(Boolean).length;
+                    let isCorrect = selectedCount === lvl.numerator;
+
+                    if (isCorrect && this.state.mode === 'half') {
+                        isCorrect = lvl.selected.every((isSelected, idx) => {
+                            if (!isSelected) return true;
+                            return lvl.sliceToppings[idx] === lvl.targetTopping;
+                        });
+                    }
+
+                    const modeConfig = CONFIG.modes[this.state.mode];
+
+                    if (isCorrect) {
+                        this.player.combo++;
+                        this.sound.playCorrect();
+                        let pts = modeConfig.points * (lvl.isGolden ? 5 : 1);
+                        if (this.player.isFever) pts *= 2;
+                        this.player.score += pts;
+                        this.state.timeLeft = Math.min(this.state.timeLeft + modeConfig.bonus, 60);
+                        this.spawnFloatingText(CONFIG.compliments[Math.floor(Math.random()*CONFIG.compliments.length)], "#4CAF50");
+                        this.nextOrder();
+                    } else {
+                        this.player.combo = 0;
+                        this.player.isFever = false;
+                        this.sound.playWrong();
+                        this.state.timeLeft = Math.max(0, this.state.timeLeft - 10);
+                        document.getElementById('customer-emoji-0').classList.add('angry');
+                        setTimeout(() => {
+                            document.getElementById('customer-emoji-0').classList.remove('angry');
+                        }, 500);
+                        this.shakeScreen();
+                        this.spawnFloatingText("ผิดแล้ว!", "#D32F2F");
+                    }
+                    this.updateUI();
+                } catch (err) {
+                    console.error(err);
+                } finally {
+                    setTimeout(() => { this.player.isServing = false; }, 300);
+                }
+            }
+
+            handleInput(e) {
+                if (!this.state.isPlaying) return;
+                const rect = this.canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                const lvl = this.player.level;
+                if (!lvl) return;
+
+                if (this.fly.active) {
+                    const dF = Math.sqrt((x-this.fly.x)**2 + (y-this.fly.y)**2);
+                    if (dF < 40) { this.fly.active = false; this.state.timeLeft = Math.min(this.state.timeLeft+3, 60); return; }
+                }
+
+                this.updatePizzaLayout();
+                for (let pIdx = 0; pIdx < this.pizzaLayouts.length; pIdx++) {
+                    const layout = this.pizzaLayouts[pIdx];
+                    const dx = x - layout.cx; 
+                    const dy = y - layout.cy;
+                    const dist = Math.sqrt(dx*dx + dy*dy);
+
+                    if (dist < layout.r * 1.1) {
+                        let angle = Math.atan2(dy, dx) - lvl.rotation;
+                        while (angle < 0) angle += Math.PI * 2;
+                        while (angle >= Math.PI * 2) angle -= Math.PI * 2;
+                        const sliceAngle = (Math.PI * 2) / lvl.sliceCount;
+                        const sIdx = Math.floor(angle / sliceAngle) + (pIdx * lvl.sliceCount);
+                        if (lvl.selected[sIdx] !== undefined) {
+                            lvl.selected[sIdx] = !lvl.selected[sIdx];
+                            this.sound.playSelect();
+                        }
+                    }
+                }
+            }
+
+            shakeScreen() {
+                const container = document.getElementById('game-container');
+                container.classList.remove('shake');
+                void container.offsetWidth;
+                container.classList.add('shake');
+            }
+
+            spawnFloatingText(text, color) {
+                this.effects.push({ text: text, x: this.width * 0.5, y: this.height * 0.4, life: 1.0, color: color });
+            }
+
+            updateUI() {
+                document.getElementById('score-0').innerText = this.player.score;
+                document.querySelectorAll('.combo-dot-0').forEach((d, i) => {
+                    d.className = 'combo-dot-0 combo-dot' + (i < this.player.combo ? ' active' : '');
+                });
+            }
+
+            update(dt) {
+                if (!this.state.isPlaying) {
+                    this.floatingFractions.forEach(f => {
+                        f.x += f.vx; f.y += f.vy; f.rot += dt;
+                        if(f.x < 0 || f.x > this.width) f.vx *= -1;
+                        if(f.y < 0 || f.y > this.height) f.vy *= -1;
+                    });
+                    return;
+                }
+                
+                this.state.timeLeft -= dt;
+                const curSec = Math.floor(this.state.timeLeft);
+                if (curSec < this.lastSecond) { this.lastSecond = curSec; this.sound.playTick(); }
+                if (this.state.timeLeft <= 0) this.gameOver();
+                
+                const timerBar = document.getElementById('timer-bar');
+                if (timerBar) {
+                    const pct = (this.state.timeLeft / 60) * 100;
+                    timerBar.style.width = `${Math.min(100, Math.max(0, pct))}%`;
+                    if (pct < 30) timerBar.style.backgroundColor = "#D32F2F";
+                    else if (this.player.isFever) timerBar.style.backgroundColor = "#FF9800";
+                    else timerBar.style.backgroundColor = "#4CAF50";
+                }
+
+                if (this.player.level) this.player.level.rotation += dt * CONFIG.modes[this.state.mode].rotSpeed;
+
+                for (let i = this.effects.length - 1; i >= 0; i--) {
+                    this.effects[i].y -= 1.5;
+                    this.effects[i].life -= 0.02;
+                    if (this.effects[i].life <= 0) this.effects.splice(i, 1);
+                }
+
+                this.fly.timer += dt;
+                if (!this.fly.active && this.fly.timer > this.fly.nextSpawn) {
+                    this.fly.active = true; this.fly.timer = 0;
+                    this.fly.x = Math.random() * this.width; this.fly.y = Math.random() * this.height;
+                }
+            }
+
+            draw() {
+                this.ctx.clearRect(0,0,this.width,this.height);
+                if (!this.state.isPlaying) {
+                    this.ctx.globalAlpha = 0.2;
+                    this.floatingFractions.forEach(f => {
+                        this.ctx.save(); this.ctx.translate(f.x, f.y); this.ctx.rotate(f.rot);
+                        this.ctx.beginPath(); this.ctx.arc(0,0,30,0,Math.PI*2*(f.n/f.d));
+                        this.ctx.fillStyle = CONFIG.colors.cheese; this.ctx.fill();
+                        this.ctx.strokeStyle = CONFIG.colors.crust; this.ctx.stroke();
+                        this.ctx.restore();
+                    });
+                    this.ctx.globalAlpha = 1;
+                    return;
+                }
+                
+                this.updatePizzaLayout();
+                const lvl = this.player.level; if(!lvl) return;
+
+                for(let p=0; p<this.pizzaLayouts.length; p++) {
+                    const layout = this.pizzaLayouts[p];
+                    this.drawPizza(p, layout.cx, layout.cy, layout.r);
+                }
+
+                if (this.fly.active) { this.ctx.font = "40px Arial"; this.ctx.fillText("🪰", this.fly.x, this.fly.y); }
+
+                this.effects.forEach(eff => {
+                    this.ctx.globalAlpha = Math.max(0, eff.life);
+                    this.ctx.fillStyle = eff.color;
+                    this.ctx.font = "bold 40px 'Kanit', sans-serif";
+                    this.ctx.textAlign = "center";
+                    this.ctx.strokeStyle = "white";
+                    this.ctx.lineWidth = 3;
+                    this.ctx.strokeText(eff.text, eff.x, eff.y);
+                    this.ctx.fillText(eff.text, eff.x, eff.y);
+                    this.ctx.globalAlpha = 1.0;
+                });
+            }
+
+            drawPizza(pIdx, cx, cy, r) {
+                const lvl = this.player.level;
+                const sliceAngle = (Math.PI * 2) / lvl.sliceCount;
+                
+                for (let i=0; i<lvl.sliceCount; i++) {
+                    const s = lvl.rotation + (i * sliceAngle); 
+                    const e = s + sliceAngle;
+                    const isS = lvl.selected[i + (pIdx * lvl.sliceCount)];
+                    
+                    this.ctx.save();
+                    this.ctx.translate(cx, cy);
+                    
+                    if(isS) { 
+                        const m = s + sliceAngle/2; 
+                        this.ctx.translate(Math.cos(m)*15, Math.sin(m)*15); 
+                    }
+                    
+                    // Draw Wedge Shape
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(0,0);
+                    this.ctx.arc(0,0, r, s, e);
+                    this.ctx.closePath();
+                    
+                    // Fill Crust
+                    this.ctx.fillStyle = lvl.isGolden ? "gold" : CONFIG.colors.crust;
+                    this.ctx.fill();
+                    
+                    // Strong divider lines
+                    this.ctx.strokeStyle = "white";
+                    this.ctx.lineWidth = 3;
+                    this.ctx.lineJoin = 'round';
+                    this.ctx.stroke();
+
+                    // Cheese Layer
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(0,0);
+                    this.ctx.arc(0,0, r*0.85, s, e);
+                    this.ctx.closePath();
+                    this.ctx.fillStyle = lvl.isGolden ? "#FFF176" : CONFIG.colors.cheese;
+                    this.ctx.fill();
+                    
+                    // Toppings
+                    const type = lvl.toppingType === 'custom' ? lvl.sliceToppings[i + (pIdx * lvl.sliceCount)] : lvl.toppingType;
+                    this.drawToppings(i, s, e, type, r);
+                    
+                    // Selection Highlight
+                    if(isS) { 
+                        this.ctx.fillStyle = "rgba(255,255,255,0.4)"; 
+                        this.ctx.beginPath();
+                        this.ctx.moveTo(0,0);
+                        this.ctx.arc(0,0, r, s, e);
+                        this.ctx.closePath();
+                        this.ctx.fill(); 
+                    }
+                    
+                    this.ctx.restore();
+                }
+            }
+
+            drawToppings(index, s, e, type, r) {
+                const m = s + (e-s)/2;
+                const drawE = (dist, off, emoji, size) => {
+                    const a = m + off; 
+                    const x = Math.cos(a)*dist; 
+                    const y = Math.sin(a)*dist;
+                    
+                    this.ctx.save(); 
+                    this.ctx.translate(x,y); 
+                    this.ctx.rotate(a + Math.PI/2);
+                    this.ctx.font = `${size*0.6}px Arial`; 
+                    this.ctx.textAlign='center'; 
+                    this.ctx.textBaseline='middle'; 
+                    this.ctx.fillText(emoji,0,0);
+                    this.ctx.restore();
+                };
+                
+                const tMap = { 
+                    pepperoni: '🌭', 
+                    basil: '🍃', 
+                    mushroom: '🍄', 
+                    shrimp: '🦐', 
+                    crabstick: '🦀', 
+                    pineapple: '🍍', 
+                    bacon: '🥓', 
+                    corn: '🌽' 
+                };
+
+                if (type && tMap[type]) {
+                    drawE(r*0.6, 0, tMap[type], r*0.4);
+                }
+            }
+
+            loop(t) {
+                const dt = Math.min((t - (this.lastTime || t))/1000, 0.1);
+                this.lastTime = t; this.update(dt); this.draw();
+                requestAnimationFrame((t) => this.loop(t));
+            }
+        }
+
+        window.game = new PizzaGame();
+    </script>
+</body>
+</html>

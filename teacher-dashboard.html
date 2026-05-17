@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>จัดการคะแนน — โรงเรียนบ้านคำไผ่</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f8fafc;--bg2:#f1f5f9;--surface:#ffffff;--surface2:#f8fafc;--surface3:#f1f5f9;
+  --border:#e2e8f0;--border2:#cbd5e1;
+  --text:#0f172a;--muted:#64748b;--hint:#94a3b8;
+  --blue:#2563eb;--blue2:#3b82f6;--blue3:#93c5fd;
+  --green:#059669;--green2:#10b981;--green3:#6ee7b7;
+  --amber:#d97706;--amber2:#f59e0b;--amber3:#fbbf24;
+  --red:#dc2626;--red2:#ef4444;--red3:#fca5a5;
+  --purple:#7c3aed;--purple2:#8b5cf6;--purple3:#c4b5fd;
+  --r:12px;
+}
+body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+
+.bg-fx{position:fixed;inset:0;pointer-events:none;z-index:0;background:var(--bg)}
+/* remove animations */
+
+/* ── LAYOUT ── */
+.wrap{position:relative;z-index:1;display:flex;min-height:100vh}
+.sidebar{width:220px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:20px 0;position:fixed;top:0;left:0;height:100vh;overflow-y:auto;transition:.3s;z-index:100}
+.sidebar-logo{padding:0 16px 20px;border-bottom:1px solid var(--border);margin-bottom:12px}
+.sidebar-logo .logo-txt{font-size:14px;font-weight:900;color:var(--text);line-height:1.3}
+.sidebar-logo .logo-sub{font-size:11px;color:var(--muted);margin-top:2px}
+.nav-section{font-size:10px;font-weight:700;color:var(--hint);letter-spacing:.8px;text-transform:uppercase;padding:10px 16px 6px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 16px;cursor:pointer;transition:.15s;color:var(--muted);font-size:13px;font-weight:600;border-left:3px solid transparent;text-decoration:none}
+.nav-item:hover{color:var(--text);background:var(--primary-light)}
+.nav-item.active{color:var(--blue);border-left-color:var(--blue);background:var(--primary-light)}
+.nav-icon{font-size:16px;flex-shrink:0}
+
+.main-area{margin-left:220px;flex:1;display:flex;flex-direction:column;min-height:100vh}
+.topbar{background:rgba(255,255,255,.8);border-bottom:1px solid var(--border);padding:14px 24px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:50;backdrop-filter:blur(12px)}
+.topbar-title{font-size:17px;font-weight:900;color:var(--text)}
+.topbar-sub{font-size:12px;color:var(--muted);margin-left:6px}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.back-btn{display:flex;align-items:center;gap:6px;text-decoration:none;color:var(--muted);font-size:12px;font-weight:600;padding:6px 12px;border:1px solid var(--border);border-radius:8px;transition:.2s}
+.back-btn:hover{color:var(--blue3);border-color:var(--blue2)}
+
+.content{padding:24px;flex:1}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;gap:7px;padding:9px 16px;border-radius:9px;border:none;font-family:'Sarabun',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:.2s;white-space:nowrap}
+.btn-blue{background:var(--blue2);color:#fff;box-shadow:0 3px 14px rgba(59,130,246,.3)}
+.btn-blue:hover{background:var(--blue3);color:#1e40af;transform:translateY(-1px)}
+.btn-green{background:rgba(16,185,129,.15);border:1px solid rgba(16,185,129,.3);color:var(--green3)}
+.btn-green:hover{background:rgba(16,185,129,.25)}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--muted)}
+.btn-outline:hover{border-color:var(--blue2);color:var(--blue3);background:rgba(59,130,246,.06)}
+.btn-danger{background:rgba(220,38,38,.12);border:1px solid rgba(220,38,38,.25);color:var(--red3)}
+.btn-danger:hover{background:rgba(220,38,38,.22)}
+.btn-sm{padding:6px 12px;font-size:12px;border-radius:7px}
+.btn-xs{padding:4px 8px;font-size:11px;border-radius:6px}
+
+/* ── CARDS ── */
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px 18px;position:relative;overflow:hidden}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--kpi-color, var(--blue2))}
+.kpi-num{font-size:28px;font-weight:900;color:var(--text);line-height:1}
+.kpi-label{font-size:11px;color:var(--muted);margin-top:5px;font-weight:600;letter-spacing:.3px}
+.kpi-change{font-size:11px;margin-top:4px}
+.kpi-change.up{color:var(--green3)}
+.kpi-change.down{color:var(--red3)}
+
+/* ── PANELS ── */
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:20px}
+.panel-header{display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--border);background:var(--surface2)}
+.panel-title{font-size:14px;font-weight:800;flex:1}
+.panel-body{padding:18px}
+
+/* ── FILTER ROW ── */
+.filter-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:18px}
+.sel{background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:9px 12px;color:var(--text);font-family:'Sarabun',sans-serif;font-size:13px;outline:none;cursor:pointer;transition:.2s;min-width:130px}
+.sel:focus{border-color:var(--blue2)}
+.sel option{background:#0b1018}
+.search-box{position:relative;flex:1;min-width:180px}
+.search-box input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:9px 12px 9px 34px;color:var(--text);font-family:'Sarabun',sans-serif;font-size:13px;outline:none;transition:.2s}
+.search-box input:focus{border-color:var(--blue2)}
+.search-box input::placeholder{color:var(--hint)}
+.search-box .si{position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--hint);pointer-events:none}
+
+/* ── SUBJECT TABS ── */
+.subject-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px}
+.stab{padding:7px 16px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:'Sarabun',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:.2s;white-space:nowrap}
+.stab:hover{border-color:var(--blue2);color:var(--blue3)}
+.stab.active{border-color:var(--blue2);background:rgba(59,130,246,.15);color:var(--blue3)}
+.stab.thai.active{border-color:var(--amber2);background:rgba(245,158,11,.12);color:var(--amber3)}
+.stab.math.active{border-color:var(--green2);background:rgba(16,185,129,.12);color:var(--green3)}
+.stab.sci.active{border-color:var(--purple2);background:rgba(139,92,246,.12);color:var(--purple3)}
+.stab.social.active{border-color:#f97316;background:rgba(249,115,22,.1);color:#fdba74}
+.stab.eng.active{border-color:var(--red2);background:rgba(239,68,68,.1);color:var(--red3)}
+.stab.pe.active{border-color:var(--blue2);background:rgba(59,130,246,.12);color:var(--blue3)}
+.stab.art.active{border-color:#ec4899;background:rgba(236,72,153,.1);color:#f9a8d4}
+.stab.tech.active{border-color:var(--teal,#14b8a6);background:rgba(20,184,166,.1);color:#5eead4}
+
+/* ── SCORE TABLE ── */
+.score-table-wrap{overflow-x:auto}
+.score-table{width:100%;border-collapse:collapse;min-width:700px}
+.score-table th{padding:10px 12px;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;background:var(--surface2);border-bottom:1px solid var(--border2);text-align:left;white-space:nowrap;position:sticky;top:0}
+.score-table th.score-col{text-align:center}
+.score-table td{padding:9px 12px;font-size:13px;border-bottom:1px solid rgba(28,45,62,.5);vertical-align:middle}
+.score-table tr:last-child td{border-bottom:none}
+.score-table tr:hover td{background:rgba(59,130,246,.04)}
+.score-table tr.anim{animation:rowSlide .3s ease both}
+@keyframes rowSlide{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:none}}
+.rank-num{font-size:11px;color:var(--hint);font-weight:600;width:32px}
+.student-name{font-weight:700;font-size:13px}
+.student-class{font-size:11px;color:var(--muted)}
+.score-cell{text-align:center;position:relative}
+.score-input-wrap{display:inline-flex;align-items:center;gap:0;justify-content:center}
+.score-input{width:58px;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:7px;padding:5px 6px;color:var(--text);font-family:'Sarabun',sans-serif;font-size:14px;font-weight:700;text-align:center;outline:none;transition:.2s}
+.score-input:focus{border-color:var(--blue2);background:rgba(59,130,246,.08)}
+.score-input.changed{border-color:var(--amber2);background:rgba(245,158,11,.08);color:var(--amber3)}
+.score-input.saved{border-color:var(--green2);background:rgba(16,185,129,.08);color:var(--green3)}
+.score-max{font-size:10px;color:var(--hint);margin-left:3px}
+.total-cell{font-size:14px;font-weight:800;text-align:center}
+.total-cell.high{color:var(--green3)}
+.total-cell.mid{color:var(--amber3)}
+.total-cell.low{color:var(--red3)}
+.game-chip{display:inline-flex;align-items:center;gap:4px;background:rgba(59,130,246,.12);border:1px solid rgba(59,130,246,.2);border-radius:6px;padding:2px 7px;font-size:10px;color:var(--blue3);font-weight:700}
+.progress-bar{height:4px;background:var(--surface3);border-radius:2px;margin-top:3px;overflow:hidden}
+.progress-fill{height:100%;border-radius:2px;background:var(--blue2);transition:width .5s ease}
+.progress-fill.high{background:var(--green2)}
+.progress-fill.mid{background:var(--amber2)}
+.progress-fill.low{background:var(--red2)}
+
+/* ── BATCH SAVE BAR ── */
+.save-bar{display:none;position:sticky;bottom:0;background:rgba(6,10,15,.95);border-top:1px solid var(--border2);padding:12px 24px;align-items:center;gap:12px;z-index:40;backdrop-filter:blur(10px)}
+.save-bar.on{display:flex}
+.save-bar-txt{font-size:13px;font-weight:700;color:var(--amber3);flex:1}
+.pending-count{background:rgba(245,158,11,.2);border:1px solid rgba(245,158,11,.3);color:var(--amber2);border-radius:6px;padding:2px 8px;font-size:11px;font-weight:800}
+
+/* ── SCORE CONFIG PANEL ── */
+.config-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+.config-card{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px;position:relative;overflow:hidden}
+.config-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--cc-color,var(--blue2))}
+.config-label{font-size:12px;font-weight:700;color:var(--muted);margin-bottom:10px}
+.config-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;font-size:12px}
+.config-row label{color:var(--muted)}
+.config-row input{width:56px;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:6px;padding:4px 7px;color:var(--text);font-family:'Sarabun',sans-serif;font-size:13px;text-align:center;outline:none}
+.config-row input:focus{border-color:var(--blue2)}
+
+/* ── REPORT TAB ── */
+.report-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.report-card{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px}
+.report-card h3{font-size:13px;font-weight:800;margin-bottom:12px;color:var(--text)}
+.stat-list{display:flex;flex-direction:column;gap:8px}
+.stat-row{display:flex;align-items:center;gap:10px}
+.stat-name{font-size:12px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.stat-bar-wrap{flex:2;background:var(--surface3);border-radius:3px;height:6px;overflow:hidden}
+.stat-bar-fill{height:100%;border-radius:3px}
+.stat-score{font-size:12px;font-weight:700;min-width:40px;text-align:right}
+.grade-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(28,45,62,.5)}
+.grade-row:last-child{border-bottom:none}
+.grade-badge{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900}
+.grade-A{background:rgba(16,185,129,.2);color:var(--green3)}
+.grade-B{background:rgba(59,130,246,.2);color:var(--blue3)}
+.grade-C{background:rgba(245,158,11,.2);color:var(--amber3)}
+.grade-D{background:rgba(239,68,68,.15);color:var(--red3)}
+
+/* ── MODAL ── */
+.modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(6px);z-index:300;display:flex;align-items:center;justify-content:center;padding:16px;opacity:0;pointer-events:none;transition:.25s}
+.modal-ov.open{opacity:1;pointer-events:all}
+.modal{background:#0e1825;border:1px solid var(--border2);border-radius:18px;width:100%;max-width:480px;padding:26px 22px;position:relative;transform:translateY(20px) scale(.97);transition:.25s;max-height:90vh;overflow-y:auto;scrollbar-width:thin}
+.modal-ov.open .modal{transform:none}
+.modal h3{font-size:16px;font-weight:900;margin-bottom:18px}
+.modal-close{position:absolute;top:16px;right:16px;background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--muted);width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;transition:.2s}
+.modal-close:hover{background:rgba(255,255,255,.14);color:var(--text)}
+.form-g{display:flex;flex-direction:column;gap:5px;margin-bottom:14px}
+.form-g label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.form-g input,.form-g select{background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:'Sarabun',sans-serif;font-size:13px;outline:none;transition:.2s}
+.form-g input:focus,.form-g select:focus{border-color:var(--blue2);background:rgba(59,130,246,.06)}
+.form-g select option{background:#0e1825}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(80px);background:rgba(8,14,22,.96);border:1px solid var(--border2);color:var(--text);padding:10px 20px;border-radius:20px;font-size:13px;font-weight:700;z-index:999;transition:transform .3s;backdrop-filter:blur(10px);white-space:nowrap}
+.toast.show{transform:translateX(-50%)}
+.toast.ok{border-color:rgba(16,185,129,.4);color:var(--green3)}
+.toast.err{border-color:rgba(239,68,68,.4);color:var(--red3)}
+.toast.info{border-color:rgba(59,130,246,.4);color:var(--blue3)}
+
+.spinner-sm{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.1);border-top-color:var(--blue2);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-row{text-align:center;padding:48px;color:var(--hint)}
+.spinner-lg{display:inline-block;width:32px;height:32px;border:2.5px solid rgba(255,255,255,.08);border-top-color:var(--blue2);border-radius:50%;animation:spin .7s linear infinite}
+.empty-msg{text-align:center;padding:48px;color:var(--hint);font-size:14px}
+
+/* ── PAGE VIEW ── */
+.page-view{display:none}
+.page-view.active{display:block}
+
+/* MOBILE */
+@media(max-width:768px){
+  .sidebar{transform:translateX(-100%);width:200px}
+  .sidebar.open{transform:none}
+  .main-area{margin-left:0}
+  .kpi-row{grid-template-columns:1fr 1fr}
+  .report-grid{grid-template-columns:1fr}
+  .mobile-menu-btn{display:flex}
+}
+.mobile-menu-btn{display:none;background:none;border:1px solid var(--border);color:var(--muted);width:34px;height:34px;border-radius:8px;align-items:center;justify-content:center;cursor:pointer;font-size:18px}
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:99}
+.sidebar-overlay.on{display:block}
+</style>
+</head>
+<body>
+<div class="bg-fx"></div>
+<div class="sidebar-overlay" id="sidebar-ov" onclick="toggleSidebar()"></div>
+
+<div class="wrap">
+<!-- ═══ SIDEBAR ═══ -->
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-txt">📊 จัดการคะแนน</div>
+    <div class="logo-sub">โรงเรียนบ้านคำไผ่</div>
+  </div>
+  <div class="nav-section">เมนูหลัก</div>
+  <a class="nav-item active" id="nav-scores" onclick="showView('scores')">
+    <span class="nav-icon">📝</span>ใส่/แก้คะแนน
+  </a>
+  <a class="nav-item" id="nav-report" onclick="showView('report')">
+    <span class="nav-icon">📈</span>รายงานสรุป
+  </a>
+  <a class="nav-item" id="nav-config" onclick="showView('config')">
+    <span class="nav-icon">⚙️</span>ตั้งค่าคะแนน
+  </a>
+  <a class="nav-item" id="nav-export" onclick="showView('export')">
+    <span class="nav-icon">📥</span>Export
+  </a>
+  <div class="nav-section">ลิงก์ด่วน</div>
+  <a class="nav-item" href="student-register.html">
+    <span class="nav-icon">🗂️</span>ทะเบียนนักเรียน
+  </a>
+  <a class="nav-item" href="teacher-profile.html">
+    <span class="nav-icon">👨‍🏫</span>ข้อมูลครู
+  </a>
+  <a class="nav-item" href="index.html">
+    <span class="nav-icon">🏠</span>หน้าหลัก
+  </a>
+</div>
+
+<!-- ═══ MAIN ═══ -->
+<div class="main-area">
+
+<div id="auth-bar"></div>
+<div class="topbar">
+  <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button>
+  <div class="topbar-title" id="topbar-title">ใส่ / แก้ไขคะแนน</div>
+  <span class="topbar-sub" id="topbar-sub"></span>
+  <div class="topbar-right">
+    <a href="index.html" class="back-btn">← หน้าหลัก</a>
+  </div>
+</div>
+
+<div class="content">
+
+<!-- ═══ VIEW: SCORES ═══ -->
+<div class="page-view active" id="view-scores">
+  <!-- KPI -->
+  <div class="kpi-row">
+    <div class="kpi" style="--kpi-color:var(--blue2)">
+      <div class="kpi-num" id="kpi-students">—</div>
+      <div class="kpi-label">นักเรียนทั้งหมด</div>
+    </div>
+    <div class="kpi" style="--kpi-color:var(--green2)">
+      <div class="kpi-num" id="kpi-filled">—</div>
+      <div class="kpi-label">บันทึกคะแนนแล้ว</div>
+    </div>
+    <div class="kpi" style="--kpi-color:var(--amber2)">
+      <div class="kpi-num" id="kpi-avg">—</div>
+      <div class="kpi-label">คะแนนเฉลี่ย</div>
+    </div>
+    <div class="kpi" style="--kpi-color:var(--purple2)">
+      <div class="kpi-num" id="kpi-pending">0</div>
+      <div class="kpi-label">รอบันทึก</div>
+    </div>
+  </div>
+
+  <!-- PANEL -->
+  <div class="panel">
+    <div class="panel-header">
+      <span class="panel-title">📝 ตารางบันทึกคะแนน</span>
+      <button class="btn btn-blue btn-sm" data-auth="write" onclick="saveAllPending()">💾 บันทึกทั้งหมด</button>
+      <button class="btn btn-green btn-sm" data-auth="write" onclick="openAddScoreModal()">+ เพิ่มรายการคะแนน</button>
+    </div>
+    <div class="panel-body">
+      <!-- FILTERS -->
+      <div class="filter-row">
+        <select class="sel" id="sel-class" onchange="onScoreFilter()">
+          <option value="">ทุกห้องเรียน</option>
+        </select>
+        <select class="sel" id="sel-term" onchange="onScoreFilter()">
+          <option value="1">ภาคเรียนที่ 1</option>
+          <option value="2">ภาคเรียนที่ 2</option>
+        </select>
+        <select class="sel" id="sel-year" onchange="onScoreFilter()">
+          <option value="2568">2568</option>
+          <option value="2567">2567</option>
+          <option value="2566">2566</option>
+        </select>
+        <div class="search-box">
+          <span class="si">🔍</span>
+          <input type="text" id="score-search" placeholder="ค้นหาชื่อนักเรียน..." oninput="onScoreFilter()"/>
+        </div>
+      </div>
+      <!-- SUBJECT TABS -->
+      <div class="subject-tabs" id="subject-tabs"></div>
+      <!-- TABLE -->
+      <div class="score-table-wrap">
+        <table class="score-table" id="score-table">
+          <thead id="score-thead"></thead>
+          <tbody id="score-tbody">
+            <tr><td colspan="10"><div class="loading-row"><div class="spinner-lg"></div></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ VIEW: REPORT ═══ -->
+<div class="page-view" id="view-report">
+  <div class="filter-row" style="margin-bottom:20px">
+    <select class="sel" id="rpt-class" onchange="buildReport()">
+      <option value="">ทุกห้องเรียน</option>
+    </select>
+    <select class="sel" id="rpt-subject" onchange="buildReport()">
+      <option value="">ทุกวิชา</option>
+    </select>
+    <select class="sel" id="rpt-term" onchange="buildReport()">
+      <option value="1">ภาคเรียนที่ 1</option>
+      <option value="2">ภาคเรียนที่ 2</option>
+    </select>
+  </div>
+  <div class="kpi-row" id="rpt-kpi"></div>
+  <div class="report-grid" id="rpt-content"></div>
+</div>
+
+<!-- ═══ VIEW: CONFIG ═══ -->
+<div class="page-view" id="view-config">
+  <div class="panel">
+    <div class="panel-header">
+      <span class="panel-title">⚙️ กำหนดคะแนนเต็มแต่ละวิชา</span>
+      <button class="btn btn-blue btn-sm" data-auth="write" onclick="saveConfig()">💾 บันทึกค่า</button>
+    </div>
+    <div class="panel-body">
+      <p style="font-size:12px;color:var(--muted);margin-bottom:16px">ตั้งค่าคะแนนเต็มของแต่ละรายการในแต่ละวิชา คะแนนจากเกมจะนำมาแปลงและรวมในช่อง "คะแนนเกม"</p>
+      <div class="config-grid" id="config-grid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ VIEW: EXPORT ═══ -->
+<div class="page-view" id="view-export">
+  <div class="panel">
+    <div class="panel-header">
+      <span class="panel-title">📥 Export คะแนน</span>
+    </div>
+    <div class="panel-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;max-width:560px;margin-bottom:20px">
+        <div class="form-g">
+          <label>ห้องเรียน</label>
+          <select class="sel" id="exp-class" style="min-width:auto;width:100%"><option value="">ทั้งหมด</option></select>
+        </div>
+        <div class="form-g">
+          <label>วิชา</label>
+          <select class="sel" id="exp-subject" style="min-width:auto;width:100%"><option value="">ทั้งหมด</option></select>
+        </div>
+        <div class="form-g">
+          <label>ภาคเรียน</label>
+          <select class="sel" id="exp-term" style="min-width:auto;width:100%">
+            <option value="1">ภาคเรียนที่ 1</option>
+            <option value="2">ภาคเรียนที่ 2</option>
+          </select>
+        </div>
+        <div class="form-g">
+          <label>ปีการศึกษา</label>
+          <select class="sel" id="exp-year" style="min-width:auto;width:100%">
+            <option value="2568">2568</option><option value="2567">2567</option>
+          </select>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn btn-blue" data-auth="write" onclick="doExport('csv')">📄 Export CSV</button>
+        <button class="btn btn-green" data-auth="write" onclick="doExport('full')">📊 รายงานครบทุกวิชา</button>
+      </div>
+      <div id="export-preview" style="margin-top:20px"></div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /content -->
+</div><!-- /main-area -->
+</div><!-- /wrap -->
+
+<!-- ─── SAVE BAR ─── -->
+<div class="save-bar" id="save-bar">
+  <div class="save-bar-txt">⚡ มีคะแนนที่ยังไม่ได้บันทึก <span class="pending-count" id="pending-count">0</span> รายการ</div>
+  <button class="btn btn-outline btn-sm" onclick="discardPending()">ยกเลิก</button>
+  <button class="btn btn-blue btn-sm" data-auth="write" onclick="saveAllPending()">💾 บันทึกทั้งหมด</button>
+</div>
+
+<!-- ─── ADD SCORE TYPE MODAL ─── -->
+<div class="modal-ov" id="add-score-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('add-score-modal')">✕</button>
+    <h3>+ เพิ่มรายการคะแนน</h3>
+    <div class="form-g"><label>วิชา</label>
+      <select id="as-subject">
+        <option value="">— เลือก —</option>
+      </select>
+    </div>
+    <div class="form-g"><label>ชื่อรายการคะแนน</label>
+      <input id="as-name" placeholder="เช่น สอบกลางภาค, งานชิ้นที่ 1"/></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="form-g"><label>ประเภท</label>
+        <select id="as-type">
+          <option value="teacher">ครูให้คะแนน</option>
+          <option value="game">คะแนนจากเกม</option>
+        </select>
+      </div>
+      <div class="form-g"><label>คะแนนเต็ม</label>
+        <input id="as-max" type="number" placeholder="100" min="1" max="100"/></div>
+    </div>
+    <div class="form-g"><label>ภาคเรียน / ปีการศึกษา</label>
+      <div style="display:flex;gap:8px">
+        <select id="as-term" style="flex:1;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:'Sarabun',sans-serif;font-size:13px;outline:none">
+          <option value="1">ภาคเรียนที่ 1</option>
+          <option value="2">ภาคเรียนที่ 2</option>
+        </select>
+        <select id="as-year" style="flex:1;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:'Sarabun',sans-serif;font-size:13px;outline:none">
+          <option value="2568">2568</option><option value="2567">2567</option>
+        </select>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:4px">
+      <button class="btn btn-outline" style="flex:1" onclick="closeModal('add-score-modal')">ยกเลิก</button>
+      <button class="btn btn-blue" style="flex:2" onclick="addScoreType()">+ เพิ่มรายการ</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+<script src="auth-guard.js"></script>
+<script>
+AuthGuard.init('require-login');
+const db=_db;
+
+// ══════════════════════════════════════════
+// SUBJECTS CONFIG
+// ══════════════════════════════════════════
+const SUBJECTS=[
+  {id:'thai',   label:'ภาษาไทย',     color:'var(--amber2)',   cls:'thai'},
+  {id:'math',   label:'คณิตศาสตร์',   color:'var(--green2)',   cls:'math'},
+  {id:'sci',    label:'วิทยาศาสตร์',  color:'var(--purple2)',  cls:'sci'},
+  {id:'social', label:'สังคมศึกษา',   color:'#f97316',         cls:'social'},
+  {id:'eng',    label:'ภาษาอังกฤษ',  color:'var(--red2)',     cls:'eng'},
+  {id:'pe',     label:'สุขศึกษา/พลศึกษา',color:'var(--blue2)',cls:'pe'},
+  {id:'art',    label:'ศิลปะ',       color:'#ec4899',         cls:'art'},
+  {id:'tech',   label:'เทคโนโลยี',   color:'#14b8a6',         cls:'tech'},
+];
+
+// Default score config
+const DEFAULT_CONFIG={
+  thai:  {teacher_mid:20,teacher_final:30,game:10,behavior:10, max:70},
+  math:  {teacher_mid:20,teacher_final:30,game:10,behavior:10, max:70},
+  sci:   {teacher_mid:20,teacher_final:30,game:10,behavior:10, max:70},
+  social:{teacher_mid:20,teacher_final:30,game:0, behavior:10, max:60},
+  eng:   {teacher_mid:20,teacher_final:30,game:5, behavior:10, max:65},
+  pe:    {teacher_mid:20,teacher_final:20,game:0, behavior:20, max:60},
+  art:   {teacher_mid:20,teacher_final:30,game:0, behavior:10, max:60},
+  tech:  {teacher_mid:15,teacher_final:25,game:20,behavior:10, max:70},
+};
+
+// ══════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════
+let STUDENTS=[];
+let SCORES={};     // Firebase scores/{studentId}/{subjectId}/{term_year}/{scoreTypeId}
+let SCORE_TYPES=[]; // [{id,subject,name,type,max,term,year}]
+let CONFIG={...DEFAULT_CONFIG};
+let currentSubject=SUBJECTS[0].id;
+let currentTerm='1';
+let currentYear='2568';
+let pending={};    // {studentId_scoreTypeId: value}
+let filteredStudents=[];
+
+// ══════════════════════════════════════════
+// LOAD
+// ══════════════════════════════════════════
+db.ref('students').on('value',snap=>{
+  STUDENTS=[];
+  snap.forEach(c=>STUDENTS.push({...c.val(),_id:c.key}));
+  STUDENTS.sort((a,b)=>(classLabel(a)).localeCompare(classLabel(b),'th')||(parseInt(a.no)||0)-(parseInt(b.no)||0));
+  buildClassDropdowns();
+  applyScoreFilter();
+  updateKPI();
+});
+
+db.ref('student_scores').on('value',snap=>{
+  SCORES=snap.val()||{};
+  applyScoreFilter();
+  updateKPI();
+});
+
+db.ref('score_types').on('value',snap=>{
+  SCORE_TYPES=[];
+  snap.forEach(c=>SCORE_TYPES.push({...c.val(),_id:c.key}));
+  buildSubjectTabs();
+  applyScoreFilter();
+  populateSubjectSelects();
+});
+
+db.ref('score_config').on('value',snap=>{
+  const v=snap.val();
+  if(v)CONFIG={...DEFAULT_CONFIG,...v};
+  buildConfigGrid();
+});
+
+// ══════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════
+function classLabel(s){return s.grade?(s.room?`${s.grade}/${s.room}`:s.grade):'';}
+function getScore(sid,subj,term,year,typeId){
+  try{return SCORES[sid]?.[subj]?.[`${term}_${year}`]?.[typeId]??'';}catch{return '';}
+}
+function classColor(sub){return SUBJECTS.find(s=>s.id===sub)?.color||'var(--blue2)';}
+
+function buildClassDropdowns(){
+  const classes=[...new Set(STUDENTS.map(s=>classLabel(s)).filter(Boolean))];
+  ['sel-class','rpt-class','exp-class'].forEach(id=>{
+    const el=document.getElementById(id);if(!el)return;
+    const cur=el.value;
+    el.innerHTML='<option value="">ทุกห้องเรียน</option>'+classes.map(c=>`<option ${c===cur?'selected':''}>${c}</option>`).join('');
+  });
+}
+
+function populateSubjectSelects(){
+  const opts=SUBJECTS.map(s=>`<option value="${s.id}">${s.label}</option>`).join('');
+  ['as-subject','exp-subject','rpt-subject'].forEach(id=>{
+    const el=document.getElementById(id);if(!el)return;
+    const cur=el.value;
+    el.innerHTML=(id==='exp-subject'||id==='rpt-subject'?'<option value="">ทั้งหมด</option>':'')+opts;
+    if(cur)el.value=cur;
+  });
+}
+
+// ══════════════════════════════════════════
+// SUBJECT TABS
+// ══════════════════════════════════════════
+function buildSubjectTabs(){
+  const wrap=document.getElementById('subject-tabs');
+  wrap.innerHTML=SUBJECTS.map(s=>`
+    <button class="stab ${s.cls} ${s.id===currentSubject?'active':''}"
+      onclick="setSubject('${s.id}')">${s.label}</button>`).join('');
+}
+
+function setSubject(id){
+  currentSubject=id;
+  buildSubjectTabs();
+  applyScoreFilter();
+}
+
+// ══════════════════════════════════════════
+// SCORE TABLE
+// ══════════════════════════════════════════
+function onScoreFilter(){
+  currentTerm=document.getElementById('sel-term').value;
+  currentYear=document.getElementById('sel-year').value;
+  applyScoreFilter();
+}
+
+function applyScoreFilter(){
+  const cls=document.getElementById('sel-class')?.value||'';
+  const q=(document.getElementById('score-search')?.value||'').toLowerCase();
+  filteredStudents=STUDENTS.filter(s=>{
+    if(cls&&classLabel(s)!==cls)return false;
+    if(q){const hay=`${s.fname} ${s.lname} ${s.nickname||''}`.toLowerCase();if(!hay.includes(q))return false;}
+    return true;
+  });
+  renderScoreTable();
+  updateKPI();
+}
+
+function renderScoreTable(){
+  // Types for current subject+term+year
+  const types=SCORE_TYPES.filter(t=>t.subject===currentSubject&&String(t.term)===String(currentTerm)&&String(t.year)===String(currentYear));
+  const cfg=CONFIG[currentSubject]||{};
+  const subColor=classColor(currentSubject);
+  const subLabel=SUBJECTS.find(s=>s.id===currentSubject)?.label||'';
+
+  // Build header
+  document.getElementById('score-thead').innerHTML=`<tr>
+    <th class="rank-num" style="text-align:center">ที่</th>
+    <th>ชื่อ-นามสกุล</th>
+    <th style="text-align:center">ห้อง</th>
+    ${types.map(t=>`<th class="score-col" style="color:${t.type==='game'?'var(--blue3)':'var(--text)'}">${t.name}<div style="font-size:9px;color:var(--hint);font-weight:400">/${t.max}</div></th>`).join('')}
+    <th class="score-col" style="color:${subColor}">รวม<div style="font-size:9px;color:var(--hint);font-weight:400">/${cfg.max||100}</div></th>
+  </tr>`;
+
+  if(!filteredStudents.length){
+    document.getElementById('score-tbody').innerHTML=`<tr><td colspan="${4+types.length}"><div class="empty-msg">ไม่พบนักเรียน</div></td></tr>`;
+    return;
+  }
+
+  const rows=filteredStudents.map((s,i)=>{
+    const scoreVals=types.map(t=>{
+      const cur=getScore(s._id,currentSubject,currentTerm,currentYear,t._id);
+      const key=`${s._id}___${t._id}`;
+      const pendingVal=pending[key];
+      const displayVal=pendingVal!==undefined?pendingVal:cur;
+      const isPending=pendingVal!==undefined;
+      const isSaved=cur!==''&&!isPending;
+      return `<td class="score-cell">
+        <div class="score-input" data-auth="write-disable"-wrap">
+          <input class="score-input" data-auth="write-disable" ${isPending?'changed':isSaved?'saved':''}"
+            data-sid="${s._id}" data-tid="${t._id}" data-max="${t.max}"
+            value="${displayVal}" type="number" min="0" max="${t.max}" step="0.5"
+            oninput="onScoreInput(this)"
+            onblur="onScoreBlur(this)"/>
+          <span class="score-max">/${t.max}</span>
+        </div>
+      </td>`;
+    }).join('');
+
+    // Calculate total (saved + pending)
+    let total=0;let hasAny=false;
+    types.forEach(t=>{
+      const key=`${s._id}___${t._id}`;
+      const v=pending[key]!==undefined?pending[key]:getScore(s._id,currentSubject,currentTerm,currentYear,t._id);
+      if(v!==''){total+=parseFloat(v)||0;hasAny=true;}
+    });
+    const maxTotal=cfg.max||100;
+    const pct=hasAny?(total/maxTotal*100):0;
+    const totalClass=!hasAny?'':pct>=80?'high':pct>=60?'mid':'low';
+    const totalDisplay=hasAny?total.toFixed(total%1?1:0):'—';
+
+    return `<tr class="anim" style="animation-delay:${i*.02}s">
+      <td class="rank-num" style="text-align:center">${(i+1)}</td>
+      <td>
+        <div class="student-name">${s.prefix||''}${s.fname} ${s.lname}</div>
+        <div class="student-class">${s.nickname?`"${s.nickname}" • `:''}เลขที่ ${s.no||'—'}</div>
+      </td>
+      <td style="text-align:center;font-size:12px;color:var(--muted)">${classLabel(s)||'—'}</td>
+      ${scoreVals}
+      <td class="total-cell ${totalClass}">${totalDisplay}
+        ${hasAny?`<div class="progress-bar"><div class="progress-fill ${totalClass}" style="width:${Math.min(100,pct)}%"></div></div>`:''}
+      </td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('score-tbody').innerHTML=rows;
+}
+
+// ══════════════════════════════════════════
+// SCORE INPUT HANDLING
+// ══════════════════════════════════════════
+function onScoreInput(el){
+  const sid=el.dataset.sid;
+  const tid=el.dataset.tid;
+  const max=parseFloat(el.dataset.max)||100;
+  let val=parseFloat(el.value);
+  if(isNaN(val))val='';
+  else val=Math.max(0,Math.min(max,val));
+  const key=`${sid}___${tid}`;
+  const original=getScore(sid,currentSubject,currentTerm,currentYear,tid);
+  if(String(val)===String(original)){delete pending[key];}
+  else{pending[key]=val;}
+  el.classList.toggle('changed',pending[key]!==undefined);
+  updatePendingUI();
+  updateKPI();
+}
+
+function onScoreBlur(el){
+  if(el.value==='')return;
+  const max=parseFloat(el.dataset.max)||100;
+  let val=parseFloat(el.value);
+  if(!isNaN(val)){el.value=Math.max(0,Math.min(max,val));}
+}
+
+function updatePendingUI(){
+  const count=Object.keys(pending).length;
+  document.getElementById('kpi-pending').textContent=count;
+  const bar=document.getElementById('save-bar');
+  const pc=document.getElementById('pending-count');
+  bar.classList.toggle('on',count>0);
+  if(pc)pc.textContent=count;
+}
+
+// ══════════════════════════════════════════
+// SAVE
+// ══════════════════════════════════════════
+async function saveAllPending(){
+  if(!AuthGuard.requireLogin())return;
+  if(!Object.keys(pending).length){toast('ไม่มีรายการที่รอบันทึก','info');return;}
+  const updates={};
+  for(const[key,val] of Object.entries(pending)){
+    const[sid,tid]=key.split('___');
+    const t=SCORE_TYPES.find(x=>x._id===tid);if(!t)continue;
+    const path=`student_scores/${sid}/${currentSubject}/${currentTerm}_${currentYear}/${tid}`;
+    updates[path]=val===''?null:parseFloat(val);
+    // Update total in student profile
+    updates[`students/${sid}/scores/${currentSubject}/term${currentTerm}_${currentYear}`]=null; // will recalc on read
+  }
+  try{
+    await db.ref().update(updates);
+    pending={};
+    updatePendingUI();
+    toast('✅ บันทึกคะแนนสำเร็จ','ok');
+    // flash saved state
+    document.querySelectorAll('.score-input.changed').forEach(el=>{
+      el.classList.remove('changed');el.classList.add('saved');
+    });
+  }catch(e){toast('❌ บันทึกไม่สำเร็จ: '+e.message,'err');}
+}
+
+function discardPending(){
+  if(!confirm('ยกเลิกการแก้ไขทั้งหมด?'))return;
+  pending={};
+  updatePendingUI();
+  applyScoreFilter();
+  toast('ยกเลิกการแก้ไขแล้ว','info');
+}
+
+// ══════════════════════════════════════════
+// ADD SCORE TYPE
+// ══════════════════════════════════════════
+function openAddScoreModal(){
+  document.getElementById('as-name').value='';
+  document.getElementById('as-max').value='20';
+  document.getElementById('as-term').value=currentTerm;
+  document.getElementById('as-year').value=currentYear;
+  document.getElementById('as-subject').value=currentSubject;
+  openModal('add-score-modal');
+}
+
+async function addScoreType(){
+  if(!AuthGuard.requireLogin())return;
+  const subject=document.getElementById('as-subject').value;
+  const name=document.getElementById('as-name').value.trim();
+  const type=document.getElementById('as-type').value;
+  const max=parseInt(document.getElementById('as-max').value)||20;
+  const term=document.getElementById('as-term').value;
+  const year=document.getElementById('as-year').value;
+  if(!subject){toast('❌ เลือกวิชา','err');return;}
+  if(!name){toast('❌ ใส่ชื่อรายการ','err');return;}
+  try{
+    await db.ref('score_types').push({subject,name,type,max,term,year});
+    toast('✅ เพิ่มรายการคะแนนแล้ว','ok');
+    closeModal('add-score-modal');
+    currentSubject=subject;
+    buildSubjectTabs();
+    applyScoreFilter();
+  }catch(e){toast('❌ '+e.message,'err');}
+}
+
+// ══════════════════════════════════════════
+// KPI
+// ══════════════════════════════════════════
+function updateKPI(){
+  const types=SCORE_TYPES.filter(t=>t.subject===currentSubject&&String(t.term)===String(currentTerm)&&String(t.year)===String(currentYear));
+  let filled=0,total=0,count=0;
+  filteredStudents.forEach(s=>{
+    let hasScore=false;
+    types.forEach(t=>{
+      const v=getScore(s._id,currentSubject,currentTerm,currentYear,t._id);
+      if(v!==''){hasScore=true;total+=parseFloat(v)||0;count++;}
+    });
+    if(hasScore)filled++;
+  });
+  document.getElementById('kpi-students').textContent=filteredStudents.length;
+  document.getElementById('kpi-filled').textContent=filled;
+  document.getElementById('kpi-avg').textContent=count>0?(total/count).toFixed(1):'—';
+}
+
+// ══════════════════════════════════════════
+// CONFIG
+// ══════════════════════════════════════════
+function buildConfigGrid(){
+  const grid=document.getElementById('config-grid');
+  if(!grid)return;
+  grid.innerHTML=SUBJECTS.map(s=>{
+    const c=CONFIG[s.id]||{};
+    return `<div class="config-card" style="--cc-color:${s.color}">
+      <div class="config-label" style="color:${s.color}">${s.label}</div>
+      <div class="config-row"><label>สอบกลางภาค</label><input type="number" data-subj="${s.id}" data-key="teacher_mid" value="${c.teacher_mid||20}" min="0" max="100" oninput="onConfigChange(this)"/></div>
+      <div class="config-row"><label>สอบปลายภาค</label><input type="number" data-subj="${s.id}" data-key="teacher_final" value="${c.teacher_final||30}" min="0" max="100" oninput="onConfigChange(this)"/></div>
+      <div class="config-row"><label>คะแนนเกม</label><input type="number" data-subj="${s.id}" data-key="game" value="${c.game||0}" min="0" max="100" oninput="onConfigChange(this)"/></div>
+      <div class="config-row"><label>พฤติกรรม/เจตคติ</label><input type="number" data-subj="${s.id}" data-key="behavior" value="${c.behavior||10}" min="0" max="100" oninput="onConfigChange(this)"/></div>
+      <div style="height:1px;background:var(--border);margin:8px 0"></div>
+      <div class="config-row" style="font-weight:700"><label>คะแนนเต็ม</label><input type="number" data-subj="${s.id}" data-key="max" value="${c.max||70}" min="1" max="100" style="font-weight:800;color:${s.color}" oninput="onConfigChange(this)"/></div>
+    </div>`;
+  }).join('');
+}
+
+function onConfigChange(el){
+  const subj=el.dataset.subj;
+  const key=el.dataset.key;
+  if(!CONFIG[subj])CONFIG[subj]={};
+  CONFIG[subj][key]=parseInt(el.value)||0;
+}
+
+async function saveConfig(){
+  if(!AuthGuard.requireLogin())return;
+  try{
+    await db.ref('score_config').set(CONFIG);
+    toast('✅ บันทึกการตั้งค่าแล้ว','ok');
+  }catch(e){toast('❌ '+e.message,'err');}
+}
+
+// ══════════════════════════════════════════
+// REPORT
+// ══════════════════════════════════════════
+function buildReport(){
+  const cls=document.getElementById('rpt-class')?.value||'';
+  const subj=document.getElementById('rpt-subject')?.value||'';
+  const term=document.getElementById('rpt-term')?.value||'1';
+  const stud=STUDENTS.filter(s=>!cls||classLabel(s)===cls);
+  const subjects=subj?[SUBJECTS.find(s=>s.id===subj)].filter(Boolean):SUBJECTS;
+
+  // KPI row
+  let kpiHTML='';
+  const totals=[];
+  stud.forEach(s=>{
+    let sum=0,cnt=0;
+    subjects.forEach(sub=>{
+      const types=SCORE_TYPES.filter(t=>t.subject===sub.id&&String(t.term)===String(term)&&String(t.year)===String(currentYear));
+      types.forEach(t=>{const v=getScore(s._id,sub.id,term,currentYear,t._id);if(v!==''){sum+=parseFloat(v)||0;cnt++;}});
+    });
+    if(cnt)totals.push(sum/cnt);
+  });
+  const avg=totals.length?totals.reduce((a,b)=>a+b,0)/totals.length:0;
+  const high=totals.filter(v=>v>=80).length;
+  const low=totals.filter(v=>v<60).length;
+  kpiHTML=`
+    <div class="kpi" style="--kpi-color:var(--blue2)"><div class="kpi-num">${stud.length}</div><div class="kpi-label">นักเรียน</div></div>
+    <div class="kpi" style="--kpi-color:var(--green2)"><div class="kpi-num" style="color:var(--green3)">${avg.toFixed(1)}</div><div class="kpi-label">คะแนนเฉลี่ย</div></div>
+    <div class="kpi" style="--kpi-color:var(--amber2)"><div class="kpi-num" style="color:var(--amber3)">${high}</div><div class="kpi-label">คะแนน ≥ 80</div></div>
+    <div class="kpi" style="--kpi-color:var(--red2)"><div class="kpi-num" style="color:var(--red3)">${low}</div><div class="kpi-label">คะแนน &lt; 60</div></div>`;
+  document.getElementById('rpt-kpi').innerHTML=kpiHTML;
+
+  // Top students per subject
+  let contentHTML='';
+  subjects.forEach(sub=>{
+    const types=SCORE_TYPES.filter(t=>t.subject===sub.id&&String(t.term)===String(term)&&String(t.year)===String(currentYear));
+    if(!types.length)return;
+    const cfg=CONFIG[sub.id]||{};
+    const rows=stud.map(s=>{
+      let sum=0,cnt=0;
+      types.forEach(t=>{const v=getScore(s._id,sub.id,term,currentYear,t._id);if(v!==''){sum+=parseFloat(v)||0;cnt++;}});
+      return{s,sum,cnt};
+    }).filter(r=>r.cnt).sort((a,b)=>b.sum-a.sum).slice(0,10);
+    const maxPossible=cfg.max||100;
+    contentHTML+=`
+      <div class="report-card">
+        <h3 style="color:${sub.color}">${sub.label} — Top ${rows.length}</h3>
+        <div class="stat-list">
+          ${rows.map((r,i)=>{
+            const pct=Math.min(100,r.sum/maxPossible*100);
+            const fillColor=pct>=80?'var(--green2)':pct>=60?'var(--amber2)':'var(--red2)';
+            return `<div class="stat-row">
+              <span style="font-size:11px;color:var(--hint);min-width:16px">${i+1}</span>
+              <span class="stat-name">${r.s.fname} ${r.s.lname}</span>
+              <div class="stat-bar-wrap"><div class="stat-bar-fill" style="width:${pct}%;background:${fillColor}"></div></div>
+              <span class="stat-score" style="color:${fillColor}">${r.sum.toFixed(r.sum%1?1:0)}</span>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>`;
+  });
+  if(!contentHTML)contentHTML='<div class="empty-msg" style="grid-column:1/-1">ยังไม่มีข้อมูลคะแนนในภาคเรียนนี้</div>';
+  document.getElementById('rpt-content').innerHTML=contentHTML;
+}
+
+// ══════════════════════════════════════════
+// EXPORT
+// ══════════════════════════════════════════
+function doExport(mode){
+  const cls=document.getElementById('exp-class')?.value||'';
+  const subj=document.getElementById('exp-subject')?.value||'';
+  const term=document.getElementById('exp-term')?.value||'1';
+  const year=document.getElementById('exp-year')?.value||'2568';
+  const stud=STUDENTS.filter(s=>!cls||classLabel(s)===cls);
+  const subjects=subj?[SUBJECTS.find(s=>s.id===subj)].filter(Boolean):SUBJECTS;
+  if(!stud.length){toast('⚠️ ไม่มีข้อมูลนักเรียน','err');return;}
+
+  const headers=['ที่','ชื่อ','นามสกุล','ห้อง','เลขที่'];
+  const typesBySubj={};
+  subjects.forEach(sub=>{
+    const types=SCORE_TYPES.filter(t=>t.subject===sub.id&&String(t.term)===String(term)&&String(t.year)===String(year));
+    typesBySubj[sub.id]=types;
+    types.forEach(t=>headers.push(`${sub.label}-${t.name}(/${t.max})`));
+    headers.push(`${sub.label}-รวม`);
+  });
+
+  const rows=stud.map((s,i)=>{
+    const row=[i+1,s.fname||'',s.lname||'',classLabel(s),s.no||''];
+    subjects.forEach(sub=>{
+      const types=typesBySubj[sub.id];
+      let total=0;let hasAny=false;
+      types.forEach(t=>{
+        const v=getScore(s._id,sub.id,term,year,t._id);
+        row.push(v===''?'':parseFloat(v));
+        if(v!==''){total+=parseFloat(v)||0;hasAny=true;}
+      });
+      row.push(hasAny?total.toFixed(total%1?1:0):'');
+    });
+    return row;
+  });
+
+  const csv=[headers,...rows].map(r=>r.map(c=>`"${String(c??'').replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`คะแนน_${cls||'ทั้งหมด'}_ภาค${term}_${year}.csv`;
+  a.click();
+  toast('📥 Export สำเร็จ','ok');
+  document.getElementById('export-preview').innerHTML=`<div style="font-size:12px;color:var(--green3);padding:10px;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);border-radius:8px">✅ Export ${stud.length} คน ${headers.length} คอลัมน์ เรียบร้อย</div>`;
+}
+
+// ══════════════════════════════════════════
+// VIEW NAVIGATION
+// ══════════════════════════════════════════
+const VIEW_TITLES={
+  scores:'ใส่ / แก้ไขคะแนน',
+  report:'รายงานสรุปคะแนน',
+  config:'ตั้งค่าคะแนน',
+  export:'Export คะแนน'
+};
+function showView(v){
+  document.querySelectorAll('.page-view').forEach(el=>el.classList.remove('active'));
+  document.getElementById('view-'+v).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
+  document.getElementById('nav-'+v)?.classList.add('active');
+  document.getElementById('topbar-title').textContent=VIEW_TITLES[v]||v;
+  if(v==='report')buildReport();
+  if(v==='config')buildConfigGrid();
+}
+
+function toggleSidebar(){
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebar-ov').classList.toggle('on');
+}
+
+// ══════════════════════════════════════════
+// MODAL
+// ══════════════════════════════════════════
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.modal-ov').forEach(el=>{
+  el.addEventListener('click',e=>{if(e.target===el)el.classList.remove('open');});
+});
+
+// ══════════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════════
+function toast(msg,type=''){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.className='toast'+(type?' '+type:'');
+  t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);
+}
+
+// ── INIT ──
+document.getElementById('sel-term').value=currentTerm;
+document.getElementById('sel-year').value=currentYear;
+buildSubjectTabs();
+buildConfigGrid();
+populateSubjectSelects();
+</script>
+</body>
+</html>

@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>ระบบติดต่อผู้ปกครอง • โรงเรียนบ้านคำไผ่</title>
+
+    <link rel="manifest" href="manifest.json" />
+    <meta name="theme-color" content="#ec4899" />
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600&display=swap');
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Sarabun', sans-serif;
+            min-height: 100vh;
+            background: #020b18;
+            color: #e0f2fe;
+            overflow-x: hidden;
+        }
+
+        /* ── Bg Effects ── */
+        .bg-layer {
+            position: fixed;
+            inset: 0;
+            z-index: -2;
+            background: linear-gradient(160deg, #020b18 0%, #4c1d95 40%, #831843 100%);
+        }
+
+        .glow {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(100px);
+            opacity: 0.15;
+            z-index: -1;
+            animation: gMove 12s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        .g1 {
+            width: 450px;
+            height: 450px;
+            background: #6366f1;
+            top: -100px;
+            left: -100px;
+        }
+
+        .g2 {
+            width: 350px;
+            height: 350px;
+            background: #ec4899;
+            bottom: 5%;
+            right: -50px;
+            animation-delay: 4s;
+        }
+
+        @keyframes gMove {
+
+            0%,
+            100% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            50% {
+                transform: translate(40px, -30px) scale(1.1);
+            }
+        }
+
+        /* ── Utility ── */
+        .wrap {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px 16px 80px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .top-nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .role-badge {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 700;
+            color: #fbcfe8;
+            border: 1px solid rgba(244, 114, 182, 0.3);
+        }
+
+        .back-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #e0f2fe;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            font-size: 18px;
+            transition: 0.2s;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .page-title {
+            font-family: 'Mitr', sans-serif;
+            font-size: 20px;
+            font-weight: 600;
+            background: linear-gradient(135deg, #fbcfe8, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* ── Tabs ── */
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #94a3b8;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .tab.active {
+            background: rgba(236, 72, 153, 0.15);
+            color: #f472b6;
+            border: 1px solid rgba(236, 72, 153, 0.3);
+        }
+
+        .view-section {
+            display: none;
+        }
+
+        .view-section.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ── Search Bar ── */
+        .search-box {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            transition: 0.2s;
+        }
+
+        .search-box:focus-within {
+            border-color: #ec4899;
+            background: rgba(236, 72, 153, 0.05);
+        }
+
+        .search-icon {
+            color: #94a3b8;
+            font-size: 16px;
+        }
+
+        .search-input {
+            background: none;
+            border: none;
+            outline: none;
+            color: #fff;
+            font-family: 'Sarabun', sans-serif;
+            font-size: 15px;
+            width: 100%;
+        }
+
+        /* ── Parent/Student List ── */
+        .contact-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .contact-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: 0.2s;
+        }
+
+        .contact-card:hover {
+            border-color: rgba(236, 72, 153, 0.3);
+            background: rgba(236, 72, 153, 0.03);
+        }
+
+        .contact-info {
+            display: flex;
+            gap: 14px;
+            align-items: center;
+        }
+
+        .contact-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.08);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .stu-name {
+            font-weight: 700;
+            font-size: 15px;
+            color: #f8fafc;
+            margin-bottom: 4px;
+        }
+
+        .par-desc {
+            font-size: 12px;
+            color: #94a3b8;
+        }
+
+        .par-tel {
+            color: #f472b6;
+            font-weight: 600;
+        }
+
+        .btn-action {
+            background: rgba(236, 72, 153, 0.1);
+            border: 1px solid rgba(236, 72, 153, 0.3);
+            color: #fbcfe8;
+            border-radius: 10px;
+            padding: 8px 14px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            font-family: 'Sarabun', sans-serif;
+        }
+
+        .btn-action:hover {
+            background: rgba(236, 72, 153, 0.25);
+            transform: translateY(-1px);
+        }
+
+        /* ── Modal Message Form ── */
+        #msg-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+            z-index: 999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-box {
+            background: #0d1825;
+            border: 1px solid rgba(236, 72, 153, 0.3);
+            border-radius: 20px;
+            width: 100%;
+            max-width: 400px;
+            padding: 24px;
+            position: relative;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            color: #94a3b8;
+            font-size: 20px;
+            cursor: pointer;
+            background: none;
+            border: none;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #e0f2fe;
+            margin-bottom: 6px;
+        }
+
+        .modal-sub {
+            font-size: 13px;
+            color: #94a3b8;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #fbcfe8;
+            margin-bottom: 6px;
+        }
+
+        .form-input,
+        .form-select,
+        .form-textarea {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 12px;
+            color: #e0f2fe;
+            font-family: 'Sarabun', sans-serif;
+            font-size: 14px;
+            outline: none;
+            transition: 0.2s;
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-input:focus,
+        .form-select:focus,
+        .form-textarea:focus {
+            border-color: #ec4899;
+        }
+
+        .form-select option {
+            background: #0f172a;
+            color: #fff;
+        }
+
+        .btn-send {
+            width: 100%;
+            padding: 14px;
+            border-radius: 12px;
+            border: none;
+            background: linear-gradient(135deg, #ec4899, #be185d);
+            color: #fff;
+            font-size: 15px;
+            font-weight: 700;
+            font-family: 'Mitr', sans-serif;
+            cursor: pointer;
+        }
+
+        .btn-send:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(236, 72, 153, 0.4);
+        }
+
+        /* ── Sent Messages Log ── */
+        .msg-log {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .log-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 16px;
+        }
+
+        .log-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px;
+        }
+
+        .log-to {
+            font-size: 14px;
+            font-weight: 700;
+            color: #f8fafc;
+        }
+
+        .log-date {
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        .log-type {
+            display: inline-block;
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+
+        .type-warn {
+            background: rgba(239, 68, 68, 0.15);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .type-praise {
+            background: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .log-body {
+            font-size: 13px;
+            color: #bae6fd;
+            line-height: 1.5;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 10px;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="auth-bar"></div>
+
+    <div class="bg-layer"></div>
+    <div class="glow g1"></div>
+    <div class="glow g2"></div>
+
+    <div class="wrap">
+        <div class="top-nav">
+            <div class="nav-left">
+                <a href="index.html" class="back-btn">←</a>
+                <div class="page-title">ติดต่อผู้ปกครอง</div>
+            </div>
+            <div class="role-badge">สำหรับครู</div>
+        </div>
+
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('contacts')">👥 รายชื่อนักเรียน</div>
+            <div class="tab" onclick="switchTab('history')">📤 ประวัติการส่งแจ้งเตือน</div>
+        </div>
+
+        <!-- ── CONTACTS SECTION ── -->
+        <div id="sec-contacts" class="view-section active">
+            <div class="search-box">
+                <div class="search-icon">🔍</div>
+                <input type="text" class="search-input" placeholder="ค้นหาชื่อนักเรียน, ป.4..."
+                    onkeyup="filterContacts(this.value)">
+            </div>
+
+            <div class="contact-list" id="clist">
+                <!-- Mock Data -->
+                <div class="contact-card" data-search="ด.ช. สมชาย ใจดี ป.4 มารดา นายสุดใจ">
+                    <div class="contact-info">
+                        <div class="contact-avatar">👦</div>
+                        <div>
+                            <div class="stu-name">ด.ช. สมชาย ใจดี (ป.4/1)</div>
+                            <div class="par-desc">ปกครองโดย: มารดา <span class="par-tel">📞 081-xxx-xxxx</span></div>
+                        </div>
+                    </div>
+                    <button class="btn-action" onclick="openMsgModal('ด.ช. สมชาย ใจดี')"
+                        data-auth="write-disable">ส่งข้อความ</button>
+                </div>
+
+                <div class="contact-card" data-search="ด.ญ. มาลี สวยงาม ป.5 บิดา">
+                    <div class="contact-info">
+                        <div class="contact-avatar">👧</div>
+                        <div>
+                            <div class="stu-name">ด.ญ. มาลี สวยงาม (ป.5/2)</div>
+                            <div class="par-desc">ปกครองโดย: บิดา <span class="par-tel">📞 089-xxx-xxxx</span></div>
+                        </div>
+                    </div>
+                    <button class="btn-action" onclick="openMsgModal('ด.ญ. มาลี สวยงาม')"
+                        data-auth="write-disable">ส่งข้อความ</button>
+                </div>
+
+                <div class="contact-card" data-search="ด.ช. ต้นกล้า รักเรียน ป.6 ย่า">
+                    <div class="contact-info">
+                        <div class="contact-avatar">👦</div>
+                        <div>
+                            <div class="stu-name">ด.ช. ต้นกล้า รักเรียน (ป.6)</div>
+                            <div class="par-desc">ปกครองโดย: ย่า <span class="par-tel">📞 084-xxx-xxxx</span></div>
+                        </div>
+                    </div>
+                    <button class="btn-action" onclick="openMsgModal('ด.ช. ต้นกล้า รักเรียน')"
+                        data-auth="write-disable">ส่งข้อความ</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── HISTORY SECTION ── -->
+        <div id="sec-history" class="view-section">
+            <div class="msg-log">
+
+                <div class="log-card">
+                    <div class="log-head">
+                        <div class="log-to">ถึง: ผู้ปกครอง ด.ช. สมชาย ใจดี</div>
+                        <div class="log-date">วันนี้ 10:30 น.</div>
+                    </div>
+                    <div class="log-type type-praise">⭐ ชื่นชม/แจ้งข่าวดี</div>
+                    <div class="log-body">
+                        น้องสมชายทำคะแนนสอบวิชาคณิตศาสตร์ได้อันดับ 1 ของห้องครับ ขอชื่นชมในความตั้งใจ
+                    </div>
+                </div>
+
+                <div class="log-card">
+                    <div class="log-head">
+                        <div class="log-to">ถึง: ผู้ปกครอง ด.ช. ต้นกล้า รักเรียน</div>
+                        <div class="log-date">เมื่อวาน 15:00 น.</div>
+                    </div>
+                    <div class="log-type type-warn">⚠️ แจ้งเตือนข้อควรปรับปรุง</div>
+                    <div class="log-body">
+                        น้องต้นกล้าขาดส่งการบ้านวิชาวิทยาศาสตร์ 3 ครั้งติดกัน รบกวนผู้ปกครองช่วยติดตามด้วยนะคะ ขอบคุณค่ะ
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ── Modal ── -->
+    <div id="msg-modal">
+        <div class="modal-box">
+            <button class="modal-close" onclick="closeMsgModal()">✖</button>
+            <div class="modal-title">ส่งข้อความแจ้งเตือน</div>
+            <div class="modal-sub" id="modal-subtitle">ถึงผู้ปกครอง: -</div>
+
+            <form id="msg-form" onsubmit="sendMsg(event)">
+                <input type="hidden" id="target_student">
+
+                <div class="form-group">
+                    <label class="form-label">ประเภทข้อความ</label>
+                    <select id="msg_type" class="form-select" required>
+                        <option value="praise">⭐ ชื่นชม / ผลการเรียนดี</option>
+                        <option value="warn">⚠️ แจ้งพฤติกรรม / ควรปรับปรุง</option>
+                        <option value="info">ℹ️ แจ้งข่าวสารทั่วไป / นัดหมาย</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">รายละเอียด</label>
+                    <textarea id="msg_body" class="form-textarea" placeholder="พิมพ์ข้อความที่ต้องการส่งถึงผู้ปกครอง..."
+                        required></textarea>
+                </div>
+
+                <button type="submit" class="btn-send" id="btn-send">ส่งข้อความผ่านแอป</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Firebase & Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script src="auth-guard.js"></script>
+
+    <script>
+        AuthGuard.init('require-login');
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
+
+            event.currentTarget.classList.add('active');
+            document.getElementById('sec-' + tabId).classList.add('active');
+        }
+
+        function filterContacts(val) {
+            const q = val.toLowerCase();
+            document.querySelectorAll('.contact-card').forEach(card => {
+                const textToSearch = card.getAttribute('data-search').toLowerCase();
+                card.style.display = textToSearch.includes(q) ? 'flex' : 'none';
+            });
+        }
+
+        function openMsgModal(studentName) {
+            if (!AuthGuard.requireLogin('เฉพาะครูเท่านั้นที่ส่งข้อความได้')) return;
+
+            document.getElementById('msg-modal').style.display = 'flex';
+            document.getElementById('modal-subtitle').textContent = "ถึงผู้ปกครอง: " + studentName;
+            document.getElementById('target_student').value = studentName;
+        }
+
+        function closeMsgModal() {
+            document.getElementById('msg-modal').style.display = 'none';
+            document.getElementById('msg-form').reset();
+        }
+
+        async function sendMsg(e) {
+            e.preventDefault();
+
+            const btn = document.getElementById('btn-send');
+            btn.disabled = true;
+            btn.textContent = "กำลังส่ง...";
+
+            const data = {
+                studentName: document.getElementById('target_student').value,
+                type: document.getElementById('msg_type').value,
+                message: document.getElementById('msg_body').value,
+                timestamp: firebase.database.ServerValue.TIMESTAMP,
+                teacherId: window._auth.currentUser.uid
+            };
+
+            try {
+                const ref = window._db.ref('parent_messages').push();
+                await ref.set(data);
+
+                alert("✅ ส่งข้อความแจ้งเตือนเรียบร้อยแล้ว");
+                closeMsgModal();
+                document.querySelectorAll('.tab')[1].click(); // Go to history
+            } catch (err) {
+                alert("❌ เกิดข้อผิดพลาด: " + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = "ส่งข้อความผ่านแอป";
+            }
+        }
+    </script>
+</body>
+
+</html>

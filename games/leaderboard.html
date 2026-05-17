@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>อันดับคะแนน — โรงเรียนบ้านคำไผ่</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#07090e;--surface:#0e1118;--surface2:#13161f;--surface3:#181c28;
+  --border:#1c2232;--border2:#222840;
+  --text:#ecf0ff;--muted:#4a5878;--hint:#2a3248;
+  --gold:#d4a843;--gold2:#e8c56a;--gold3:#f5e4a8;
+  --silver:#8a9ab0;--silver2:#aab8c8;
+  --bronze:#8b5a2b;--bronze2:#b07840;
+  --blue:#2563eb;--blue2:#3b82f6;--blue3:#93c5fd;
+  --r:14px
+}
+body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+.bg-fx{position:fixed;inset:0;z-index:0;pointer-events:none}
+.bg-fx::before{content:'';position:absolute;width:600px;height:600px;
+  background:radial-gradient(circle,rgba(212,168,67,.1) 0%,transparent 65%);
+  top:-100px;left:50%;transform:translateX(-50%);animation:glow 8s ease-in-out infinite}
+@keyframes glow{0%,100%{opacity:.6}50%{opacity:1}}
+
+.page{position:relative;z-index:1;max-width:800px;margin:0 auto;padding:0 16px 80px}
+.nav{display:flex;align-items:center;gap:12px;padding:16px 0 22px;border-bottom:1px solid var(--border);margin-bottom:28px}
+.back-btn{text-decoration:none;color:var(--muted);font-size:13px;font-weight:600;padding:7px 14px;border:1px solid var(--border);border-radius:8px;transition:.2s;display:flex;align-items:center;gap:6px}
+.back-btn:hover{color:var(--gold2);border-color:var(--gold)}
+.nav-title{font-size:18px;font-weight:900;flex:1}
+
+/* HERO */
+.hero{text-align:center;padding:10px 0 28px}
+.hero-title{font-size:26px;font-weight:900;background:linear-gradient(135deg,var(--gold),var(--gold2),var(--gold3));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:6px}
+.hero-sub{font-size:13px;color:var(--muted)}
+
+/* PODIUM */
+.podium{display:flex;align-items:flex-end;justify-content:center;gap:12px;margin:24px 0 32px;padding:0 20px}
+.podium-item{display:flex;flex-direction:column;align-items:center;gap:8px;flex:1;max-width:180px}
+.podium-avatar{border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;overflow:hidden;border:3px solid;transition:transform .3s;animation:avatarIn 1s ease both}
+@keyframes avatarIn{from{opacity:0;transform:scale(0.5)}to{opacity:1;transform:none}}
+.podium-item:nth-child(1) .podium-avatar{width:72px;height:72px;font-size:24px;border-color:var(--silver2);animation-delay:.2s}
+.podium-item:nth-child(2) .podium-avatar{width:90px;height:90px;font-size:30px;border-color:var(--gold2);animation-delay:0s}
+.podium-item:nth-child(3) .podium-avatar{width:64px;height:64px;font-size:20px;border-color:var(--bronze2);animation-delay:.4s}
+.podium-avatar img{width:100%;height:100%;object-fit:cover}
+.podium-medal{font-size:28px;animation:medalBounce 2s ease-in-out infinite}
+@keyframes medalBounce{0%,100%{transform:translateY(0) rotate(-5deg)}50%{transform:translateY(-6px) rotate(5deg)}}
+.podium-name{font-size:13px;font-weight:800;text-align:center;line-height:1.3}
+.podium-class{font-size:10px;color:var(--muted)}
+.podium-score{font-size:18px;font-weight:900;text-align:center}
+.podium-platform{height:var(--ph);border-radius:8px 8px 0 0;width:100%;display:flex;align-items:flex-end;justify-content:center;padding-bottom:6px}
+.podium-item:nth-child(1) .podium-platform{--ph:60px;background:linear-gradient(180deg,rgba(139,154,176,.2),rgba(139,154,176,.08));border:1px solid rgba(139,154,176,.2)}
+.podium-item:nth-child(2) .podium-platform{--ph:90px;background:linear-gradient(180deg,rgba(212,168,67,.2),rgba(212,168,67,.06));border:1px solid rgba(212,168,67,.25)}
+.podium-item:nth-child(3) .podium-platform{--ph:48px;background:linear-gradient(180deg,rgba(139,90,43,.2),rgba(139,90,43,.06));border:1px solid rgba(139,90,43,.2)}
+.p-rank-num{font-size:20px;font-weight:900;opacity:.5}
+
+/* FILTER */
+.filter-bar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px}
+.sel{background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:9px 12px;color:var(--text);font-family:'Sarabun',sans-serif;font-size:13px;outline:none;cursor:pointer;min-width:120px}
+.sel:focus{border-color:var(--gold)}
+.sel option{background:#0e1118}
+.subj-tabs{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:20px}
+.stab{padding:6px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:'Sarabun',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:.2s}
+.stab:hover{border-color:var(--gold);color:var(--gold2)}
+.stab.active{border-color:var(--gold);background:rgba(212,168,67,.12);color:var(--gold2)}
+
+/* LEADERBOARD LIST */
+.lb-list{display:flex;flex-direction:column;gap:6px}
+.lb-row{display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);transition:transform .2s,border-color .2s;animation:rowIn .3s ease both;cursor:pointer}
+@keyframes rowIn{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:none}}
+.lb-row:hover{transform:translateX(4px);border-color:rgba(212,168,67,.3)}
+.lb-row.top1{background:linear-gradient(135deg,rgba(212,168,67,.12),var(--surface));border-color:rgba(212,168,67,.3)}
+.lb-row.top2{background:linear-gradient(135deg,rgba(139,154,176,.08),var(--surface));border-color:rgba(139,154,176,.2)}
+.lb-row.top3{background:linear-gradient(135deg,rgba(139,90,43,.1),var(--surface));border-color:rgba(139,90,43,.2)}
+.lb-rank{width:36px;text-align:center;font-size:16px;font-weight:900;flex-shrink:0}
+.lb-rank.r1{color:var(--gold2)}
+.lb-rank.r2{color:var(--silver2)}
+.lb-rank.r3{color:var(--bronze2)}
+.lb-rank.rN{color:var(--hint);font-size:13px}
+.lb-avatar{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:#fff;flex-shrink:0;overflow:hidden;border:2px solid rgba(255,255,255,.08)}
+.lb-avatar img{width:100%;height:100%;object-fit:cover}
+.lb-info{flex:1;min-width:0}
+.lb-name{font-size:13px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lb-sub{font-size:11px;color:var(--muted)}
+.lb-score{text-align:right;flex-shrink:0}
+.lb-score-num{font-size:18px;font-weight:900;color:var(--gold2)}
+.lb-score-max{font-size:10px;color:var(--hint)}
+.lb-bar{width:80px;height:4px;background:var(--surface3);border-radius:2px;overflow:hidden;margin-top:3px;margin-left:auto}
+.lb-bar-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--gold),var(--gold3))}
+.empty-msg{text-align:center;padding:48px;color:var(--hint);font-size:13px}
+.spinner{display:inline-block;width:26px;height:26px;border:2.5px solid rgba(255,255,255,.08);border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+@media(max-width:500px){.podium{gap:6px}.podium-item:nth-child(2) .podium-avatar{width:72px;height:72px;font-size:24px}}
+</style>
+</head>
+<body>
+<div class="bg-fx"></div>
+<div id="auth-bar"></div>
+
+<div class="page">
+  <div class="nav">
+    <a href="index.html" class="back-btn">← หน้าหลัก</a>
+    <div class="nav-title">🏆 อันดับคะแนน</div>
+  </div>
+
+  <div class="hero">
+    <div class="hero-title">🏆 Leaderboard คะแนนรายวิชา</div>
+    <div class="hero-sub">อันดับนักเรียนที่มีคะแนนสูงสุด</div>
+  </div>
+
+  <!-- PODIUM (top 3) -->
+  <div class="podium" id="podium"></div>
+
+  <!-- FILTERS -->
+  <div class="filter-bar">
+    <select class="sel" id="sel-class" onchange="applyFilter()"><option value="">ทุกห้องเรียน</option></select>
+    <select class="sel" id="sel-term" onchange="applyFilter()">
+      <option value="1">ภาคเรียนที่ 1</option>
+      <option value="2">ภาคเรียนที่ 2</option>
+    </select>
+    <select class="sel" id="sel-year" onchange="applyFilter()">
+      <option value="2568">2568</option><option value="2567">2567</option>
+    </select>
+  </div>
+  <div class="subj-tabs" id="subj-tabs"></div>
+
+  <!-- LIST -->
+  <div class="lb-list" id="lb-list">
+    <div class="empty-msg"><div class="spinner"></div></div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+<script src="auth-guard.js"></script>
+<script>
+AuthGuard.init('read-only');
+const db = _db;
+
+const SUBJECTS=[
+  {id:'thai',   label:'ภาษาไทย',         color:'#f59e0b',max:70},
+  {id:'math',   label:'คณิตศาสตร์',       color:'#14b8a6',max:70},
+  {id:'sci',    label:'วิทยาศาสตร์',      color:'#8b5cf6',max:70},
+  {id:'social', label:'สังคมศึกษา',       color:'#f97316',max:60},
+  {id:'eng',    label:'ภาษาอังกฤษ',      color:'#ef4444',max:65},
+  {id:'pe',     label:'สุขศึกษา/พลศึกษา',color:'#3b82f6',max:60},
+  {id:'art',    label:'ศิลปะ',           color:'#ec4899',max:60},
+  {id:'tech',   label:'เทคโนโลยี',       color:'#14b8a6',max:70},
+];
+const MEDALS=['🥇','🥈','🥉'];
+const MEDAL_COLORS=[{av:'rgba(212,168,67,.25)',bd:'var(--gold2)'},{av:'rgba(139,154,176,.2)',bd:'var(--silver2)'},{av:'rgba(139,90,43,.2)',bd:'var(--bronze2)'}];
+
+let STUDENTS=[],SCORES={},SCORE_TYPES=[],CONFIG={};
+let currentSubj='thai',currentTerm='1',currentYear='2568';
+
+db.ref('students').on('value',snap=>{
+  STUDENTS=[];snap.forEach(c=>STUDENTS.push({...c.val(),_id:c.key}));
+  buildClassFilter();render();
+});
+db.ref('student_scores').on('value',snap=>{SCORES=snap.val()||{};render();});
+db.ref('score_types').on('value',snap=>{SCORE_TYPES=[];snap.forEach(c=>SCORE_TYPES.push({...c.val(),_id:c.key}));render();});
+db.ref('score_config').on('value',snap=>{CONFIG=snap.val()||{};render();});
+
+function classLabel(s){return s.grade?(s.room?`${s.grade}/${s.room}`:s.grade):'';}
+function getScore(sid,subj,term,year,tid){try{return SCORES[sid]?.[subj]?.[`${term}_${year}`]?.[tid]??'';}catch{return '';}}
+function subjTotal(sid,subj,term,year){
+  const types=SCORE_TYPES.filter(t=>t.subject===subj&&String(t.term)===String(term)&&String(t.year)===String(year));
+  let tot=0,has=false;
+  types.forEach(t=>{const v=getScore(sid,subj,term,year,t._id);if(v!==''){tot+=parseFloat(v)||0;has=true;}});
+  return has?tot:null;
+}
+
+function buildClassFilter(){
+  const classes=[...new Set(STUDENTS.map(s=>classLabel(s)).filter(Boolean))];
+  const sel=document.getElementById('sel-class');const cur=sel.value;
+  sel.innerHTML='<option value="">ทุกห้องเรียน</option>'+classes.map(c=>`<option ${c===cur?'selected':''}>${c}</option>`).join('');
+}
+function buildSubjTabs(){
+  document.getElementById('subj-tabs').innerHTML=SUBJECTS.map(s=>`
+    <button class="stab ${s.id===currentSubj?'active':''}"
+      style="${s.id===currentSubj?`border-color:${s.color};background:${s.color}18;color:${s.color}`:''}"
+      onclick="setSubj('${s.id}')">${s.label}</button>`).join('');
+}
+function setSubj(id){currentSubj=id;buildSubjTabs();render();}
+function applyFilter(){currentTerm=document.getElementById('sel-term').value;currentYear=document.getElementById('sel-year').value;render();}
+
+function render(){
+  buildSubjTabs();
+  const cls=document.getElementById('sel-class')?.value||'';
+  const subj=SUBJECTS.find(s=>s.id===currentSubj);
+  const cfg=CONFIG[currentSubj]||{max:subj?.max||100};
+  const maxScore=cfg.max||100;
+
+  const list=STUDENTS
+    .filter(s=>!cls||classLabel(s)===cls)
+    .map(s=>({...s,_total:subjTotal(s._id,currentSubj,currentTerm,currentYear)}))
+    .filter(s=>s._total!==null)
+    .sort((a,b)=>b._total-a._total);
+
+  // PODIUM top 3
+  const top3=list.slice(0,3);
+  const podiumOrder=[1,0,2]; // 2nd, 1st, 3rd
+  const podiumEl=document.getElementById('podium');
+  if(top3.length>=2){
+    const ordered=podiumOrder.map(i=>top3[i]).filter(Boolean);
+    podiumEl.innerHTML=ordered.map((s,pi)=>{
+      const realRank=top3.indexOf(s);
+      const ini=s.fname?s.fname[0]:'?';
+      const mc=MEDAL_COLORS[realRank]||MEDAL_COLORS[2];
+      const pct=Math.min(100,s._total/maxScore*100);
+      return `<div class="podium-item">
+        <div class="podium-medal" style="animation-delay:${realRank*.2}s">${MEDALS[realRank]}</div>
+        <div class="podium-avatar" style="background:${mc.av};border-color:${mc.bd};animation-delay:${realRank*.3}s">
+          ${s.photo?`<img src="${s.photo}" alt=""/>`:`<span>${ini}</span>`}
+        </div>
+        <div class="podium-name">${s.fname||''}<br/>${s.lname||''}</div>
+        <div class="podium-class">${classLabel(s)||'—'}</div>
+        <div class="podium-score" style="color:${subj?.color||'var(--gold2)'}">${s._total.toFixed(s._total%1?1:0)}</div>
+        <div class="podium-platform"><div class="p-rank-num">${realRank+1}</div></div>
+      </div>`;
+    }).join('');
+  } else { podiumEl.innerHTML=''; }
+
+  // LIST
+  if(!list.length){
+    document.getElementById('lb-list').innerHTML='<div class="empty-msg">ยังไม่มีคะแนนในวิชานี้</div>';
+    return;
+  }
+  document.getElementById('lb-list').innerHTML=list.map((s,i)=>{
+    const rank=i+1;
+    const rankCls=rank===1?'r1':rank===2?'r2':rank===3?'r3':'rN';
+    const rowCls=rank===1?'top1':rank===2?'top2':rank===3?'top3':'';
+    const rankDisplay=rank<=3?MEDALS[rank-1]:rank;
+    const pct=Math.min(100,s._total/maxScore*100);
+    const ini=s.fname?s.fname[0]:'?';
+    return `<div class="lb-row ${rowCls}" style="animation-delay:${i*.03}s" onclick="location.href='../student-profile.html?id=${s._id}'">
+      <div class="lb-rank ${rankCls}">${rankDisplay}</div>
+      <div class="lb-avatar" style="background:${rank<=3?MEDAL_COLORS[rank-1].av:'rgba(37,99,235,.18)'}">
+        ${s.photo?`<img src="${s.photo}" alt=""/>`:`<span>${ini}</span>`}
+      </div>
+      <div class="lb-info">
+        <div class="lb-name">${s.prefix||''}${s.fname||''} ${s.lname||''}</div>
+        <div class="lb-sub">${classLabel(s)||'—'} · เลขที่ ${s.no||'—'}</div>
+      </div>
+      <div class="lb-score">
+        <div class="lb-score-num" style="color:${subj?.color||'var(--gold2)'}">${s._total.toFixed(s._total%1?1:0)}</div>
+        <div class="lb-score-max">/${maxScore}</div>
+        <div class="lb-bar"><div class="lb-bar-fill" style="width:${pct}%;background:${subj?.color||'var(--gold2)'}"></div></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+buildSubjTabs();
+</script>
+</body>
+</html>

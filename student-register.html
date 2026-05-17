@@ -1,0 +1,1890 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>ทะเบียนนักเรียน — โรงเรียนบ้านคำไผ่</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet" />
+  <!-- qrcode.js for QR Code generator -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0
+    }
+
+    :root {
+      --bg: #020b18;
+      --bg2: #061220;
+      --surface: #0d1f33;
+      --surface2: #112844;
+      --border: #1a3a5c;
+      --border2: #1e4470;
+      --text: #e8f4fd;
+      --muted: #5a8ab0;
+      --hint: #3d6080;
+      --accent: #0ea5e9;
+      --accent2: #38bdf8;
+      --accent3: #7dd3fc;
+      --red: #ef4444;
+      --green: #22c55e;
+      --yellow: #f59e0b;
+      --orange: #f97316;
+      --r: 12px;
+    }
+
+    body {
+      font-family: 'Sarabun', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden
+    }
+
+    /* BG */
+    .bg-glow {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden
+    }
+
+    .bg-glow::before {
+      content: '';
+      position: absolute;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(14, 165, 233, .12) 0%, transparent 70%);
+      top: -200px;
+      left: -200px;
+      animation: driftA 14s ease-in-out infinite
+    }
+
+    .bg-glow::after {
+      content: '';
+      position: absolute;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(56, 189, 248, .08) 0%, transparent 70%);
+      bottom: -150px;
+      right: -150px;
+      animation: driftB 18s ease-in-out infinite
+    }
+
+    @keyframes driftA {
+
+      0%,
+      100% {
+        transform: translate(0, 0)
+      }
+
+      50% {
+        transform: translate(60px, 40px)
+      }
+    }
+
+    @keyframes driftB {
+
+      0%,
+      100% {
+        transform: translate(0, 0)
+      }
+
+      50% {
+        transform: translate(-50px, -30px)
+      }
+    }
+
+    /* LAYOUT */
+    .page {
+      position: relative;
+      z-index: 1;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 16px 60px
+    }
+
+    /* NAV */
+    .nav {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 0 20px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 24px
+    }
+
+    .back-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      text-decoration: none;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 600;
+      padding: 7px 14px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      transition: .2s
+    }
+
+    .back-btn:hover {
+      color: var(--text);
+      border-color: var(--accent);
+      background: rgba(14, 165, 233, .07)
+    }
+
+    .nav-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--text)
+    }
+
+    .nav-sub {
+      font-size: 12px;
+      color: var(--muted);
+      margin-left: auto
+    }
+
+    /* TOOLBAR */
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap
+    }
+
+    .search-wrap {
+      position: relative;
+      flex: 1;
+      min-width: 220px
+    }
+
+    .search-wrap input {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 14px 10px 38px;
+      color: var(--text);
+      font-family: 'Sarabun', sans-serif;
+      font-size: 14px;
+      outline: none;
+      transition: .2s
+    }
+
+    .search-wrap input:focus {
+      border-color: var(--accent);
+      background: var(--surface2)
+    }
+
+    .search-wrap input::placeholder {
+      color: var(--hint)
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 15px;
+      pointer-events: none;
+      color: var(--hint)
+    }
+
+    .filter-select {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 12px;
+      color: var(--text);
+      font-family: 'Sarabun', sans-serif;
+      font-size: 13px;
+      outline: none;
+      cursor: pointer;
+      transition: .2s;
+      min-width: 130px
+    }
+
+    .filter-select:focus {
+      border-color: var(--accent)
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 10px 18px;
+      border-radius: 10px;
+      border: none;
+      font-family: 'Sarabun', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: .2s;
+      white-space: nowrap
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(14, 165, 233, .3)
+    }
+
+    .btn-primary:hover {
+      background: var(--accent2);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(14, 165, 233, .4)
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted)
+    }
+
+    .btn-outline:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: rgba(14, 165, 233, .06)
+    }
+
+    .btn-danger {
+      background: rgba(239, 68, 68, .15);
+      border: 1px solid rgba(239, 68, 68, .3);
+      color: #fca5a5
+    }
+
+    .btn-danger:hover {
+      background: rgba(239, 68, 68, .25)
+    }
+
+    .btn-sm {
+      padding: 6px 12px;
+      font-size: 12px;
+      border-radius: 7px
+    }
+
+    /* STATS CHIPS */
+    .stats-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap
+    }
+
+    .stat-chip {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex: 1;
+      min-width: 130px
+    }
+
+    .stat-num {
+      font-size: 22px;
+      font-weight: 800
+    }
+
+    .stat-num.blue {
+      color: var(--accent2)
+    }
+
+    .stat-num.green {
+      color: #4ade80
+    }
+
+    .stat-num.yellow {
+      color: #fbbf24
+    }
+
+    .stat-num.red {
+      color: #f87171
+    }
+
+    .stat-label {
+      font-size: 11px;
+      color: var(--muted)
+    }
+
+    /* TABLE */
+    .table-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      overflow: hidden
+    }
+
+    .table-head {
+      display: grid;
+      grid-template-columns: 50px 56px 1fr 110px 90px 90px 100px;
+      gap: 0;
+      background: var(--surface2);
+      border-bottom: 1px solid var(--border2);
+      padding: 0 4px
+    }
+
+    .th {
+      padding: 12px 10px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .6px;
+      white-space: nowrap
+    }
+
+    .table-body {
+      display: flex;
+      flex-direction: column
+    }
+
+    .table-row {
+      display: grid;
+      grid-template-columns: 50px 56px 1fr 110px 90px 90px 100px;
+      gap: 0;
+      padding: 0 4px;
+      border-bottom: 1px solid rgba(26, 58, 92, .5);
+      transition: background .15s;
+      align-items: center;
+      animation: rowIn .3s ease both
+    }
+
+    @keyframes rowIn {
+      from {
+        opacity: 0;
+        transform: translateY(8px)
+      }
+
+      to {
+        opacity: 1;
+        transform: none
+      }
+    }
+
+    .table-row:last-child {
+      border-bottom: none
+    }
+
+    .table-row:hover {
+      background: rgba(14, 165, 233, .05)
+    }
+
+    .td {
+      padding: 11px 10px;
+      font-size: 13px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap
+    }
+
+    .td-num {
+      color: var(--hint);
+      font-size: 12px;
+      font-weight: 600
+    }
+
+    .avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), #0369a1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 700;
+      color: #fff;
+      flex-shrink: 0;
+      border: 2px solid var(--border2)
+    }
+
+    .class-pill {
+      display: inline-block;
+      background: rgba(14, 165, 233, .15);
+      border: 1px solid rgba(14, 165, 233, .25);
+      color: var(--accent3);
+      border-radius: 20px;
+      padding: 2px 10px;
+      font-size: 11px;
+      font-weight: 700
+    }
+
+    .gender-m {
+      color: #60a5fa
+    }
+
+    .gender-f {
+      color: #f472b6
+    }
+
+    .actions {
+      display: flex;
+      gap: 6px;
+      justify-content: flex-end
+    }
+
+    .icon-btn {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 14px;
+      transition: .2s;
+      color: var(--muted)
+    }
+
+    .icon-btn:hover.edit {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: rgba(14, 165, 233, .1)
+    }
+
+    .icon-btn:hover.del {
+      border-color: var(--red);
+      color: var(--red);
+      background: rgba(239, 68, 68, .1)
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--hint)
+    }
+
+    .empty-state .big {
+      font-size: 48px;
+      margin-bottom: 12px
+    }
+
+    .empty-state p {
+      font-size: 14px
+    }
+
+    /* PAGINATION */
+    .pagination {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 16px;
+      border-top: 1px solid var(--border)
+    }
+
+    .page-btn {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
+      transition: .2s
+    }
+
+    .page-btn:hover:not(:disabled) {
+      border-color: var(--accent);
+      color: var(--accent)
+    }
+
+    .page-btn.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff
+    }
+
+    .page-btn:disabled {
+      opacity: .35;
+      cursor: default
+    }
+
+    .page-info {
+      font-size: 12px;
+      color: var(--hint);
+      margin: 0 8px
+    }
+
+    /* MODAL */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, .7);
+      backdrop-filter: blur(6px);
+      z-index: 300;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      opacity: 0;
+      pointer-events: none;
+      transition: .25s
+    }
+
+    .modal-overlay.open {
+      opacity: 1;
+      pointer-events: all
+    }
+
+    .modal {
+      background: #0d1f33;
+      border: 1px solid var(--border2);
+      border-radius: 20px;
+      width: 100%;
+      max-width: 560px;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 28px 24px;
+      position: relative;
+      transform: translateY(24px) scale(.97);
+      transition: .25s;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border) transparent
+    }
+
+    .modal-overlay.open .modal {
+      transform: none
+    }
+
+    .modal h2 {
+      font-size: 19px;
+      font-weight: 800;
+      margin-bottom: 22px;
+      color: var(--text)
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: rgba(255, 255, 255, .06);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: .2s
+    }
+
+    .modal-close:hover {
+      background: rgba(255, 255, 255, .14);
+      color: var(--text)
+    }
+
+    /* FORM */
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px
+    }
+
+    .form-full {
+      grid-column: 1/-1
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 5px
+    }
+
+    .form-group label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .6px
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      background: rgba(255, 255, 255, .05);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      padding: 10px 13px;
+      color: var(--text);
+      font-family: 'Sarabun', sans-serif;
+      font-size: 14px;
+      outline: none;
+      transition: .2s;
+      width: 100%
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      border-color: var(--accent);
+      background: rgba(14, 165, 233, .07)
+    }
+
+    .form-group input::placeholder,
+    .form-group textarea::placeholder {
+      color: var(--hint)
+    }
+
+    .form-group select option {
+      background: #0d1f33
+    }
+
+    .form-section {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--hint);
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      margin: 18px 0 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px
+    }
+
+    .form-section::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border)
+    }
+
+    .modal-footer {
+      display: flex;
+      gap: 10px;
+      margin-top: 22px
+    }
+
+    .modal-footer .btn {
+      flex: 1
+    }
+
+    /* PHOTO UPLOAD */
+    .photo-upload {
+      display: flex;
+      align-items: center;
+      gap: 16px
+    }
+
+    .photo-preview {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), #0369a1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      color: #fff;
+      border: 3px solid var(--border2);
+      overflow: hidden;
+      flex-shrink: 0
+    }
+
+    .photo-preview img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover
+    }
+
+    .photo-info {
+      flex: 1
+    }
+
+    .photo-info p {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.6;
+      margin-bottom: 8px
+    }
+
+    .photo-btn {
+      background: rgba(14, 165, 233, .1);
+      border: 1px solid rgba(14, 165, 233, .25);
+      color: var(--accent3);
+      border-radius: 8px;
+      padding: 7px 14px;
+      font-size: 12px;
+      font-family: 'Sarabun', sans-serif;
+      font-weight: 700;
+      cursor: pointer;
+      transition: .2s
+    }
+
+    .photo-btn:hover {
+      background: rgba(14, 165, 233, .2)
+    }
+
+    #photo-input {
+      display: none
+    }
+
+    /* CONFIRM DELETE */
+    .confirm-modal {
+      max-width: 400px
+    }
+
+    .confirm-modal .warn {
+      text-align: center;
+      padding: 16px 0 8px
+    }
+
+    .confirm-modal .warn-icon {
+      font-size: 44px;
+      margin-bottom: 8px
+    }
+
+    .confirm-modal .warn-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #fca5a5;
+      margin-bottom: 6px
+    }
+
+    .confirm-modal .warn-sub {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.6
+    }
+
+    /* TOAST */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: rgba(10, 30, 50, .95);
+      border: 1px solid var(--border2);
+      color: var(--text);
+      padding: 11px 22px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      z-index: 999;
+      transition: transform .3s;
+      backdrop-filter: blur(10px);
+      white-space: nowrap
+    }
+
+    .toast.show {
+      transform: translateX(-50%)
+    }
+
+    .toast.ok {
+      border-color: rgba(34, 197, 94, .4);
+      color: #86efac
+    }
+
+    .toast.err {
+      border-color: rgba(239, 68, 68, .4);
+      color: #fca5a5
+    }
+
+    /* LOADING */
+    .loading-row {
+      text-align: center;
+      padding: 40px;
+      color: var(--hint)
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 28px;
+      height: 28px;
+      border: 2.5px solid rgba(255, 255, 255, .1);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin .7s linear infinite
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg)
+      }
+    }
+
+    /* MOBILE */
+
+    /* QR PRINT MODAL */
+    .qr-print-modal {
+      max-width: 900px;
+      width: 96vw
+    }
+
+    .qr-class-select {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 18px
+    }
+
+    .qr-class-select select,
+    .qr-class-select input {
+      background: rgba(255, 255, 255, .06);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      padding: 9px 13px;
+      color: var(--text);
+      font-family: 'Sarabun', sans-serif;
+      font-size: 14px;
+      outline: none;
+      min-width: 160px
+    }
+
+    .qr-class-select label {
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 600
+    }
+
+    .qr-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      max-height: 55vh;
+      overflow-y: auto;
+      padding: 4px;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border) transparent
+    }
+
+    .qr-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 10px 10px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      page-break-inside: avoid;
+      break-inside: avoid
+    }
+
+    .qr-card-avatar {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      overflow: hidden;
+      margin: 0 auto 4px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: 700;
+      color: #fff;
+      background: linear-gradient(135deg, var(--accent), #0369a1)
+    }
+
+    .qr-card-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover
+    }
+
+    .qr-card-name {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.3;
+      word-break: break-word;
+      max-width: 110px
+    }
+
+    .qr-card-class {
+      font-size: 10px;
+      color: var(--muted);
+      background: rgba(14, 165, 233, .12);
+      border: 1px solid rgba(14, 165, 233, .2);
+      border-radius: 6px;
+      padding: 1px 7px
+    }
+
+    .qr-code-wrap {
+      background: #fff;
+      border-radius: 8px;
+      padding: 6px;
+      margin: 2px 0
+    }
+
+    .qr-card-url {
+      font-size: 8.5px;
+      color: var(--hint);
+      word-break: break-all;
+      max-width: 110px;
+      line-height: 1.3
+    }
+
+    .qr-empty {
+      text-align: center;
+      padding: 40px;
+      color: var(--hint);
+      font-size: 14px
+    }
+
+    .qr-print-footer {
+      display: flex;
+      gap: 10px;
+      margin-top: 16px;
+      align-items: center
+    }
+
+    .qr-count-badge {
+      font-size: 12px;
+      color: var(--muted);
+      flex: 1
+    }
+
+    .qr-url-note {
+      font-size: 11px;
+      color: var(--hint);
+      margin-bottom: 12px;
+      background: rgba(14, 165, 233, .07);
+      border: 1px solid rgba(14, 165, 233, .15);
+      border-radius: 8px;
+      padding: 8px 12px;
+      line-height: 1.5
+    }
+
+    /* PRINT STYLES */
+    @media print {
+      body>* {
+        display: none !important
+      }
+
+      #qr-printable {
+        display: block !important
+      }
+
+      #qr-printable .qr-print-page {
+        page-break-after: always
+      }
+
+      .qr-print-page-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        padding: 10mm 8mm
+      }
+
+      .qr-print-card {
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        padding: 12px 8px 8px;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 5px;
+        break-inside: avoid
+      }
+
+      .qr-print-card .pname {
+        font-family: 'Sarabun', sans-serif;
+        font-size: 10pt;
+        font-weight: 700;
+        line-height: 1.3;
+        color: #000
+      }
+
+      .qr-print-card .pcls {
+        font-size: 8pt;
+        color: #555;
+        margin-bottom: 3px
+      }
+
+      .qr-print-card .pavatar {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        overflow: hidden;
+        margin: 0 auto 3px;
+        border: 1px solid #ddd;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        font-weight: 700;
+        color: #fff
+      }
+
+      .qr-print-card .pavatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover
+      }
+
+      .qr-print-card .pqr-wrap {
+        background: #fff;
+        padding: 4px;
+        border-radius: 4px
+      }
+
+      .qr-print-card .purl {
+        font-size: 6pt;
+        color: #888;
+        word-break: break-all;
+        margin-top: 2px
+      }
+
+      .qr-print-header {
+        text-align: center;
+        font-family: 'Sarabun', sans-serif;
+        font-size: 12pt;
+        font-weight: 700;
+        color: #000;
+        padding: 6mm 0 3mm;
+        border-bottom: 1px solid #ccc;
+        margin-bottom: 5mm
+      }
+    }
+
+    @media(max-width:700px) {
+
+      .table-head,
+      .table-row {
+        grid-template-columns: 40px 44px 1fr 90px 80px
+      }
+
+      .table-head .th:nth-child(6),
+      .table-head .th:nth-child(7),
+      .table-row .td:nth-child(6),
+      .table-row .td:nth-child(7) {
+        display: none
+      }
+
+      .form-grid {
+        grid-template-columns: 1fr
+      }
+
+      .toolbar {
+        flex-direction: column;
+        align-items: stretch
+      }
+
+      .filter-select {
+        width: 100%
+      }
+    }
+
+    @media(max-width:480px) {
+
+      .table-head,
+      .table-row {
+        grid-template-columns: 36px 1fr 80px 80px
+      }
+
+      .table-head .th:nth-child(2),
+      .table-row .td:nth-child(2) {
+        display: none
+      }
+    }
+
+    /* Hidden printable area */
+    #qr-printable {
+      display: none
+    }
+  </style>
+</head>
+
+<body>
+  <div class="bg-glow"></div>
+
+
+  <div id="auth-bar"></div>
+  <div class="page">
+    <!-- NAV -->
+    <div class="nav">
+      <a href="index.html" class="back-btn">← หน้าหลัก</a>
+      <div class="nav-title">🗂️ ทะเบียนนักเรียน</div>
+      <div class="nav-sub" id="nav-sub">โรงเรียนบ้านคำไผ่</div>
+    </div>
+
+    <!-- STATS -->
+    <div class="stats-row">
+      <div class="stat-chip">
+        <div>
+          <div class="stat-num blue" id="stat-total">—</div>
+          <div class="stat-label">นักเรียนทั้งหมด</div>
+        </div>
+      </div>
+      <div class="stat-chip">
+        <div>
+          <div class="stat-num green" id="stat-male">—</div>
+          <div class="stat-label">ชาย</div>
+        </div>
+      </div>
+      <div class="stat-chip">
+        <div>
+          <div class="stat-num red" id="stat-female">—</div>
+          <div class="stat-label">หญิง</div>
+        </div>
+      </div>
+      <div class="stat-chip">
+        <div>
+          <div class="stat-num yellow" id="stat-classes">—</div>
+          <div class="stat-label">ห้องเรียน</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TOOLBAR -->
+    <div class="toolbar">
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="search-input" placeholder="ค้นหาชื่อ เลขประจำตัว ห้องเรียน..." oninput="onSearch()" />
+      </div>
+      <select class="filter-select" id="filter-class" onchange="onFilter()">
+        <option value="">ทุกห้องเรียน</option>
+      </select>
+      <select class="filter-select" id="filter-gender" onchange="onFilter()">
+        <option value="">ทุกเพศ</option>
+        <option value="ชาย">ชาย</option>
+        <option value="หญิง">หญิง</option>
+      </select>
+      <button class="btn btn-primary" data-auth="write" onclick="openAddModal()">+ เพิ่มนักเรียน</button>
+      <button class="btn btn-outline" data-auth="write" onclick="exportCSV()" title="ส่งออก CSV">📥 Export</button>
+      <button class="btn btn-outline" onclick="openQRModal()" title="พิมพ์ QR Code นักเรียน">🖨️ พิมพ์ QR</button>
+    </div>
+
+    <!-- TABLE -->
+    <div class="table-wrap">
+      <div class="table-head">
+        <div class="th" style="text-align:center">ที่</div>
+        <div class="th"></div>
+        <div class="th">ชื่อ-นามสกุล</div>
+        <div class="th">ห้องเรียน</div>
+        <div class="th">เพศ</div>
+        <div class="th">วันเกิด</div>
+        <div class="th" style="text-align:right">จัดการ</div>
+      </div>
+      <div class="table-body" id="table-body">
+        <div class="loading-row">
+          <div class="spinner"></div>
+        </div>
+      </div>
+    </div>
+    <div class="pagination" id="pagination" style="display:none"></div>
+  </div>
+
+  <!-- ADD/EDIT MODAL -->
+  <div class="modal-overlay" id="form-modal">
+    <div class="modal">
+      <button class="modal-close" onclick="closeModal('form-modal')">✕</button>
+      <h2 id="modal-title">➕ เพิ่มนักเรียนใหม่</h2>
+
+      <div class="form-section">รูปภาพ</div>
+      <div class="photo-upload">
+        <div class="photo-preview" id="photo-preview">🧒</div>
+        <div class="photo-info">
+          <p>รูปภาพนักเรียน<br>JPG, PNG • สูงสุด 3MB</p>
+          <button class="photo-btn" onclick="document.getElementById('photo-input').click()">📷 เลือกรูป</button>
+          <input type="file" id="photo-input" accept="image/*" onchange="onPhotoSelect(event)" />
+        </div>
+      </div>
+
+      <div class="form-section">ข้อมูลทั่วไป</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>คำนำหน้า</label>
+          <select id="f-prefix">
+            <option>เด็กชาย</option>
+            <option>เด็กหญิง</option>
+            <option>นาย</option>
+            <option>นางสาว</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>เพศ</label>
+          <select id="f-gender">
+            <option>ชาย</option>
+            <option>หญิง</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>ชื่อ *</label>
+          <input id="f-fname" placeholder="ชื่อ" required />
+        </div>
+        <div class="form-group">
+          <label>นามสกุล *</label>
+          <input id="f-lname" placeholder="นามสกุล" required />
+        </div>
+        <div class="form-group">
+          <label>ชื่อเล่น</label>
+          <input id="f-nickname" placeholder="ชื่อเล่น" />
+        </div>
+        <div class="form-group">
+          <label>วันเกิด</label>
+          <input id="f-birthday" type="date" />
+        </div>
+        <div class="form-group">
+          <label>เลขประจำตัวนักเรียน</label>
+          <input id="f-sid" placeholder="เช่น 24001" />
+        </div>
+        <div class="form-group">
+          <label>เลขบัตรประชาชน</label>
+          <input id="f-idcard" placeholder="1-XXXX-XXXXX-XX-X" maxlength="17" />
+        </div>
+      </div>
+
+      <div class="form-section">ห้องเรียน</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>ระดับชั้น *</label>
+          <select id="f-grade">
+            <option value="">— เลือก —</option>
+            <option>อนุบาล 1</option>
+            <option>อนุบาล 2</option>
+            <option>อนุบาล 3</option>
+            <option>ป.1</option>
+            <option>ป.2</option>
+            <option>ป.3</option>
+            <option>ป.4</option>
+            <option>ป.5</option>
+            <option>ป.6</option>
+            <option>ม.1</option>
+            <option>ม.2</option>
+            <option>ม.3</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>ห้อง</label>
+          <input id="f-room" placeholder="เช่น 1" maxlength="2" />
+        </div>
+        <div class="form-group">
+          <label>เลขที่ในห้อง</label>
+          <input id="f-no" type="number" placeholder="1" min="1" max="60" />
+        </div>
+        <div class="form-group">
+          <label>ปีการศึกษา</label>
+          <input id="f-year" placeholder="2568" />
+        </div>
+      </div>
+
+      <div class="form-section">ผู้ปกครอง</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>ชื่อผู้ปกครอง</label>
+          <input id="f-parent" placeholder="ชื่อ-นามสกุล" />
+        </div>
+        <div class="form-group">
+          <label>ความสัมพันธ์</label>
+          <select id="f-relation">
+            <option>บิดา</option>
+            <option>มารดา</option>
+            <option>ผู้ปกครอง</option>
+            <option>ปู่/ตา</option>
+            <option>ย่า/ยาย</option>
+            <option>อื่นๆ</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>เบอร์โทรผู้ปกครอง</label>
+          <input id="f-phone" placeholder="0XX-XXX-XXXX" maxlength="12" />
+        </div>
+        <div class="form-group">
+          <label>Line ID / อีเมล</label>
+          <input id="f-contact" placeholder="Line หรือ email" />
+        </div>
+        <div class="form-group form-full">
+          <label>ที่อยู่</label>
+          <textarea id="f-address" rows="2" placeholder="บ้านเลขที่ หมู่ ตำบล อำเภอ จังหวัด"></textarea>
+        </div>
+      </div>
+
+      <div class="form-section">สถานะ</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>สถานะนักเรียน</label>
+          <select id="f-status">
+            <option value="กำลังศึกษา">กำลังศึกษา</option>
+            <option value="จบการศึกษา">จบการศึกษา</option>
+            <option value="ย้ายออก">ย้ายออก</option>
+            <option value="พักการเรียน">พักการเรียน</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>หมายเหตุ</label>
+          <input id="f-note" placeholder="หมายเหตุเพิ่มเติม" />
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeModal('form-modal')">ยกเลิก</button>
+        <button class="btn btn-primary" onclick="saveStudent()">💾 บันทึก</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONFIRM DELETE MODAL -->
+  <div class="modal-overlay" id="confirm-modal">
+    <div class="modal confirm-modal">
+      <button class="modal-close" onclick="closeModal('confirm-modal')">✕</button>
+      <div class="warn">
+        <div class="warn-icon">🗑️</div>
+        <div class="warn-title">ยืนยันการลบนักเรียน</div>
+        <div class="warn-sub" id="confirm-text">
+          คุณต้องการลบข้อมูลนักเรียนนี้ออกจากระบบ?<br>ข้อมูลจะหายถาวรและไม่สามารถกู้คืนได้</div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeModal('confirm-modal')">ยกเลิก</button>
+        <button class="btn btn-danger" id="confirm-delete-btn">🗑 ลบออก</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <!-- ═══════════════════════════════════════════════
+     QR PRINT MODAL
+═══════════════════════════════════════════════ -->
+  <div class="modal-overlay" id="qr-modal">
+    <div class="modal qr-print-modal">
+      <button class="modal-close" onclick="closeModal('qr-modal')">✕</button>
+      <h2>🖨️ พิมพ์ QR Code นักเรียน</h2>
+
+      <div class="qr-url-note">
+        📌 QR Code จะลิงก์ไปยัง <b>Student Portal</b> ของนักเรียนแต่ละคน<br />
+        สามารถ scan เพื่อดูคะแนน ประวัติ และข้อมูลส่วนตัวได้ทันที
+      </div>
+
+      <div class="qr-class-select">
+        <label>เลือกห้อง:</label>
+        <select id="qr-filter-class" onchange="renderQRCards()">
+          <option value="">ทุกห้องเรียน</option>
+        </select>
+        <label style="margin-left:8px">Base URL:</label>
+        <input id="qr-base-url" value="https://kampai-school-app.vercel.app/student-portal.html"
+          placeholder="URL หน้า portal..." style="flex:1;min-width:200px" oninput="renderQRCards()" />
+      </div>
+
+      <div class="qr-cards-grid" id="qr-cards-grid"></div>
+
+      <div class="qr-print-footer">
+        <span class="qr-count-badge" id="qr-count-badge">0 คน</span>
+        <button class="btn btn-outline" onclick="closeModal('qr-modal')">ยกเลิก</button>
+        <button class="btn btn-primary" onclick="printQRCards()">🖨️ พิมพ์</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hidden printable area -->
+  <div id="qr-printable"></div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+  <script src="auth-guard.js"></script>
+  <script>
+    // ── AUTH GUARD (firebase init อยู่ใน auth-guard.js แล้ว) ──
+    AuthGuard.init('require-login');
+    const db = _db;
+    const REF = db.ref('students');
+
+    // ── STATE ──
+    let ALL = [];
+    let filtered = [];
+    let page = 1;
+    const PAGE = 20;
+    let editId = null;
+    let photoData = null;
+
+    // ── LOAD ──
+    REF.on('value', snap => {
+      ALL = [];
+      snap.forEach(c => { ALL.push({ ...c.val(), _id: c.key }); });
+      ALL.sort((a, b) => {
+        const ga = gradeOrder(a.grade), gb = gradeOrder(b.grade);
+        if (ga !== gb) return ga - gb;
+        const ra = parseInt(a.room) || 0, rb = parseInt(b.room) || 0;
+        if (ra !== rb) return ra - rb;
+        return (parseInt(a.no) || 0) - (parseInt(b.no) || 0);
+      });
+      applyFilter();
+      updateStats();
+      buildClassFilter();
+    });
+
+    function gradeOrder(g) {
+      const map = {
+        'อนุบาล 1': 0, 'อนุบาล 2': 1, 'อนุบาล 3': 2,
+        'ป.1': 3, 'ป.2': 4, 'ป.3': 5, 'ป.4': 6, 'ป.5': 7, 'ป.6': 8,
+        'ม.1': 9, 'ม.2': 10, 'ม.3': 11
+      };
+      return map[g] ?? 99;
+    }
+
+    // ── FILTER & SEARCH ──
+    function onSearch() { page = 1; applyFilter(); }
+    function onFilter() { page = 1; applyFilter(); }
+
+    function applyFilter() {
+      const q = (document.getElementById('search-input').value || '').trim().toLowerCase();
+      const cls = document.getElementById('filter-class').value;
+      const gdr = document.getElementById('filter-gender').value;
+      filtered = ALL.filter(s => {
+        if (cls && classLabel(s) !== cls) return false;
+        if (gdr && s.gender !== gdr) return false;
+        if (q) {
+          const hay = `${s.fname} ${s.lname} ${s.nickname || ''} ${s.sid || ''} ${s.grade || ''} ${s.room || ''}`.toLowerCase();
+          if (!hay.includes(q)) return false;
+        }
+        return true;
+      });
+      renderTable();
+    }
+
+    function classLabel(s) {
+      if (!s.grade) return '';
+      return s.room ? `${s.grade}/${s.room}` : s.grade;
+    }
+
+    // ── RENDER TABLE ──
+    function renderTable() {
+      const body = document.getElementById('table-body');
+      const total = filtered.length;
+      const pages = Math.max(1, Math.ceil(total / PAGE));
+      if (page > pages) page = pages;
+      const slice = filtered.slice((page - 1) * PAGE, page * PAGE);
+
+      if (!slice.length) {
+        body.innerHTML = `<div class="empty-state"><div class="big">🔍</div><p>${ALL.length ? 'ไม่พบนักเรียนที่ค้นหา' : 'ยังไม่มีข้อมูลนักเรียน'}</p></div>`;
+        document.getElementById('pagination').style.display = 'none';
+        return;
+      }
+
+      body.innerHTML = slice.map((s, i) => {
+        const num = (page - 1) * PAGE + i + 1;
+        const initials = s.fname ? s.fname[0] : '?';
+        const cls = classLabel(s);
+        const bday = s.birthday ? formatDate(s.birthday) : '—';
+        return `
+    <div class="table-row" style="animation-delay:${i * 0.03}s">
+      <div class="td td-num" style="text-align:center">${num}</div>
+      <div class="td">${s.photo ? `<div class="avatar"><img src="${s.photo}" alt=""/></div>` : `<div class="avatar">${initials}</div>`}</div>
+      <div class="td">
+        <div style="font-weight:700;font-size:14px">${s.prefix || ''}${s.fname} ${s.lname}</div>
+        <div style="font-size:11px;color:var(--hint)">${s.nickname ? `"${s.nickname}" • ` : ''}เลขที่ ${s.no || '—'} ${s.sid ? `• รหัส ${s.sid}` : ''}</div>
+      </div>
+      <div class="td"><span class="class-pill">${cls || '—'}</span></div>
+      <div class="td"><span class="${s.gender === 'หญิง' ? 'gender-f' : 'gender-m'}">${s.gender === 'หญิง' ? '♀ หญิง' : '♂ ชาย'}</span></div>
+      <div class="td" style="color:var(--hint);font-size:12px">${bday}</div>
+      <div class="td actions">
+        <button class="icon-btn edit" onclick="openEditModal('${s._id}')" title="แก้ไข">✏️</button>
+        <button class="icon-btn del" onclick="confirmDelete('${s._id}')" title="ลบ">🗑</button>
+      </div>
+    </div>`;
+      }).join('');
+
+      renderPagination(page, pages, total);
+    }
+
+    function renderPagination(cur, total, count) {
+      const el = document.getElementById('pagination');
+      if (total <= 1) { el.style.display = 'none'; return; }
+      el.style.display = 'flex';
+      let h = `<button class="page-btn" onclick="goPage(${cur - 1})" ${cur <= 1 ? 'disabled' : ''}>‹</button>`;
+      const range = [];
+      for (let i = 1; i <= total; i++) {
+        if (i === 1 || i === total || Math.abs(i - cur) <= 1) range.push(i);
+        else if (Math.abs(i - cur) === 2) range.push('…');
+      }
+      [...new Set(range)].forEach(p => {
+        if (p === '…') h += `<span class="page-info">…</span>`;
+        else h += `<button class="page-btn ${p === cur ? 'active' : ''}" onclick="goPage(${p})">${p}</button>`;
+      });
+      h += `<button class="page-btn" onclick="goPage(${cur + 1})" ${cur >= total ? 'disabled' : ''}>›</button>`;
+      h += `<span class="page-info">${count} คน</span>`;
+      el.innerHTML = h;
+    }
+
+    function goPage(p) { page = p; renderTable(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+
+    // ── STATS ──
+    function updateStats() {
+      const active = ALL.filter(s => !s.status || s.status === 'กำลังศึกษา');
+      document.getElementById('stat-total').textContent = active.length;
+      document.getElementById('stat-male').textContent = active.filter(s => s.gender !== 'หญิง').length;
+      document.getElementById('stat-female').textContent = active.filter(s => s.gender === 'หญิง').length;
+      const classes = new Set(active.map(s => classLabel(s)).filter(Boolean));
+      document.getElementById('stat-classes').textContent = classes.size;
+    }
+
+    // ── CLASS FILTER ──
+    function buildClassFilter() {
+      const classes = [...new Set(ALL.map(s => classLabel(s)).filter(Boolean))].sort((a, b) => {
+        const sa = ALL.find(s => classLabel(s) === a), sb = ALL.find(s => classLabel(s) === b);
+        return gradeOrder(sa?.grade) - gradeOrder(sb?.grade);
+      });
+      const sel = document.getElementById('filter-class');
+      const cur = sel.value;
+      sel.innerHTML = '<option value="">ทุกห้องเรียน</option>' + classes.map(c => `<option ${c === cur ? 'selected' : ''}>${c}</option>`).join('');
+    }
+
+    function formatDate(str) {
+      if (!str) return '—';
+      const [y, m, d] = str.split('-');
+      const months = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+      return `${parseInt(d)} ${months[parseInt(m) - 1]} ${parseInt(y) + 543}`;
+    }
+
+    // ── MODAL ──
+    function openModal(id) { document.getElementById(id).classList.add('open'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+    function openAddModal() {
+      editId = null; photoData = null;
+      document.getElementById('modal-title').textContent = '➕ เพิ่มนักเรียนใหม่';
+      clearForm();
+      document.getElementById('f-year').value = new Date().getFullYear() + 543;
+      document.getElementById('f-status').value = 'กำลังศึกษา';
+      setPhotoPreview(null);
+      openModal('form-modal');
+    }
+
+    function openEditModal(id) {
+      const s = ALL.find(x => x._id === id);
+      if (!s) return;
+      editId = id; photoData = s.photo || null;
+      document.getElementById('modal-title').textContent = '✏️ แก้ไขข้อมูลนักเรียน';
+      document.getElementById('f-prefix').value = s.prefix || 'เด็กชาย';
+      document.getElementById('f-gender').value = s.gender || 'ชาย';
+      document.getElementById('f-fname').value = s.fname || '';
+      document.getElementById('f-lname').value = s.lname || '';
+      document.getElementById('f-nickname').value = s.nickname || '';
+      document.getElementById('f-birthday').value = s.birthday || '';
+      document.getElementById('f-sid').value = s.sid || '';
+      document.getElementById('f-idcard').value = s.idcard || '';
+      document.getElementById('f-grade').value = s.grade || '';
+      document.getElementById('f-room').value = s.room || '';
+      document.getElementById('f-no').value = s.no || '';
+      document.getElementById('f-year').value = s.year || '';
+      document.getElementById('f-parent').value = s.parent || '';
+      document.getElementById('f-relation').value = s.relation || 'มารดา';
+      document.getElementById('f-phone').value = s.phone || '';
+      document.getElementById('f-contact').value = s.contact || '';
+      document.getElementById('f-address').value = s.address || '';
+      document.getElementById('f-status').value = s.status || 'กำลังศึกษา';
+      document.getElementById('f-note').value = s.note || '';
+      setPhotoPreview(s.photo || null);
+      openModal('form-modal');
+    }
+
+    function clearForm() {
+      ['f-prefix', 'f-gender', 'f-fname', 'f-lname', 'f-nickname', 'f-birthday',
+        'f-sid', 'f-idcard', 'f-grade', 'f-room', 'f-no', 'f-year',
+        'f-parent', 'f-relation', 'f-phone', 'f-contact', 'f-address', 'f-status', 'f-note']
+        .forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+      document.getElementById('f-prefix').value = 'เด็กชาย';
+      document.getElementById('f-gender').value = 'ชาย';
+      document.getElementById('f-relation').value = 'มารดา';
+    }
+
+    // ── PHOTO ──
+    function onPhotoSelect(e) {
+      const file = e.target.files[0]; e.target.value = '';
+      if (!file) return;
+      if (!file.type.startsWith('image/')) { showToast('❌ เลือกไฟล์รูปภาพเท่านั้น', 'err'); return; }
+      if (file.size > 3 * 1024 * 1024) { showToast('❌ ไฟล์ใหญ่เกิน 3MB', 'err'); return; }
+      const r = new FileReader();
+      r.onload = ev => { photoData = ev.target.result; setPhotoPreview(photoData); };
+      r.readAsDataURL(file);
+    }
+    function setPhotoPreview(src) {
+      const el = document.getElementById('photo-preview');
+      el.innerHTML = src ? `<img src="${src}" alt=""/>` : '🧒';
+    }
+
+    // ── SAVE ──
+    async function saveStudent() {
+      if (!AuthGuard.requireLogin()) return;
+      const fname = document.getElementById('f-fname').value.trim();
+      const lname = document.getElementById('f-lname').value.trim();
+      const grade = document.getElementById('f-grade').value;
+      if (!fname || !lname) { showToast('❌ กรุณากรอกชื่อและนามสกุล', 'err'); return; }
+      if (!grade) { showToast('❌ กรุณาเลือกระดับชั้น', 'err'); return; }
+
+      const data = {
+        prefix: document.getElementById('f-prefix').value,
+        gender: document.getElementById('f-gender').value,
+        fname, lname,
+        nickname: document.getElementById('f-nickname').value.trim(),
+        birthday: document.getElementById('f-birthday').value,
+        sid: document.getElementById('f-sid').value.trim(),
+        idcard: document.getElementById('f-idcard').value.trim(),
+        grade,
+        room: document.getElementById('f-room').value.trim(),
+        no: document.getElementById('f-no').value,
+        year: document.getElementById('f-year').value,
+        parent: document.getElementById('f-parent').value.trim(),
+        relation: document.getElementById('f-relation').value,
+        phone: document.getElementById('f-phone').value.trim(),
+        contact: document.getElementById('f-contact').value.trim(),
+        address: document.getElementById('f-address').value.trim(),
+        status: document.getElementById('f-status').value,
+        note: document.getElementById('f-note').value.trim(),
+        photo: photoData || null,
+        updatedAt: new Date().toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }),
+      };
+
+      try {
+        if (editId) {
+          await REF.child(editId).update(data);
+          showToast('✅ แก้ไขข้อมูลสำเร็จ', 'ok');
+        } else {
+          data.createdAt = data.updatedAt;
+          await REF.push(data);
+          showToast('✅ เพิ่มนักเรียนสำเร็จ', 'ok');
+        }
+        closeModal('form-modal');
+      } catch (e) { showToast('❌ บันทึกไม่สำเร็จ: ' + e.message, 'err'); }
+    }
+
+    // ── DELETE ──
+    function confirmDelete(id) {
+      if (!AuthGuard.requireLogin()) return;
+      const s = ALL.find(x => x._id === id);
+      if (!s) return;
+      document.getElementById('confirm-text').innerHTML =
+        `ต้องการลบข้อมูลของ <b>${s.prefix || ''}${s.fname} ${s.lname}</b><br>ชั้น ${classLabel(s) || '—'} ออกจากระบบ?<br><span style="color:#f87171;font-size:12px">ข้อมูลจะหายถาวร ไม่สามารถกู้คืนได้</span>`;
+      document.getElementById('confirm-delete-btn').onclick = async () => {
+        try {
+          await REF.child(id).remove();
+          showToast('🗑 ลบข้อมูลเรียบร้อย', 'ok');
+          closeModal('confirm-modal');
+        } catch (e) { showToast('❌ ลบไม่สำเร็จ: ' + e.message, 'err'); }
+      };
+      openModal('confirm-modal');
+    }
+
+    // ── EXPORT CSV ──
+    function exportCSV() {
+      if (!filtered.length) { showToast('⚠️ ไม่มีข้อมูลให้ส่งออก', 'err'); return; }
+      const headers = ['ที่', 'คำนำหน้า', 'ชื่อ', 'นามสกุล', 'ชื่อเล่น', 'เพศ', 'วันเกิด', 'รหัสนักเรียน', 'ชั้น', 'ห้อง', 'เลขที่', 'ปีการศึกษา', 'ผู้ปกครอง', 'ความสัมพันธ์', 'เบอร์โทร', 'ที่อยู่', 'สถานะ'];
+      const rows = filtered.map((s, i) => [
+        i + 1, s.prefix || '', s.fname || '', s.lname || '', s.nickname || '', s.gender || '',
+        s.birthday || '', s.sid || '', s.grade || '', s.room || '', s.no || '', s.year || '',
+        s.parent || '', s.relation || '', s.phone || '', s.address || '', s.status || ''
+      ]);
+      const csv = [headers, ...rows].map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
+      const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = `ทะเบียนนักเรียน_${new Date().toLocaleDateString('th-TH')}.csv`;
+      a.click(); URL.revokeObjectURL(url);
+      showToast('📥 ส่งออก CSV เรียบร้อย', 'ok');
+    }
+
+    // ── TOAST ──
+    function showToast(msg, type = '') {
+      const t = document.getElementById('toast');
+      t.textContent = msg; t.className = 'toast' + (type ? ' ' + type : '');
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2800);
+    }
+
+    // ── CLOSE ON OVERLAY CLICK ──
+    document.querySelectorAll('.modal-overlay').forEach(el => {
+      el.addEventListener('click', e => { if (e.target === el) el.classList.remove('open'); });
+    });
+
+    // ── PREFIX AUTO-SYNC GENDER ──
+    document.getElementById('f-prefix').addEventListener('change', function () {
+      const map = { 'เด็กชาย': 'ชาย', 'นาย': 'ชาย', 'เด็กหญิง': 'หญิง', 'นางสาว': 'หญิง' };
+      if (map[this.value]) document.getElementById('f-gender').value = map[this.value];
+    });
+
+    // ══════════════════════════════════════════════════════
+    // QR CODE GENERATOR
+    // ══════════════════════════════════════════════════════
+
+    // เปิด Modal QR — โหลด dropdown ห้องก่อน
+    function openQRModal() {
+      // สร้าง dropdown ห้อง
+      const classes = [...new Set(
+        ALL.filter(s => !s.status || s.status === 'กำลังศึกษา')
+          .map(s => classLabel(s))
+          .filter(Boolean)
+      )].sort((a, b) => {
+        const sa = ALL.find(s => classLabel(s) === a);
+        const sb = ALL.find(s => classLabel(s) === b);
+        return (gradeOrder(sa?.grade) || 0) - (gradeOrder(sb?.grade) || 0);
+      });
+
+      const sel = document.getElementById('qr-filter-class');
+      sel.innerHTML = '<option value="">ทุกห้องเรียน</option>' +
+        classes.map(c => `<option>${c}</option>`).join('');
+
+      renderQRCards();
+      openModal('qr-modal');
+    }
+
+    // Render การ์ด QR ใน modal
+    function renderQRCards() {
+      const cls = document.getElementById('qr-filter-class').value;
+      const baseUrl = (document.getElementById('qr-base-url').value || '').trim();
+      const grid = document.getElementById('qr-cards-grid');
+      grid.innerHTML = '';
+
+      const students = ALL.filter(s =>
+        (!s.status || s.status === 'กำลังศึกษา') &&
+        (!cls || classLabel(s) === cls)
+      ).sort((a, b) => {
+        const ga = gradeOrder(a.grade), gb = gradeOrder(b.grade);
+        if (ga !== gb) return ga - gb;
+        return (parseInt(a.no) || 0) - (parseInt(b.no) || 0);
+      });
+
+      document.getElementById('qr-count-badge').textContent = `${students.length} คน`;
+
+      if (!students.length) {
+        grid.innerHTML = '<div class="qr-empty">🔍 ไม่พบนักเรียน</div>';
+        return;
+      }
+
+      students.forEach(s => {
+        const portalUrl = baseUrl
+          ? `${baseUrl}?member=${s._id}`
+          : `student-portal.html?member=${s._id}`;
+        const cls2 = classLabel(s);
+        const initials = (s.fname || '?')[0];
+        const name = `${s.prefix || ''}${s.fname} ${s.lname}`;
+
+        // สร้าง card element
+        const card = document.createElement('div');
+        card.className = 'qr-card';
+        card.innerHTML = `
+          <div class="qr-card-avatar">
+            ${s.photo ? `<img src="${s.photo}" alt=""/>` : initials}
+          </div>
+          <div class="qr-card-name">${name}</div>
+          <div class="qr-card-class">${cls2 || '—'}${s.no ? ` เลขที่ ${s.no}` : ''}</div>
+          <div class="qr-code-wrap" id="qrwrap-${s._id}"></div>
+          <div class="qr-card-url">${portalUrl.replace(/^https?:\/\//, '')}</div>
+        `;
+        grid.appendChild(card);
+
+        // Generate QR Code
+        try {
+          new QRCode(document.getElementById(`qrwrap-${s._id}`), {
+            text: portalUrl,
+            width: 90,
+            height: 90,
+            colorDark: '#000000',
+            colorLight: '#ffffff',
+            correctLevel: QRCode.CorrectLevel.M,
+          });
+        } catch (e) {
+          document.getElementById(`qrwrap-${s._id}`).textContent = '⚠️';
+        }
+      });
+    }
+
+    // พิมพ์ QR Cards
+    function printQRCards() {
+      const cls = document.getElementById('qr-filter-class').value;
+      const baseUrl = (document.getElementById('qr-base-url').value || '').trim();
+
+      const students = ALL.filter(s =>
+        (!s.status || s.status === 'กำลังศึกษา') &&
+        (!cls || classLabel(s) === cls)
+      ).sort((a, b) => {
+        const ga = gradeOrder(a.grade), gb = gradeOrder(b.grade);
+        if (ga !== gb) return ga - gb;
+        return (parseInt(a.no) || 0) - (parseInt(b.no) || 0);
+      });
+
+      if (!students.length) { showToast('⚠️ ไม่มีนักเรียนในห้องที่เลือก', 'err'); return; }
+
+      // สร้าง QR Data URIs ก่อน print (ใช้ Canvas)
+      const CARDS_PER_PAGE = 8;
+      const pages = [];
+      for (let i = 0; i < students.length; i += CARDS_PER_PAGE) {
+        pages.push(students.slice(i, i + CARDS_PER_PAGE));
+      }
+
+      const printable = document.getElementById('qr-printable');
+      printable.innerHTML = '';
+
+      const headerLabel = cls ? `บัตร QR Code นักเรียน — ห้อง ${cls}` : 'บัตร QR Code นักเรียนทุกห้อง';
+
+      // สร้างแต่ละหน้า
+      pages.forEach((pageStudents, pi) => {
+        const page = document.createElement('div');
+        page.className = 'qr-print-page';
+        page.innerHTML = `<div class="qr-print-header">${headerLabel} (หน้า ${pi + 1}/${pages.length})</div>
+          <div class="qr-print-page-grid" id="print-grid-${pi}"></div>`;
+        printable.appendChild(page);
+
+        const grid = page.querySelector(`#print-grid-${pi}`);
+
+        pageStudents.forEach(s => {
+          const portalUrl = baseUrl
+            ? `${baseUrl}?member=${s._id}`
+            : `student-portal.html?member=${s._id}`;
+          const cls2 = classLabel(s);
+          const initials = (s.fname || '?')[0];
+          const name = `${s.prefix || ''}${s.fname} ${s.lname}`;
+
+          const wrapId = `pqr-${s._id}-${pi}`;
+          const card = document.createElement('div');
+          card.className = 'qr-print-card';
+          card.innerHTML = `
+            <div class="pavatar" style="background:linear-gradient(135deg,#0ea5e9,#0369a1)">
+              ${s.photo ? `<img src="${s.photo}" alt=""/>` : initials}
+            </div>
+            <div class="pname">${name}</div>
+            <div class="pcls">${cls2 || '—'}${s.no ? ` เลขที่ ${s.no}` : ''}</div>
+            <div class="pqr-wrap" id="${wrapId}"></div>
+            <div class="purl">${portalUrl.replace(/^https?:\/\//, '')}</div>
+          `;
+          grid.appendChild(card);
+
+          // Generate QR Code สำหรับ print
+          try {
+            new QRCode(document.getElementById(wrapId), {
+              text: portalUrl,
+              width: 100,
+              height: 100,
+              colorDark: '#000000',
+              colorLight: '#ffffff',
+              correctLevel: QRCode.CorrectLevel.M,
+            });
+          } catch (e) { }
+        });
+      });
+
+      // รอให้ QR render เสร็จก่อน print
+      setTimeout(() => { window.print(); }, 600);
+    }
+
+  </script>
+</body>
+
+</html>

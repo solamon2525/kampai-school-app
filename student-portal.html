@@ -1,0 +1,528 @@
+
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Student Portal • ธนาคารขยะ</title>
+<link href="https://fonts.googleapis.com/css2?family=Mitr:wght@300;400;500;600;700&family=Sarabun:wght@300;400;600;700&display=swap" rel="stylesheet"/>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+<script src="auth-guard.js"></script>
+<style>
+:root{
+  --bg:#f8fafc;
+  --card:#ffffff;
+  --card2:#f8fafc;
+  --border:#e2e8f0;
+  --green:#22c55e;
+  --green2:#16a34a;
+  --green-dim:#dcfce7;
+  --gold:#fbbf24;
+  --gold-dim:#fef3c7;
+  --text:#0f172a;
+  --muted:#64748b;
+  --muted2:#94a3b8;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Sarabun',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  overflow-x:hidden;
+}
+
+/* ── Background ── */
+.bg-noise{
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:none;
+  opacity:.5;
+}
+.bg-orb{display:none}
+
+/* ── Layout ── */
+.wrap{position:relative;z-index:1;max-width:480px;margin:0 auto;padding:24px 16px 60px}
+
+/* ── Loading ── */
+#loading-screen{
+  position:fixed;inset:0;z-index:100;background:var(--bg);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;
+  transition:opacity .4s;
+}
+.spin-ring{
+  width:52px;height:52px;border-radius:50%;
+  border:3px solid var(--green-dim);
+  border-top-color:var(--green);
+  animation:spin .8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-txt{font-family:'Mitr',sans-serif;font-size:14px;color:var(--muted);letter-spacing:.05em}
+
+/* ── Error / Not found ── */
+#error-screen{display:none;text-align:center;padding:60px 20px}
+.err-ico{font-size:64px;margin-bottom:16px;display:block}
+.err-title{font-family:'Mitr',sans-serif;font-size:22px;font-weight:600;color:var(--text);margin-bottom:8px}
+.err-sub{font-size:14px;color:var(--muted);line-height:1.6}
+
+/* ── Main content ── */
+#portal{display:none}
+
+/* ── Hero card ── */
+.hero-card{
+  background:linear-gradient(145deg,var(--card) 0%,var(--card2) 100%);
+  border:1px solid var(--border);
+  border-radius:24px;
+  padding:28px 24px 24px;
+  margin-bottom:16px;
+  position:relative;
+  overflow:hidden;
+  animation:fadeUp .5s ease both;
+}
+.hero-card::before{
+  content:'';position:absolute;inset:0;border-radius:24px;
+  background:linear-gradient(135deg,rgba(34,197,94,.06) 0%,transparent 60%);
+  pointer-events:none;
+}
+.hero-card-deco{
+  position:absolute;right:-20px;bottom:-20px;
+  font-size:100px;opacity:.04;pointer-events:none;
+  transform:rotate(-15deg);
+}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+
+.avatar-ring{
+  width:88px;height:88px;border-radius:50%;
+  border:2px solid var(--green2);
+  box-shadow:0 0 0 4px rgba(34,197,94,.1),0 0 24px rgba(34,197,94,.15);
+  margin:0 auto 16px;display:flex;align-items:center;justify-content:center;
+  overflow:hidden;flex-shrink:0;
+  animation:pulse-ring 3s ease-in-out infinite;
+}
+@keyframes pulse-ring{
+  0%,100%{box-shadow:0 0 0 4px rgba(34,197,94,.1),0 0 24px rgba(34,197,94,.15)}
+  50%{box-shadow:0 0 0 8px rgba(34,197,94,.06),0 0 40px rgba(34,197,94,.2)}
+}
+.avatar-ring img,.avatar-ph-big{width:100%;height:100%;border-radius:50%;object-fit:cover}
+.avatar-ph-big{display:flex;align-items:center;justify-content:center;font-family:'Mitr',sans-serif;font-size:32px;font-weight:700;color:#fff}
+
+.student-name{
+  font-family:'Mitr',sans-serif;font-size:26px;font-weight:600;
+  color:var(--text);text-align:center;margin-bottom:4px;
+}
+.room-badge{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:3px 12px;border-radius:20px;font-size:13px;font-weight:600;
+  margin:0 auto 20px;
+}
+.hero-pts{
+  text-align:center;
+  background:var(--green-dim);
+  border:1px solid rgba(34,197,94,.2);
+  border-radius:16px;padding:16px;
+}
+.pts-num{
+  font-family:'Mitr',sans-serif;font-size:52px;font-weight:700;
+  background:linear-gradient(135deg,var(--green),#86efac);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;line-height:1;margin-bottom:4px;
+}
+.pts-lbl{font-size:13px;color:var(--muted);font-weight:600;letter-spacing:.05em;text-transform:uppercase}
+
+/* ── Badge ── */
+.badge-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:20px;padding:18px 20px;margin-bottom:16px;
+  animation:fadeUp .5s .08s ease both;
+}
+.badge-display{display:flex;align-items:center;gap:14px}
+.badge-ico-wrap{
+  width:54px;height:54px;border-radius:14px;
+  background:var(--gold-dim);border:1px solid rgba(251,191,36,.2);
+  display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0;
+}
+.badge-name{font-family:'Mitr',sans-serif;font-size:17px;font-weight:600;color:var(--gold);margin-bottom:2px}
+.badge-desc{font-size:12px;color:var(--muted)}
+.next-badge{margin-top:12px}
+.next-lbl{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.prog-track{background:rgba(255,255,255,.06);border-radius:99px;height:7px;overflow:hidden}
+.prog-fill{height:7px;border-radius:99px;background:linear-gradient(90deg,var(--green2),var(--green));transition:width 1.2s cubic-bezier(.22,1,.36,1)}
+.next-hint{font-size:11px;color:var(--muted);margin-top:4px;display:flex;justify-content:space-between}
+
+/* ── Waste type chips ── */
+.type-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:16px;animation:fadeUp .5s .12s ease both}
+.type-chip{
+  background:var(--card);border:1px solid var(--border);border-radius:14px;
+  padding:12px 14px;display:flex;align-items:center;gap:10px;
+}
+.type-ico{font-size:22px;flex-shrink:0}
+.type-info .val{font-family:'Mitr',sans-serif;font-size:20px;font-weight:600;color:var(--text)}
+.type-info .lbl{font-size:11px;color:var(--muted)}
+
+/* ── Rank card ── */
+.rank-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:20px;padding:18px 20px;margin-bottom:16px;
+  display:flex;align-items:center;gap:16px;
+  animation:fadeUp .5s .16s ease both;
+}
+.rank-ico{font-size:40px;flex-shrink:0;line-height:1}
+.rank-info .val{font-family:'Mitr',sans-serif;font-size:28px;font-weight:700;color:var(--text)}
+.rank-info .lbl{font-size:13px;color:var(--muted)}
+.rank-info .room-rank{font-size:12px;color:var(--green);margin-top:2px;font-weight:600}
+
+/* ── History ── */
+.section-head{
+  font-size:12px;font-weight:700;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.1em;
+  margin:20px 0 10px;display:flex;align-items:center;gap:8px;
+  animation:fadeUp .5s .2s ease both;
+}
+.section-head::after{content:'';flex:1;height:1px;background:var(--border)}
+.rec-list{animation:fadeUp .5s .24s ease both}
+.rec-item{
+  background:var(--card);border:1px solid var(--border);border-radius:14px;
+  padding:13px 16px;margin-bottom:8px;
+  display:flex;align-items:center;gap:12px;
+}
+.rec-date{flex:1}
+.rec-date .d1{font-size:13px;font-weight:600;color:var(--text)}
+.rec-date .d2{font-size:11px;color:var(--muted);margin-top:1px}
+.rec-tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:5px}
+.rec-tag{font-size:10px;padding:1px 7px;border-radius:8px;font-weight:600;background:var(--green-dim);color:var(--green)}
+.rec-total{font-family:'Mitr',sans-serif;font-size:20px;font-weight:700;color:var(--green);text-align:right;flex-shrink:0}
+.rec-total span{display:block;font-size:10px;color:var(--muted);font-family:'Sarabun',sans-serif;font-weight:400}
+
+/* ── Empty state ── */
+.empty-hist{text-align:center;padding:24px;color:var(--muted);font-size:13px}
+
+/* ── Streaks / stats ── */
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;animation:fadeUp .5s .2s ease both}
+.stat-box{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:12px;text-align:center}
+.stat-box .sv{font-family:'Mitr',sans-serif;font-size:22px;font-weight:600;color:var(--text)}
+.stat-box .sl{font-size:10px;color:var(--muted);margin-top:2px}
+
+/* ── Footer ── */
+.portal-footer{text-align:center;margin-top:32px;padding-top:20px;border-top:1px solid var(--border);animation:fadeUp .5s .3s ease both}
+.footer-logo{font-family:'Mitr',sans-serif;font-size:15px;color:var(--muted2);letter-spacing:.05em}
+.footer-time{font-size:11px;color:var(--muted2);margin-top:4px}
+
+/* ── Rank colors ── */
+.r1{color:#fbbf24}.r2{color:#9ca3af}.r3{color:#b45309}
+</style>
+</head>
+<body>
+<div id="auth-bar"></div>
+<div style="position:fixed;top:12px;left:12px;z-index:90">
+  <a href="index.html" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.25);border-radius:12px;color:#22c55e;font-size:14px;font-weight:600;text-decoration:none;backdrop-filter:blur(8px);transition:all .2s" onmouseover="this.style.background='rgba(34,197,94,.25)'" onmouseout="this.style.background='rgba(34,197,94,.15)'">← หน้าหลัก</a>
+</div>
+<div class="bg-noise"></div>
+<div class="bg-orb orb1"></div>
+<div class="bg-orb orb2"></div>
+
+<!-- Loading -->
+<div id="loading-screen">
+  <div class="spin-ring"></div>
+  <div class="loading-txt">กำลังโหลดข้อมูล...</div>
+</div>
+
+<!-- Error -->
+<div id="error-screen" class="wrap">
+  <span class="err-ico">🔍</span>
+  <div class="err-title">ไม่พบข้อมูลนักเรียน</div>
+  <div class="err-sub" id="err-msg">QR code อาจหมดอายุหรือไม่ถูกต้อง<br/>กรุณาติดต่อครูเพื่อขอ QR ใหม่</div>
+</div>
+
+<!-- Portal -->
+<div id="portal" class="wrap"></div>
+
+<script>
+// ── auth-guard.js จัดการ Firebase init แล้ว ──
+AuthGuard.init('read-only');
+const db=_db;
+
+const BADGES=[
+  {pts:500,icon:'👑',label:'ราชาขยะ'},
+  {pts:300,icon:'🏆',label:'แชมป์'},
+  {pts:100,icon:'🌳',label:'เพชรเขียว'},
+  {pts:50, icon:'🌿',label:'นักเก็บ'},
+  {pts:10, icon:'🌱',label:'มือใหม่'},
+];
+const WASTE_TYPES=[
+  {key:'plastic',ico:'🍶',label:'ขวดพลาสติก',color:'#3b82f6'},
+  {key:'can',    ico:'🥫',label:'กระป๋อง',    color:'#f59e0b'},
+  {key:'paper',  ico:'📄',label:'กระดาษ',     color:'#10b981'},
+  {key:'other',  ico:'🗑️',label:'อื่นๆ',       color:'#8b5cf6'},
+];
+const ROOM_COLORS={
+  'อนุบาล':'#ec4899','ป.1':'#3b82f6','ป.2':'#8b5cf6',
+  'ป.3':'#14b8a6','ป.4':'#22c55e','ป.5':'#f43f5e','ป.6':'#6366f1'
+};
+const WEEKDAYS=['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์','เสาร์'];
+const MONTHS=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+
+function fmtShort(d){
+  if(!d)return'-';
+  const dt=new Date(d);if(isNaN(dt))return'-';
+  return `${dt.getDate()} ${MONTHS[dt.getMonth()]} ${dt.getFullYear()+543}`;
+}
+function fmtTime(d){
+  if(!d)return'';
+  const dt=new Date(d);if(isNaN(dt))return'';
+  return `${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')} น.`;
+}
+
+// Get member ID from URL
+const params=new URLSearchParams(location.search);
+const memberId=params.get('member')||params.get('id');
+
+if(!memberId){
+  showError('ไม่พบ ID นักเรียนใน URL<br/>กรุณา scan QR code จากระบบ');
+} else {
+  loadPortal(memberId);
+}
+
+async function loadPortal(mid){
+  try{
+    // Load member + all members + records in parallel
+    const [memSnap, allMemSnap, recSnap]=await Promise.all([
+      db.ref(`members/${mid}`).get(),
+      db.ref('members').get(),
+      db.ref('records').orderByChild('member_id').equalTo(mid).get(),
+    ]);
+
+    if(!memSnap.exists()){
+      showError('ไม่พบข้อมูลนักเรียน<br/>กรุณาติดต่อครูเพื่อตรวจสอบ');
+      return;
+    }
+
+    const member=memSnap.val();
+    member.fbKey=mid;
+
+    // All students for ranking
+    const allMembers=allMemSnap.val()||{};
+    const students=Object.entries(allMembers)
+      .filter(([,m])=>m.type==='student')
+      .map(([k,m])=>({...m,fbKey:k}));
+
+    // My records
+    const recVal=recSnap.val()||{};
+    const myRecords=Object.entries(recVal)
+      .map(([k,r])=>({...r,fbKey:k}))
+      .sort((a,b)=>new Date(b.date)-new Date(a.date));
+
+    renderPortal(member, students, myRecords);
+  }catch(e){
+    showError('เกิดข้อผิดพลาด: '+e.message);
+  }
+}
+
+function renderPortal(member, students, myRecords){
+  const pts=member.points||0;
+  const room=member.room||'';
+  const rc=ROOM_COLORS[room]||'#22c55e';
+
+  // Badges
+  const curBadge=BADGES.find(b=>pts>=b.pts)||null;
+  const nextBadge=[...BADGES].reverse().find(b=>pts<b.pts)||null;
+
+  // Rank (overall)
+  const ranked=[...students].sort((a,b)=>(b.points||0)-(a.points||0));
+  const overallRank=ranked.findIndex(s=>s.fbKey===member.fbKey)+1;
+
+  // Rank in room
+  const roomStudents=students.filter(s=>s.room===room).sort((a,b)=>(b.points||0)-(a.points||0));
+  const roomRank=roomStudents.findIndex(s=>s.fbKey===member.fbKey)+1;
+
+  // Waste totals
+  const totals={plastic:0,can:0,paper:0,other:0,all:0};
+  myRecords.forEach(r=>{
+    WASTE_TYPES.forEach(t=>{totals[t.key]+=(r[t.key]||0);});
+    totals.all+=(r.total||0);
+  });
+
+  // Stats
+  const today=new Date().toISOString().slice(0,10);
+  const thisMonth=today.slice(0,7);
+  const todayTotal=myRecords.filter(r=>(r.date||'').slice(0,10)===today).reduce((s,r)=>s+(r.total||0),0);
+  const monthTotal=myRecords.filter(r=>(r.date||'').slice(0,7)===thisMonth).reduce((s,r)=>s+(r.total||0),0);
+
+  // Rank icon
+  const rankIco=overallRank===1?'🥇':overallRank===2?'🥈':overallRank===3?'🥉':'🏅';
+  const rankClass=overallRank===1?'r1':overallRank===2?'r2':overallRank===3?'r3':'';
+
+  // Avatar
+  const avHTML=member.img&&member.img.length>5
+    ? `<img src="${member.img}" class="avatar-ring" style="width:88px;height:88px;border-radius:50%;border:2px solid ${rc};box-shadow:0 0 0 4px ${rc}22,0 0 24px ${rc}33"/>`
+    : (()=>{
+        const cols=['#16a34a','#3b82f6','#f59e0b','#ec4899','#8b5cf6','#14b8a6'];
+        const bg=cols[(member.name||'?').charCodeAt(0)%cols.length];
+        return `<div class="avatar-ring" style="background:${bg};border-color:${rc};box-shadow:0 0 0 4px ${rc}22,0 0 24px ${rc}33"><div style="font-family:Mitr,sans-serif;font-size:32px;font-weight:700;color:#fff">${(member.name||'?')[0]}</div></div>`;
+      })();
+
+  // Progress bar pct
+  const progPct=nextBadge
+    ? Math.min(100,Math.round(pts/nextBadge.pts*100))
+    : 100;
+  const prevPts=nextBadge
+    ? (curBadge?curBadge.pts:0)
+    : (curBadge?curBadge.pts:0);
+  const rangePts=nextBadge?(nextBadge.pts-prevPts):1;
+  const fillPct=nextBadge
+    ? Math.min(100,Math.round((pts-prevPts)/rangePts*100))
+    : 100;
+
+  const html=`
+    <!-- Hero -->
+    <div class="hero-card">
+      <div class="hero-card-deco">♻️</div>
+      <div style="display:flex;flex-direction:column;align-items:center">
+        ${avHTML}
+        <div class="student-name">${member.name}</div>
+        <div style="display:flex;justify-content:center;margin-bottom:20px">
+          <span class="room-badge" style="background:${rc}22;color:${rc};border:1px solid ${rc}44">🏫 ${room||'ไม่ระบุห้อง'}</span>
+        </div>
+        <div class="hero-pts">
+          <div class="pts-num" id="pts-anim">0</div>
+          <div class="pts-lbl">คะแนนสะสม</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Badge -->
+    <div class="badge-card">
+      ${curBadge?`
+        <div class="badge-display">
+          <div class="badge-ico-wrap">${curBadge.icon}</div>
+          <div>
+            <div class="badge-name">${curBadge.icon} ${curBadge.label}</div>
+            <div class="badge-desc">ระดับปัจจุบัน • ${pts} แต้มสะสม</div>
+          </div>
+        </div>
+      `:`
+        <div class="badge-display">
+          <div class="badge-ico-wrap" style="background:var(--card2)">🌱</div>
+          <div>
+            <div class="badge-name" style="color:var(--muted)">ยังไม่มี Badge</div>
+            <div class="badge-desc">เก็บขยะ 10 ชิ้นเพื่อรับ badge แรก!</div>
+          </div>
+        </div>
+      `}
+      ${nextBadge?`
+        <div class="next-badge">
+          <div class="next-lbl">ถัดไป: ${nextBadge.icon} ${nextBadge.label}</div>
+          <div class="prog-track"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+          <div class="next-hint">
+            <span>${pts} แต้ม</span>
+            <span>${nextBadge.pts} แต้ม</span>
+          </div>
+        </div>
+      `:'<div style="font-size:12px;color:var(--green);margin-top:10px;font-weight:600">🏆 ถึงระดับสูงสุดแล้ว!</div>'}
+    </div>
+
+    <!-- Rank -->
+    <div class="rank-card">
+      <div class="rank-ico">${rankIco}</div>
+      <div class="rank-info">
+        <div class="val ${rankClass}">#${overallRank} <span style="font-size:16px;color:var(--muted)">/ ${students.length}</span></div>
+        <div class="lbl">อันดับรวมทั้งโรงเรียน</div>
+        ${room?`<div class="room-rank">อันดับ ${roomRank} ในห้อง${room}</div>`:''}
+      </div>
+    </div>
+
+    <!-- Quick stats -->
+    <div class="stats-row">
+      <div class="stat-box">
+        <div class="sv">${myRecords.length}</div>
+        <div class="sl">ครั้งที่บันทึก</div>
+      </div>
+      <div class="stat-box">
+        <div class="sv">${todayTotal}</div>
+        <div class="sl">วันนี้ (ชิ้น)</div>
+      </div>
+      <div class="stat-box">
+        <div class="sv">${monthTotal}</div>
+        <div class="sl">เดือนนี้ (ชิ้น)</div>
+      </div>
+    </div>
+
+    <!-- Waste breakdown -->
+    <div class="type-grid">
+      ${WASTE_TYPES.map(t=>`
+        <div class="type-chip">
+          <div class="type-ico">${t.ico}</div>
+          <div class="type-info">
+            <div class="val" style="color:${t.color}">${totals[t.key]}</div>
+            <div class="lbl">${t.label}</div>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+
+    <!-- History -->
+    <div class="section-head">📋 ประวัติล่าสุด</div>
+    <div class="rec-list">
+      ${myRecords.length===0
+        ?'<div class="empty-hist">ยังไม่มีประวัติการบันทึก</div>'
+        :myRecords.slice(0,10).map(r=>`
+          <div class="rec-item">
+            <div class="rec-date">
+              <div class="d1">${fmtShort(r.date)}</div>
+              <div class="d2">${fmtTime(r.date)}${r.note?` • ${r.note}`:''}</div>
+              <div class="rec-tags">
+                ${WASTE_TYPES.filter(t=>r[t.key]>0).map(t=>`<span class="rec-tag" style="background:${t.color}22;color:${t.color}">${t.ico} ${r[t.key]}</span>`).join('')}
+              </div>
+            </div>
+            <div class="rec-total">${r.total}<span>ชิ้น</span></div>
+          </div>
+        `).join('')
+      }
+      ${myRecords.length>10?`<div style="text-align:center;font-size:12px;color:var(--muted);padding:8px">และอีก ${myRecords.length-10} รายการ</div>`:''}
+    </div>
+
+    <!-- Footer -->
+    <div class="portal-footer">
+      <div class="footer-logo">♻️ โครงการธนาคารขยะ</div>
+      <div class="footer-time">อัปเดตล่าสุด: ${new Date().toLocaleString('th-TH')}</div>
+    </div>
+  `;
+
+  document.getElementById('portal').innerHTML=html;
+  document.getElementById('portal').style.display='block';
+  document.getElementById('loading-screen').style.opacity='0';
+  setTimeout(()=>{ document.getElementById('loading-screen').style.display='none'; },400);
+
+  // Animate points counter
+  animateNum('pts-anim', pts, 1200);
+
+  // Animate progress bar
+  setTimeout(()=>{
+    const pf=document.getElementById('prog-fill');
+    if(pf) pf.style.width=fillPct+'%';
+  }, 300);
+}
+
+function animateNum(id, target, dur){
+  const el=document.getElementById(id);if(!el)return;
+  const start=Date.now();
+  const tick=()=>{
+    const p=Math.min(1,(Date.now()-start)/dur);
+    const eased=1-Math.pow(1-p,3);
+    el.textContent=Math.round(eased*target).toLocaleString();
+    if(p<1) requestAnimationFrame(tick);
+    else el.textContent=target.toLocaleString();
+  };
+  tick();
+}
+
+function showError(msg){
+  document.getElementById('error-screen').style.display='block';
+  document.getElementById('err-msg').innerHTML=msg;
+  document.getElementById('loading-screen').style.opacity='0';
+  setTimeout(()=>{ document.getElementById('loading-screen').style.display='none'; },400);
+}
+</script>
+</body>
+</html>

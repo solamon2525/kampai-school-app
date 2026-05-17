@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Blockly Games — บ้านคำไผ่</title>
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--bg:#0d1117;--surface:#1c2128;--border:#30363d;--text:#e6edf3;--muted:#8b949e;
+         --cyan:#00bcd4;--green:#3fb950;--yellow:#ffd700}
+    body{font-family:'Kanit',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
+    .nav{background:rgba(13,17,23,.9);backdrop-filter:blur(10px);border-bottom:1px solid var(--border);
+      display:flex;align-items:center;justify-content:space-between;padding:0 16px;height:50px;z-index:10}
+    .back{text-decoration:none;color:var(--muted);font-size:13px;padding:4px 12px;
+      border:1px solid var(--border);border-radius:8px;transition:.2s}
+    .back:hover{color:var(--text);border-color:var(--cyan)}
+    .nav-title{font-weight:700;font-size:15px}
+    main{flex:1;display:flex;flex-direction:column;align-items:center;padding:0}
+
+    /* HERO */
+    .hero{width:100%;padding:40px 20px;text-align:center;
+      background:linear-gradient(180deg,rgba(0,188,212,.08),transparent)}
+    .hero-icon{font-size:4rem;margin-bottom:12px}
+    .hero-title{font-size:1.8rem;font-weight:700;margin-bottom:8px}
+    .hero-sub{color:var(--muted);font-size:15px;max-width:500px;margin:0 auto 24px;line-height:1.6}
+
+    /* CARDS */
+    .cards-section{width:100%;max-width:900px;padding:0 20px 40px}
+    .section-title{font-size:16px;font-weight:600;margin-bottom:16px;
+      display:flex;align-items:center;gap:8px;color:var(--muted)}
+    .section-title::after{content:'';flex:1;height:1px;background:var(--border)}
+    .cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px}
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:16px;
+      overflow:hidden;text-decoration:none;color:var(--text);transition:.2s;display:flex;flex-direction:column}
+    .card:hover{transform:translateY(-4px);box-shadow:0 12px 30px rgba(0,0,0,.4);border-color:var(--cyan)}
+    .card-thumb{width:100%;aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;
+      font-size:3rem;background:linear-gradient(135deg,#0a2233,#0d3347)}
+    .card-body{padding:14px}
+    .card-name{font-size:15px;font-weight:700;margin-bottom:6px}
+    .card-desc{font-size:13px;color:var(--muted);line-height:1.5;margin-bottom:10px}
+    .card-badge{display:inline-block;font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600}
+    .badge-begin{background:rgba(63,185,80,.15);color:#81c784;border:1px solid rgba(63,185,80,.3)}
+    .badge-mid{background:rgba(255,215,0,.15);color:#ffd700;border:1px solid rgba(255,215,0,.3)}
+    .badge-adv{background:rgba(229,57,53,.15);color:#ef9a9a;border:1px solid rgba(229,57,53,.3)}
+    .card-arrow{display:inline-flex;align-items:center;gap:6px;color:var(--cyan);font-size:13px;margin-top:8px}
+
+    /* TIPS */
+    .tip-box{width:100%;max-width:900px;padding:0 20px 30px}
+    .tip{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 20px;
+      display:flex;gap:14px;align-items:flex-start;margin-bottom:10px}
+    .tip-icon{font-size:1.4rem;flex-shrink:0}
+    .tip-text{font-size:14px;color:var(--muted);line-height:1.6}
+    .tip-text strong{color:var(--text)}
+  </style>
+</head>
+<body>
+<nav class="nav">
+  <a class="back" href="../index.html">← กลับ</a>
+  <span class="nav-title">🧩 Blockly Games</span>
+  <span style="width:60px"></span>
+</nav>
+<main>
+  <div class="hero">
+    <div class="hero-icon">🧩</div>
+    <h1 class="hero-title">เรียนรู้การเขียนโปรแกรม</h1>
+    <p class="hero-sub">ฝึกคิดแบบโปรแกรมเมอร์ผ่านเกมส์สนุก ไม่ต้องมีพื้นฐาน!<br/>เลือกเกมส์ด้านล่างเพื่อเล่น</p>
+  </div>
+
+  <div class="cards-section">
+    <p class="section-title">⭐ เกมส์ Blockly แนะนำ</p>
+    <div class="cards-grid">
+      <a class="card" href="https://blockly.games/puzzle" target="_blank" rel="noopener">
+        <div class="card-thumb">🧩</div>
+        <div class="card-body">
+          <div class="card-name">Blockly Puzzle</div>
+          <div class="card-desc">จับคู่บล็อกโค้ดกับรูปภาพ — เรียนรู้โครงสร้างพื้นฐาน</div>
+          <span class="card-badge badge-begin">เริ่มต้น</span><br/>
+          <span class="card-arrow">เล่นเลย →</span>
+        </div>
+      </a>
+      <a class="card" href="https://blockly.games/maze" target="_blank" rel="noopener">
+        <div class="card-thumb">🌀</div>
+        <div class="card-body">
+          <div class="card-name">Maze</div>
+          <div class="card-desc">นำทางตัวละครออกจากเขาวงกต ด้วยคำสั่งเลี้ยวซ้าย-ขวา</div>
+          <span class="card-badge badge-begin">เริ่มต้น</span><br/>
+          <span class="card-arrow">เล่นเลย →</span>
+        </div>
+      </a>
+      <a class="card" href="https://blockly.games/bird" target="_blank" rel="noopener">
+        <div class="card-thumb">🐦</div>
+        <div class="card-body">
+          <div class="card-name">Bird</div>
+          <div class="card-desc">สั่งให้นกบินหาหนอน เรียนรู้เงื่อนไข if/else</div>
+          <span class="card-badge badge-mid">กลาง</span><br/>
+          <span class="card-arrow">เล่นเลย →</span>
+        </div>
+      </a>
+      <a class="card" href="https://blockly.games/turtle" target="_blank" rel="noopener">
+        <div class="card-thumb">🐢</div>
+        <div class="card-body">
+          <div class="card-name">Turtle</div>
+          <div class="card-desc">วาดรูปด้วยเต่า ฝึก Loop และ Function</div>
+          <span class="card-badge badge-mid">กลาง</span><br/>
+          <span class="card-arrow">เล่นเลย →</span>
+        </div>
+      </a>
+      <a class="card" href="https://blockly.games/movie" target="_blank" rel="noopener">
+        <div class="card-thumb">🎬</div>
+        <div class="card-body">
+          <div class="card-name">Movie</div>
+          <div class="card-desc">สร้างแอนิเมชัน เรียนรู้ Function และพารามิเตอร์</div>
+          <span class="card-badge badge-adv">ขั้นสูง</span><br/>
+          <span class="card-arrow">เล่นเลย →</span>
+        </div>
+      </a>
+      <a class="card" href="https://blockly.games/pond-tutor" target="_blank" rel="noopener">
+        <div class="card-thumb">🦆</div>
+        <div class="card-body">
+          <div class="card-name">Pond Tutor</div>
+          <div class="card-desc">บังคับเป็ดในสระ เรียนรู้การพิมพ์โค้ดจริงครั้งแรก</div>
+          <span class="card-badge badge-adv">ขั้นสูง</span><br/>
+          <span class="card-arrow">เล่นเลย →</span>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <div class="tip-box">
+    <p class="section-title">💡 เคล็ดลับ</p>
+    <div class="tip"><div class="tip-icon">🎯</div><div class="tip-text"><strong>เริ่มจาก Puzzle หรือ Maze</strong> — ง่ายที่สุด เหมาะสำหรับผู้เริ่มต้นเขียนโปรแกรม</div></div>
+    <div class="tip"><div class="tip-icon">🔁</div><div class="tip-text"><strong>ทำซ้ำจนผ่านทุก Level</strong> — แต่ละเกมส์มีหลาย level ที่ยากขึ้นเรื่อยๆ อย่าเร่งรีบ</div></div>
+    <div class="tip"><div class="tip-icon">📖</div><div class="tip-text"><strong>อ่านคำอธิบายในเกมส์</strong> — เกมส์จะสอนแนวคิดการเขียนโปรแกรมทีละขั้น</div></div>
+  </div>
+</main>
+</body>
+</html>

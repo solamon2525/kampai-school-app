@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>Super App บ้านคำไผ่</title>
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#2563eb" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="คำไผ่" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap');
+
+    :root {
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --primary-light: #eff6ff;
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --accent: #2563eb;
+      --radius-lg: 16px;
+      --radius-md: 12px;
+      --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0
+    }
+
+    body {
+      font-family: 'Sarabun', sans-serif;
+      background-color: var(--bg);
+      color: var(--text-main);
+      line-height: 1.5;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── LAYOUT ── */
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 0 16px;
+    }
+
+    /* ── HEADER ── */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .header-content {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 0;
+    }
+
+    .logo-box {
+      width: 40px;
+      height: 40px;
+      background: var(--primary);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      color: white;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .logo-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .header-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .header-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-main);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .header-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    /* ── HERO ── */
+    .hero {
+      padding: 48px 0 32px;
+      text-align: center;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      padding: 4px 12px;
+      background: var(--primary-light);
+      color: var(--primary);
+      font-size: 12px;
+      font-weight: 700;
+      border-radius: 20px;
+      margin-bottom: 16px;
+    }
+
+    .hero h1 {
+      font-size: clamp(28px, 5vw, 42px);
+      font-weight: 800;
+      color: var(--text-main);
+      line-height: 1.2;
+      margin-bottom: 12px;
+    }
+
+    .hero p {
+      font-size: 16px;
+      color: var(--text-muted);
+      max-width: 500px;
+      margin: 0 auto;
+    }
+
+    /* ── SECTION TITLES ── */
+    .sec-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin: 32px 0 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .sec-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* ── APP GRID ── */
+    .apps-grid {
+      display: grid;
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .cols-1 { grid-template-columns: 1fr; }
+    .cols-2 { grid-template-columns: repeat(2, 1fr); }
+    .cols-3 { grid-template-columns: repeat(3, 1fr); }
+
+    /* ── APP CARD ── */
+    .app-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      text-decoration: none;
+      color: inherit;
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .app-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--primary);
+      box-shadow: var(--shadow-md);
+    }
+
+    .app-card:active {
+      transform: scale(0.98);
+    }
+
+    .card-icon {
+      width: 48px;
+      height: 48px;
+      background: var(--primary-light);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      margin-bottom: 16px;
+      transition: transform 0.2s ease;
+    }
+
+    .app-card:hover .card-icon {
+      transform: scale(1.1);
+    }
+
+    .app-name {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 4px;
+    }
+
+    .app-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    .badge {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 10px;
+      position: absolute;
+      top: 12px;
+      right: 12px;
+    }
+
+    .badge-live { background: #dcfce7; color: #166534; }
+    .badge-soon { background: #f1f5f9; color: #475569; }
+
+    /* WIDE CARD */
+    .wide {
+      grid-column: 1 / -1;
+      flex-direction: row;
+      align-items: center;
+      gap: 20px;
+      padding: 24px;
+    }
+
+    .wide .card-icon { margin-bottom: 0; width: 64px; height: 64px; font-size: 32px; }
+
+    /* ── ACCORDION ── */
+    .app-group {
+      margin-bottom: 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      background: var(--surface);
+      overflow: hidden;
+    }
+
+    .group-header {
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.2s;
+    }
+
+    .group-header:hover { background: var(--bg); }
+
+    .group-icon { font-size: 20px; }
+    .group-title { font-size: 15px; font-weight: 700; flex: 1; }
+    .group-chevron { font-size: 12px; color: var(--text-muted); transition: transform 0.3s; }
+
+    .app-group.open .group-chevron { transform: rotate(180deg); }
+    .group-body { display: none; padding: 0 20px 20px; }
+    .app-group.open .group-body { display: block; }
+
+    /* ── UTILS ── */
+    .notice {
+      background: var(--primary-light);
+      border: 1px solid rgba(37, 99, 235, 0.1);
+      padding: 16px;
+      border-radius: var(--radius-md);
+      display: flex;
+      gap: 12px;
+      margin-top: 48px;
+    }
+
+    .notice-txt { font-size: 13px; color: var(--primary); }
+
+    footer {
+      padding: 32px 0 64px;
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    /* ── MODALS ── */
+    .modal-bg {
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      background: rgba(15, 23, 42, 0.5);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .modal-bg.open { display: flex; }
+
+    .modal {
+      background: white;
+      border-radius: var(--radius-lg);
+      width: 100%;
+      max-width: 480px;
+      padding: 32px;
+      box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+      position: relative;
+    }
+
+    .modal h2 { margin-bottom: 24px; font-size: 20px; }
+
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      border-radius: 8px;
+      border: none;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:hover { background: var(--primary-hover); }
+    
+    .form-group { margin-bottom: 16px; }
+    .form-label { display: block; font-size: 12px; font-weight: 700; margin-bottom: 6px; }
+    .form-input {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-family: inherit;
+    }
+
+    /* ── TOAST ── */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #1e293b;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 30px;
+      font-size: 14px;
+      z-index: 300;
+      display: none;
+    }
+    .toast.show { display: block; animation: fadeInUp 0.3s ease; }
+    @keyframes fadeInUp { from { opacity: 0; transform: translate(-50%, 20px); } to { opacity: 1; transform: translate(-50%, 0); } }
+
+    /* Loading */
+    #loading {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      background: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+    }
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid var(--border);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @media (max-width: 640px) {
+      .cols-2, .cols-3 { grid-template-columns: 1fr; }
+      .hero h1 { font-size: 28px; }
+      .wide { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+
+<body>
+  <div id="loading">
+    <div class="spinner"></div>
+    <p style="font-size: 14px; color: var(--text-muted)">กำลังโหลด...</p>
+  </div>
+
+  <header>
+    <div class="container header-content">
+      <div class="logo-box" id="main-logo">🏫</div>
+      <div class="header-info">
+        <div class="header-title" id="main-school-name">Super App บ้านคำไผ่</div>
+        <div class="header-sub" id="main-school-sub">ระบบบริหารจัดการโรงเรียนออนไลน์</div>
+      </div>
+      <button id="admin-btn" onclick="openLogin()" style="background: none; border: 1px solid var(--border); padding: 6px 12px; border-radius: 20px; font-size: 12px; cursor: pointer;">
+        จัดการระบบ
+      </button>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="hero">
+      <div class="hero-badge" id="greeting-txt">สวัสดีชาวคำไผ่</div>
+      <h1>โรงเรียนบ้านคำไผ่</h1>
+      <p>เครื่องมือบริหารจัดการโรงเรียนครบวงจร เพื่อก้าวสู่อนาคตทางการศึกษาที่ทันสมัย</p>
+    </div>
+
+    <div id="apps-render"></div>
+
+    <div class="notice">
+      <div class="notice-ico">💡</div>
+      <div class="notice-txt" id="main-notice-txt"><b>พร้อมให้บริการ!</b> ระบบอัปเดตข้อมูลแบบเรียลไทม์</div>
+    </div>
+  </main>
+
+  <footer class="container" id="main-footer">
+    © 2024 โรงเรียนบ้านคำไผ่ • พัฒนาด้วยความใส่ใจเพื่อการศึกษา
+  </footer>
+
+  <div class="toast" id="toast"></div>
+
+  <!-- Login Modal -->
+  <div class="modal-bg" id="login-modal">
+    <div class="modal">
+      <button onclick="closeModal('login-modal')" style="position: absolute; top: 16px; right: 16px; border: none; background: none; cursor: pointer; font-size: 20px;">&times;</button>
+      <h2>ลงชื่อเข้าใช้ระบบ</h2>
+      <div class="form-group">
+        <label class="form-label">อีเมล</label>
+        <input class="form-input" id="login-email" type="email" placeholder="admin@school.com" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">รหัสผ่าน</label>
+        <input class="form-input" id="login-pwd" type="password" placeholder="••••••••" />
+      </div>
+      <div id="login-err" style="color: #ef4444; font-size: 13px; margin-bottom: 16px;"></div>
+      <button class="btn btn-primary" id="login-btn" onclick="doLogin()">เข้าสู่ระบบ</button>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+  <script>
+    const fbConfig = { apiKey: "AIzaSyBSUa3gj5l2VSYoUnVFXQwF0OX2SJe6Szc", authDomain: "kampai-school-app.firebaseapp.com", databaseURL: "https://kampai-school-app-default-rtdb.asia-southeast1.firebasedatabase.app", projectId: "kampai-school-app", storageBucket: "kampai-school-app.firebasestorage.app", messagingSenderId: "206365774974", appId: "1:206365774974:web:8f261ade7aa07ef338f42f" };
+    firebase.initializeApp(fbConfig);
+    const auth = firebase.auth();
+    const db = firebase.database();
+
+    const DEFAULT_APPS = [
+      { id: 'profile', icon: '👤', name: 'ประวัตินักเรียน', desc: 'ข้อมูลส่วนตัว คะแนน และประวัติพัฒนาการรายบุคคล', url: 'student-profile.html', color: 'indigo', live: true, wide: true, group: 'นักเรียน' },
+      { id: 'portal', icon: '🎓', name: 'พอร์ทัลนักเรียน', desc: 'แดชบอร์ดหลักสำหรับนักเรียน เข้าถึงทุกบริการ', url: 'student-portal.html', color: 'blue', live: true, group: 'นักเรียน' },
+      { id: 'games', icon: '🎮', name: 'เกมส์การเรียนรู้', desc: 'มินิเกมส์ฝึกทักษะ ไทย คณิต และเทคโนโลยี', url: 'games/index.html', color: 'purple', live: true, group: 'นักเรียน' },
+      { id: 'exam-student', icon: '📝', name: 'ระบบสอบออนไลน์', desc: 'ทำข้อสอบวัดผลวิชาการ ป.4–ป.6 พร้อมวิเคราะห์ผล', url: 'student-portal.html', color: 'blue', live: true, wide: true, group: 'นักเรียน' },
+      { id: 'documents', icon: '📋', name: 'ระบบจัดการเอกสาร', desc: 'หนังสือราชการ ว.PA SAR และแผนปฏิบัติการ', url: 'school-docs.html', color: 'slate', live: true, wide: true, group: 'ธุรการ' },
+      { id: 'teacher', icon: '👨‍🏫', name: 'จัดการคะแนน', desc: 'ระบบกรอกคะแนน และรายงานผลสัมฤทธิ์ทางการเรียน', url: 'teacher-dashboard.html', color: 'orange', live: true, group: 'บุคลากร' },
+      { id: 'attend', icon: '✅', name: 'เช็คชื่อนักเรียน', desc: 'เช็คชื่อออนไลน์ สรุปสถิติการมาเรียนรายเดือน', url: 'attendance.html', color: 'emerald', live: true, group: 'โรงเรียน' },
+      { id: 'waste', icon: '♻️', name: 'ธนาคารขยะ', desc: 'บันทึกการคัดแยกขยะ และสะสมแต้มรักษ์โลก', url: 'waste/waste-app-final.html', color: 'emerald', live: true, group: 'กิจกรรม' },
+      { id: 'news', icon: '📰', name: 'ข่าวสารการศึกษา', desc: 'อัปเดตข่าวจาก ศธ. และ สพฐ. โดยอัตโนมัติ', url: 'news.html', color: 'sky', live: true, group: 'โรงเรียน' },
+      { id: 'parent', icon: '👨‍👩‍👧', name: 'ติดต่อผู้ปกครอง', desc: 'ช่องทางสื่อสาร และรายงานพฤติกรรมนักเรียน', url: 'parent-contact.html', color: 'rose', live: true, group: 'โรงเรียน' }
+    ];
+
+    let cfg = {
+      schoolName: 'Super App บ้านคำไผ่',
+      schoolSub: 'ระบบบริหารจัดการโรงเรียนออนไลน์',
+      noticeTxt: '<b>พร้อมให้บริการ!</b> ระบบอัปเดตข้อมูลแบบเรียลไทม์',
+      footer: '© 2024 โรงเรียนบ้านคำไผ่ • พัฒนาด้วยความใส่ใจเพื่อการศึกษา',
+      logoData: null,
+      apps: JSON.parse(JSON.stringify(DEFAULT_APPS)),
+      layout: { cols: '2', size: 'md', wideFirst: true, showComing: true, showHeader: true, groupMode: false }
+    };
+
+    function showLoading(v) { document.getElementById('loading').style.display = v ? 'flex' : 'none'; }
+    function showToast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000); }
+
+    db.ref('superapp_config').on('value', snap => {
+      const v = snap.val();
+      if (v) {
+        cfg = { ...cfg, ...v };
+        if (v.apps) cfg.apps = v.apps;
+      }
+      applyConfig();
+      showLoading(false);
+    });
+
+    function applyConfig() {
+      document.getElementById('main-school-name').textContent = cfg.schoolName;
+      document.getElementById('main-school-sub').textContent = cfg.schoolSub;
+      document.getElementById('main-notice-txt').innerHTML = cfg.noticeTxt;
+      document.getElementById('main-footer').textContent = cfg.footer;
+      renderApps(cfg.apps);
+    }
+
+    function renderApps(apps) {
+      const container = document.getElementById('apps-render');
+      const L = cfg.layout;
+      const visApps = apps.filter(a => a.visible !== false);
+      let html = '';
+
+      const groups = [...new Set(visApps.map(a => a.group || 'อื่นๆ'))];
+      groups.forEach(grp => {
+        const grpApps = visApps.filter(a => (a.group || 'อื่นๆ') === grp);
+        if (!grpApps.length) return;
+
+        html += `<div class="sec-title">${grp}</div>`;
+        html += `<div class="apps-grid cols-${L.cols || '2'}">`;
+        grpApps.forEach((a, i) => {
+          const isWide = L.wideFirst && i === 0 && a.wide;
+          html += `<a href="${a.url}" class="app-card ${isWide ? 'wide' : ''}">
+            ${a.live ? '<span class="badge badge-live">LIVE</span>' : '<span class="badge badge-soon">SOON</span>'}
+            <div class="card-icon">${a.icon}</div>
+            <div class="card-content">
+              <div class="app-name">${a.name}</div>
+              <div class="app-desc">${a.desc}</div>
+            </div>
+          </a>`;
+        });
+        html += `</div>`;
+      });
+      container.innerHTML = html;
+    }
+
+    const DAYS_TH = ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์'];
+    const MONTHS_TH = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
+    const now = new Date();
+    document.getElementById('greeting-txt').textContent = `วัน${DAYS_TH[now.getDay()]}ที่ ${now.getDate()} ${MONTHS_TH[now.getMonth()]} ${now.getFullYear() + 543}`;
+
+    function openLogin() { if (auth.currentUser) { window.location.reload(); return; } document.getElementById('login-modal').classList.add('open'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+    async function doLogin() {
+      const email = document.getElementById('login-email').value;
+      const pwd = document.getElementById('login-pwd').value;
+      try {
+        await auth.signInWithEmailAndPassword(email, pwd);
+        showToast('เข้าสู่ระบบสำเร็จ');
+        closeModal('login-modal');
+      } catch (e) {
+        document.getElementById('login-err').textContent = 'อีเมลหรือรหัสผ่านไม่ถูกต้อง';
+      }
+    }
+  </script>
+</body>
+</html>

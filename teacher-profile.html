@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>บุคลากร — โรงเรียนบ้านคำไผ่</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0c0f;--bg2:#0f1318;--surface:#141a22;--surface2:#1a2230;
+  --border:#1e2d3d;--border2:#243648;
+  --text:#f0f4f8;--muted:#5c7a96;--hint:#3a546a;
+  --gold:#d4a843;--gold2:#e8c56a;--gold3:#f5e4a8;
+  --teal:#0d9488;--teal2:#14b8a6;--teal3:#5eead4;
+  --r:14px;
+}
+body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+
+/* ELEGANT BG — subtle grid + warm glow */
+.bg-layer{position:fixed;inset:0;z-index:0;pointer-events:none}
+.bg-layer::before{
+  content:'';position:absolute;inset:0;
+  background-image:linear-gradient(rgba(212,168,67,.03) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(212,168,67,.03) 1px,transparent 1px);
+  background-size:48px 48px;
+}
+.bg-layer::after{
+  content:'';position:absolute;
+  width:800px;height:800px;
+  background:radial-gradient(circle,rgba(212,168,67,.06) 0%,transparent 65%);
+  top:-300px;right:-300px;
+  animation:warmDrift 20s ease-in-out infinite;
+}
+@keyframes warmDrift{0%,100%{transform:translate(0,0)}50%{transform:translate(-40px,30px)}}
+.bg-accent{position:fixed;bottom:-200px;left:-200px;width:600px;height:600px;
+  background:radial-gradient(circle,rgba(13,148,136,.06) 0%,transparent 65%);
+  pointer-events:none;z-index:0;animation:tealDrift 24s ease-in-out infinite}
+@keyframes tealDrift{0%,100%{transform:translate(0,0)}50%{transform:translate(50px,-40px)}}
+
+/* PAGE */
+.page{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:0 16px 80px}
+
+/* NAV */
+.nav{display:flex;align-items:center;gap:14px;padding:20px 0 24px;border-bottom:1px solid var(--border);margin-bottom:32px}
+.back-btn{display:flex;align-items:center;gap:6px;text-decoration:none;color:var(--muted);font-size:13px;font-weight:600;padding:7px 14px;border:1px solid var(--border);border-radius:8px;transition:.2s}
+.back-btn:hover{color:var(--gold2);border-color:var(--gold);background:rgba(212,168,67,.07)}
+.nav-badge{display:flex;align-items:center;gap:8px}
+.nav-badge-dot{width:6px;height:6px;border-radius:50%;background:var(--gold);box-shadow:0 0 8px var(--gold)}
+.nav-title{font-size:19px;font-weight:900;color:var(--text);letter-spacing:-.3px}
+.nav-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+
+/* HERO STRIP */
+.hero-strip{background:linear-gradient(135deg,rgba(212,168,67,.08) 0%,rgba(13,148,136,.05) 100%);
+  border:1px solid rgba(212,168,67,.15);border-radius:var(--r);padding:20px 24px;
+  margin-bottom:28px;display:flex;align-items:center;gap:24px;flex-wrap:wrap}
+.hero-stat{text-align:center;padding:0 20px;border-right:1px solid var(--border)}
+.hero-stat:last-child{border-right:none}
+.hero-stat-num{font-size:28px;font-weight:900;color:var(--gold2);line-height:1}
+.hero-stat-label{font-size:11px;color:var(--muted);margin-top:4px;font-weight:600;letter-spacing:.4px}
+.hero-divider{flex:1}
+
+/* VIEW TOGGLE */
+.view-toggle{display:flex;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:3px;gap:3px}
+.vt-btn{padding:7px 16px;border-radius:7px;border:none;background:none;font-family:'Sarabun',sans-serif;font-size:13px;font-weight:700;color:var(--muted);cursor:pointer;transition:.2s}
+.vt-btn.active{background:rgba(212,168,67,.15);color:var(--gold2);border:1px solid rgba(212,168,67,.2)}
+
+/* TOOLBAR */
+.toolbar{display:flex;align-items:center;gap:10px;margin-bottom:20px;flex-wrap:wrap}
+.search-wrap{position:relative;flex:1;min-width:200px}
+.search-wrap input{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 14px 10px 38px;color:var(--text);font-family:'Sarabun',sans-serif;font-size:14px;outline:none;transition:.2s}
+.search-wrap input:focus{border-color:var(--gold);background:var(--surface2)}
+.search-wrap input::placeholder{color:var(--hint)}
+.search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:15px;color:var(--hint);pointer-events:none}
+.filter-select{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 12px;color:var(--text);font-family:'Sarabun',sans-serif;font-size:13px;outline:none;cursor:pointer;transition:.2s;min-width:130px}
+.filter-select:focus{border-color:var(--gold)}
+.btn{display:inline-flex;align-items:center;gap:7px;padding:10px 18px;border-radius:10px;border:none;font-family:'Sarabun',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:.2s;white-space:nowrap}
+.btn-gold{background:linear-gradient(135deg,var(--gold),#b8922e);color:#1a0f00;box-shadow:0 4px 16px rgba(212,168,67,.3)}
+.btn-gold:hover{transform:translateY(-1px);box-shadow:0 6px 22px rgba(212,168,67,.4)}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--muted)}
+.btn-outline:hover{border-color:var(--gold);color:var(--gold2);background:rgba(212,168,67,.06)}
+.btn-danger{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.25);color:#fca5a5}
+.btn-danger:hover{background:rgba(239,68,68,.22)}
+
+/* ═══ CARD VIEW ═══ */
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px}
+.teacher-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--r);
+  overflow:hidden;cursor:pointer;transition:transform .22s,box-shadow .22s,border-color .22s;
+  animation:cardIn .35s ease both;position:relative;
+}
+@keyframes cardIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.teacher-card:hover{transform:translateY(-5px);box-shadow:0 12px 36px rgba(0,0,0,.5);border-color:rgba(212,168,67,.35)}
+.card-top{height:7px;background:linear-gradient(90deg,var(--gold),var(--teal2))}
+.card-body{padding:20px 18px 16px;display:flex;flex-direction:column;align-items:center;text-align:center}
+.card-avatar{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--gold),#7c5a1a);display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;color:#1a0f00;border:3px solid rgba(212,168,67,.3);overflow:hidden;margin-bottom:12px;position:relative}
+.card-avatar img{width:100%;height:100%;object-fit:cover}
+.card-avatar .status-dot{position:absolute;bottom:2px;right:2px;width:12px;height:12px;border-radius:50%;border:2px solid var(--surface)}
+.status-dot.active{background:#22c55e}
+.status-dot.inactive{background:#94a3b8}
+.card-name{font-size:15px;font-weight:800;margin-bottom:2px;line-height:1.3}
+.card-position{font-size:12px;color:var(--gold2);font-weight:600;margin-bottom:8px}
+.card-dept{display:inline-block;background:rgba(13,148,136,.15);border:1px solid rgba(13,148,136,.25);color:var(--teal3);border-radius:20px;padding:2px 10px;font-size:11px;font-weight:700;margin-bottom:10px}
+.card-meta{font-size:11px;color:var(--muted);line-height:1.7;width:100%}
+.card-meta span{display:flex;align-items:center;gap:6px;justify-content:center}
+.card-actions{display:flex;gap:8px;margin-top:14px;width:100%}
+.card-actions .btn{flex:1;padding:7px;font-size:12px;border-radius:8px}
+
+/* ═══ LIST VIEW ═══ */
+.list-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.list-head{display:grid;grid-template-columns:52px 64px 1fr 160px 130px 100px 90px;background:var(--surface2);border-bottom:1px solid var(--border2);padding:0 8px}
+.lh{padding:12px 10px;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}
+.list-body{display:flex;flex-direction:column}
+.list-row{display:grid;grid-template-columns:52px 64px 1fr 160px 130px 100px 90px;padding:0 8px;border-bottom:1px solid rgba(30,45,61,.6);align-items:center;transition:background .15s;animation:rowIn .3s ease both}
+@keyframes rowIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.list-row:last-child{border-bottom:none}
+.list-row:hover{background:rgba(212,168,67,.04)}
+.ld{padding:10px;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.list-avatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--gold),#7c5a1a);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#1a0f00;border:2px solid rgba(212,168,67,.25);overflow:hidden;flex-shrink:0}
+.list-avatar img{width:100%;height:100%;object-fit:cover}
+.pos-tag{display:inline-block;background:rgba(212,168,67,.12);border:1px solid rgba(212,168,67,.2);color:var(--gold2);border-radius:6px;padding:1px 8px;font-size:11px;font-weight:700}
+.dept-tag{display:inline-block;background:rgba(13,148,136,.12);border:1px solid rgba(13,148,136,.2);color:var(--teal3);border-radius:6px;padding:1px 8px;font-size:11px;font-weight:700}
+.status-badge{border-radius:6px;padding:2px 8px;font-size:11px;font-weight:700}
+.status-badge.on{background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.2);color:#86efac}
+.status-badge.off{background:rgba(148,163,184,.1);border:1px solid rgba(148,163,184,.15);color:#94a3b8}
+.list-actions{display:flex;gap:6px;justify-content:flex-end}
+.icon-btn{background:none;border:1px solid var(--border);border-radius:7px;width:30px;height:30px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;transition:.2s;color:var(--muted)}
+.icon-btn:hover.edit{border-color:var(--gold);color:var(--gold2);background:rgba(212,168,67,.1)}
+.icon-btn:hover.del{border-color:#ef4444;color:#fca5a5;background:rgba(239,68,68,.1)}
+.icon-btn:hover.view{border-color:var(--teal2);color:var(--teal3);background:rgba(13,148,136,.1)}
+.empty-state{text-align:center;padding:60px 20px;color:var(--hint)}
+.empty-state .big{font-size:48px;margin-bottom:12px}
+
+/* ═══ MODAL ═══ */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(6px);z-index:300;display:flex;align-items:flex-start;justify-content:center;padding:16px;overflow-y:auto;opacity:0;pointer-events:none;transition:.25s}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal{background:#111920;border:1px solid var(--border2);border-radius:20px;width:100%;max-width:620px;margin:auto;padding:28px 24px;position:relative;transform:translateY(24px) scale(.97);transition:.25s;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+.modal-overlay.open .modal{transform:none}
+.modal-top-bar{height:4px;background:linear-gradient(90deg,var(--gold),var(--teal2));border-radius:4px;margin-bottom:22px}
+.modal h2{font-size:18px;font-weight:900;margin-bottom:20px;color:var(--text)}
+.modal-close{position:absolute;top:18px;right:18px;background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--muted);width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:.2s}
+.modal-close:hover{background:rgba(255,255,255,.14);color:var(--text)}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.form-full{grid-column:1/-1}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-group label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}
+.form-group input,.form-group select,.form-group textarea{background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:9px;padding:10px 13px;color:var(--text);font-family:'Sarabun',sans-serif;font-size:14px;outline:none;transition:.2s;width:100%}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--gold);background:rgba(212,168,67,.06)}
+.form-group input::placeholder,.form-group textarea::placeholder{color:var(--hint)}
+.form-group select option{background:#111920}
+.form-section{font-size:11px;font-weight:700;color:var(--hint);text-transform:uppercase;letter-spacing:.8px;margin:18px 0 10px;display:flex;align-items:center;gap:8px}
+.form-section::after{content:'';flex:1;height:1px;background:rgba(212,168,67,.15)}
+.modal-footer{display:flex;gap:10px;margin-top:22px}
+.modal-footer .btn{flex:1}
+
+/* Photo upload */
+.photo-upload{display:flex;align-items:center;gap:16px;margin-bottom:4px}
+.photo-prev{width:76px;height:76px;border-radius:50%;background:linear-gradient(135deg,var(--gold),#7c5a1a);display:flex;align-items:center;justify-content:center;font-size:28px;color:#1a0f00;border:3px solid rgba(212,168,67,.3);overflow:hidden;flex-shrink:0}
+.photo-prev img{width:100%;height:100%;object-fit:cover}
+.photo-info p{font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:8px}
+.upload-btn{background:rgba(212,168,67,.1);border:1px solid rgba(212,168,67,.25);color:var(--gold2);border-radius:8px;padding:7px 14px;font-size:12px;font-family:'Sarabun',sans-serif;font-weight:700;cursor:pointer;transition:.2s}
+.upload-btn:hover{background:rgba(212,168,67,.2)}
+#photo-file{display:none}
+
+/* DETAIL MODAL */
+.detail-modal{max-width:680px}
+.detail-header{display:flex;gap:20px;align-items:flex-start;margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid var(--border)}
+.detail-avatar{width:88px;height:88px;border-radius:50%;background:linear-gradient(135deg,var(--gold),#7c5a1a);display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:800;color:#1a0f00;border:3px solid rgba(212,168,67,.3);overflow:hidden;flex-shrink:0}
+.detail-avatar img{width:100%;height:100%;object-fit:cover}
+.detail-info{flex:1}
+.detail-name{font-size:20px;font-weight:900;margin-bottom:4px}
+.detail-pos{font-size:13px;color:var(--gold2);font-weight:600;margin-bottom:6px}
+.detail-tags{display:flex;gap:6px;flex-wrap:wrap}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:0}
+.detail-item{padding:10px 0;border-bottom:1px solid rgba(30,45,61,.6);display:flex;flex-direction:column;gap:2px;padding-right:16px}
+.detail-item:nth-child(even){padding-left:16px;padding-right:0;border-left:1px solid rgba(30,45,61,.6)}
+.detail-key{font-size:10px;font-weight:700;color:var(--hint);text-transform:uppercase;letter-spacing:.5px}
+.detail-val{font-size:13px;color:var(--text)}
+
+/* CONFIRM DELETE */
+.confirm-warn{text-align:center;padding:12px 0 16px}
+.confirm-warn .big{font-size:44px;margin-bottom:8px}
+.confirm-warn h3{color:#fca5a5;font-size:16px;margin-bottom:6px}
+.confirm-warn p{color:var(--muted);font-size:13px;line-height:1.6}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:rgba(10,16,22,.96);border:1px solid var(--border2);color:var(--text);padding:11px 22px;border-radius:20px;font-size:13px;font-weight:600;z-index:999;transition:transform .3s;backdrop-filter:blur(10px);white-space:nowrap}
+.toast.show{transform:translateX(-50%)}
+.toast.ok{border-color:rgba(34,197,94,.4);color:#86efac}
+.toast.err{border-color:rgba(239,68,68,.4);color:#fca5a5}
+
+/* SPINNER */
+.loading-row{text-align:center;padding:60px;color:var(--hint)}
+.spinner{display:inline-block;width:28px;height:28px;border:2.5px solid rgba(255,255,255,.08);border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* PAGINATION */
+.pagination{display:flex;align-items:center;justify-content:center;gap:6px;padding:16px;border-top:1px solid var(--border)}
+.page-btn{background:var(--surface2);border:1px solid var(--border);border-radius:7px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;font-weight:600;color:var(--muted);transition:.2s}
+.page-btn:hover:not([disabled]){border-color:var(--gold);color:var(--gold2)}
+.page-btn.active{background:rgba(212,168,67,.2);border-color:var(--gold);color:var(--gold2)}
+.page-btn[disabled]{opacity:.3;cursor:default}
+.page-info{font-size:12px;color:var(--hint);margin:0 8px}
+
+@media(max-width:720px){
+  .cards-grid{grid-template-columns:1fr 1fr}
+  .list-head,.list-row{grid-template-columns:44px 1fr 120px 90px}
+  .list-head .lh:nth-child(n+5),.list-row .ld:nth-child(n+5){display:none}
+  .hero-stat{padding:0 12px}
+  .hero-stat-num{font-size:22px}
+}
+@media(max-width:480px){
+  .cards-grid{grid-template-columns:1fr}
+  .form-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="bg-layer"></div>
+<div class="bg-accent"></div>
+
+
+<div id="auth-bar"></div>
+<div class="page">
+
+  <!-- NAV -->
+  <div class="nav">
+    <a href="index.html" class="back-btn">← หน้าหลัก</a>
+    <div class="nav-badge">
+      <div class="nav-badge-dot"></div>
+      <div class="nav-title">ประวัติครู / บุคลากร</div>
+    </div>
+    <div class="nav-right">
+      <div class="view-toggle">
+        <button class="vt-btn active" id="vt-card" onclick="setView('card')">⊞ การ์ด</button>
+        <button class="vt-btn" id="vt-list" onclick="setView('list')">≡ รายการ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- HERO STATS -->
+  <div class="hero-strip">
+    <div class="hero-stat">
+      <div class="hero-stat-num" id="stat-total">—</div>
+      <div class="hero-stat-label">บุคลากรทั้งหมด</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-num" id="stat-active">—</div>
+      <div class="hero-stat-label">ปฏิบัติหน้าที่</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-num" id="stat-teach">—</div>
+      <div class="hero-stat-label">ครูผู้สอน</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-num" id="stat-dept">—</div>
+      <div class="hero-stat-label">กลุ่มสาระ</div>
+    </div>
+    <div class="hero-divider"></div>
+    <button class="btn btn-gold" data-auth="write" onclick="openAddModal()">+ เพิ่มบุคลากร</button>
+    <button class="btn btn-outline" data-auth="write" onclick="exportCSV()">📥 Export</button>
+  </div>
+
+  <!-- TOOLBAR -->
+  <div class="toolbar">
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="search" placeholder="ค้นหาชื่อ ตำแหน่ง กลุ่มสาระ..." oninput="onFilter()"/>
+    </div>
+    <select class="filter-select" id="f-dept" onchange="onFilter()">
+      <option value="">ทุกกลุ่มสาระ/ฝ่าย</option>
+    </select>
+    <select class="filter-select" id="f-pos" onchange="onFilter()">
+      <option value="">ทุกตำแหน่ง</option>
+      <option>ผู้อำนวยการ</option>
+      <option>รองผู้อำนวยการ</option>
+      <option>ครู</option>
+      <option>ครูผู้ช่วย</option>
+      <option>พนักงานราชการ</option>
+      <option>ลูกจ้างประจำ</option>
+      <option>เจ้าหน้าที่</option>
+    </select>
+    <select class="filter-select" id="f-status" onchange="onFilter()">
+      <option value="">ทุกสถานะ</option>
+      <option>ปฏิบัติหน้าที่</option>
+      <option>ลาออก</option>
+      <option>ย้าย</option>
+      <option>เกษียณ</option>
+    </select>
+  </div>
+
+  <!-- CONTENT -->
+  <div id="content-area">
+    <div class="loading-row"><div class="spinner"></div></div>
+  </div>
+  <div class="pagination" id="pagination" style="display:none"></div>
+
+</div><!-- /page -->
+
+<!-- ═══ ADD/EDIT MODAL ═══ -->
+<div class="modal-overlay" id="form-modal">
+  <div class="modal">
+    <div class="modal-top-bar"></div>
+    <button class="modal-close" onclick="closeModal('form-modal')">✕</button>
+    <h2 id="modal-title">➕ เพิ่มบุคลากร</h2>
+
+    <div class="form-section">รูปภาพ</div>
+    <div class="photo-upload">
+      <div class="photo-prev" id="photo-prev">👤</div>
+      <div class="photo-info">
+        <p>รูปภาพบุคลากร<br>JPG, PNG • สูงสุด 3MB</p>
+        <button class="upload-btn" onclick="document.getElementById('photo-file').click()">📷 เลือกรูป</button>
+        <input type="file" id="photo-file" accept="image/*" onchange="onPhoto(event)"/>
+      </div>
+    </div>
+
+    <div class="form-section">ข้อมูลส่วนตัว</div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>คำนำหน้า</label>
+        <select id="e-prefix">
+          <option>นาย</option><option>นาง</option><option>นางสาว</option>
+          <option>ดร.</option><option>อ.</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>เพศ</label>
+        <select id="e-gender"><option>ชาย</option><option>หญิง</option></select>
+      </div>
+      <div class="form-group">
+        <label>ชื่อ *</label>
+        <input id="e-fname" placeholder="ชื่อ"/>
+      </div>
+      <div class="form-group">
+        <label>นามสกุล *</label>
+        <input id="e-lname" placeholder="นามสกุล"/>
+      </div>
+      <div class="form-group">
+        <label>ชื่อเล่น</label>
+        <input id="e-nickname" placeholder="ชื่อเล่น"/>
+      </div>
+      <div class="form-group">
+        <label>วันเกิด</label>
+        <input id="e-birthday" type="date"/>
+      </div>
+      <div class="form-group">
+        <label>เลขบัตรประชาชน</label>
+        <input id="e-idcard" placeholder="X-XXXX-XXXXX-XX-X" maxlength="17"/>
+      </div>
+      <div class="form-group">
+        <label>เบอร์โทรศัพท์</label>
+        <input id="e-phone" placeholder="0XX-XXX-XXXX"/>
+      </div>
+      <div class="form-group form-full">
+        <label>ที่อยู่</label>
+        <textarea id="e-address" rows="2" placeholder="ที่อยู่ปัจจุบัน"></textarea>
+      </div>
+    </div>
+
+    <div class="form-section">ตำแหน่ง / การทำงาน</div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>ตำแหน่ง *</label>
+        <select id="e-position">
+          <option value="">— เลือก —</option>
+          <option>ผู้อำนวยการ</option><option>รองผู้อำนวยการ</option>
+          <option>ครู</option><option>ครูผู้ช่วย</option>
+          <option>พนักงานราชการ</option><option>ลูกจ้างประจำ</option>
+          <option>เจ้าหน้าที่ธุรการ</option><option>นักการภารโรง</option><option>เจ้าหน้าที่</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>วิทยฐานะ</label>
+        <select id="e-rank">
+          <option value="">ไม่มี</option>
+          <option>ชำนาญการ</option><option>ชำนาญการพิเศษ</option>
+          <option>เชี่ยวชาญ</option><option>เชี่ยวชาญพิเศษ</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>กลุ่มสาระ / ฝ่าย *</label>
+        <select id="e-dept">
+          <option value="">— เลือก —</option>
+          <option>บริหาร</option>
+          <option>ภาษาไทย</option><option>คณิตศาสตร์</option>
+          <option>วิทยาศาสตร์และเทคโนโลยี</option><option>สังคมศึกษา</option>
+          <option>ภาษาต่างประเทศ</option><option>สุขศึกษาและพลศึกษา</option>
+          <option>ศิลปะ</option><option>การงานอาชีพ</option>
+          <option>กิจกรรมพัฒนาผู้เรียน</option><option>ปฐมวัย</option>
+          <option>ธุรการ</option><option>อื่นๆ</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>วิชาที่สอน</label>
+        <input id="e-subject" placeholder="เช่น ภาษาไทย, คณิตศาสตร์"/>
+      </div>
+      <div class="form-group">
+        <label>เลขที่ตำแหน่ง</label>
+        <input id="e-posno" placeholder="เลขที่ตำแหน่ง"/>
+      </div>
+      <div class="form-group">
+        <label>วันบรรจุ / เริ่มงาน</label>
+        <input id="e-startdate" type="date"/>
+      </div>
+      <div class="form-group">
+        <label>อีเมลราชการ</label>
+        <input id="e-email" type="email" placeholder="name@school.ac.th"/>
+      </div>
+      <div class="form-group">
+        <label>ครูประจำชั้น</label>
+        <input id="e-homeroom" placeholder="เช่น ป.3/1"/>
+      </div>
+    </div>
+
+    <div class="form-section">การศึกษา</div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>วุฒิการศึกษาสูงสุด</label>
+        <select id="e-edu">
+          <option value="">— เลือก —</option>
+          <option>ต่ำกว่าปริญญาตรี</option><option>ปริญญาตรี</option>
+          <option>ปริญญาโท</option><option>ปริญญาเอก</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>สาขาวิชา</label>
+        <input id="e-major" placeholder="สาขาที่เรียน"/>
+      </div>
+      <div class="form-group form-full">
+        <label>สถาบันการศึกษา</label>
+        <input id="e-school" placeholder="ชื่อมหาวิทยาลัย/สถาบัน"/>
+      </div>
+    </div>
+
+    <div class="form-section">สถานะ</div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>สถานะการทำงาน</label>
+        <select id="e-status">
+          <option>ปฏิบัติหน้าที่</option><option>ลาออก</option>
+          <option>ย้าย</option><option>เกษียณ</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>หมายเหตุ</label>
+        <input id="e-note" placeholder="หมายเหตุ"/>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('form-modal')">ยกเลิก</button>
+      <button class="btn btn-gold" onclick="saveTeacher()">💾 บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ DETAIL VIEW MODAL ═══ -->
+<div class="modal-overlay" id="detail-modal">
+  <div class="modal detail-modal">
+    <div class="modal-top-bar"></div>
+    <button class="modal-close" onclick="closeModal('detail-modal')">✕</button>
+    <div id="detail-content"></div>
+    <div class="modal-footer" style="margin-top:16px">
+      <button class="btn btn-outline" onclick="closeModal('detail-modal')">ปิด</button>
+      <button class="btn btn-gold" id="detail-edit-btn">✏️ แก้ไข</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ CONFIRM DELETE ═══ -->
+<div class="modal-overlay" id="confirm-modal">
+  <div class="modal" style="max-width:400px">
+    <button class="modal-close" onclick="closeModal('confirm-modal')">✕</button>
+    <div class="confirm-warn">
+      <div class="big">🗑️</div>
+      <h3>ยืนยันการลบ</h3>
+      <p id="confirm-txt">ต้องการลบข้อมูลบุคลากรนี้หรือไม่?<br>ไม่สามารถกู้คืนได้</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('confirm-modal')">ยกเลิก</button>
+      <button class="btn btn-danger" id="confirm-del-btn">🗑 ลบ</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+<script src="auth-guard.js"></script>
+<script>
+AuthGuard.init('read-only');
+const db=_db;
+const REF=db.ref('teachers');
+
+let ALL=[],filtered=[],viewMode='card',page=1,PAGE=20;
+let editId=null,photoData=null;
+
+// ── POSITION ORDER ──
+const POS_ORDER=['ผู้อำนวยการ','รองผู้อำนวยการ','ครู','ครูผู้ช่วย','พนักงานราชการ','ลูกจ้างประจำ','เจ้าหน้าที่ธุรการ','นักการภารโรง','เจ้าหน้าที่'];
+const posOrder=p=>POS_ORDER.indexOf(p)>=0?POS_ORDER.indexOf(p):99;
+
+// ── LOAD ──
+REF.on('value',snap=>{
+  ALL=[];
+  snap.forEach(c=>ALL.push({...c.val(),_id:c.key}));
+  ALL.sort((a,b)=>posOrder(a.position)-posOrder(b.position)||(a.fname||'').localeCompare(b.fname||'','th'));
+  applyFilter();
+  updateStats();
+  buildDeptFilter();
+});
+
+function updateStats(){
+  const act=ALL.filter(t=>t.status==='ปฏิบัติหน้าที่'||!t.status);
+  document.getElementById('stat-total').textContent=ALL.length;
+  document.getElementById('stat-active').textContent=act.length;
+  document.getElementById('stat-teach').textContent=ALL.filter(t=>['ครู','ครูผู้ช่วย','พนักงานราชการ'].includes(t.position)).length;
+  const depts=new Set(ALL.map(t=>t.dept).filter(Boolean));
+  document.getElementById('stat-dept').textContent=depts.size;
+}
+
+function buildDeptFilter(){
+  const depts=[...new Set(ALL.map(t=>t.dept).filter(Boolean))].sort();
+  const sel=document.getElementById('f-dept');
+  const cur=sel.value;
+  sel.innerHTML='<option value="">ทุกกลุ่มสาระ/ฝ่าย</option>'+depts.map(d=>`<option ${d===cur?'selected':''}>${d}</option>`).join('');
+}
+
+// ── FILTER ──
+function onFilter(){page=1;applyFilter();}
+function applyFilter(){
+  const q=(document.getElementById('search').value||'').trim().toLowerCase();
+  const dept=document.getElementById('f-dept').value;
+  const pos=document.getElementById('f-pos').value;
+  const st=document.getElementById('f-status').value;
+  filtered=ALL.filter(t=>{
+    if(dept&&t.dept!==dept)return false;
+    if(pos&&t.position!==pos)return false;
+    if(st&&(t.status||'ปฏิบัติหน้าที่')!==st)return false;
+    if(q){const hay=`${t.fname} ${t.lname} ${t.nickname||''} ${t.position||''} ${t.dept||''} ${t.subject||''}`.toLowerCase();if(!hay.includes(q))return false;}
+    return true;
+  });
+  renderContent();
+}
+
+// ── VIEW MODE ──
+function setView(v){
+  viewMode=v;page=1;
+  document.getElementById('vt-card').classList.toggle('active',v==='card');
+  document.getElementById('vt-list').classList.toggle('active',v==='list');
+  renderContent();
+}
+
+function renderContent(){
+  viewMode==='card'?renderCards():renderList();
+}
+
+// ── CARD VIEW ──
+function renderCards(){
+  const area=document.getElementById('content-area');
+  const total=filtered.length;
+  const pages=Math.max(1,Math.ceil(total/PAGE));
+  if(page>pages)page=pages;
+  const slice=filtered.slice((page-1)*PAGE,page*PAGE);
+  if(!slice.length){area.innerHTML=`<div class="empty-state"><div class="big">👤</div><p>${ALL.length?'ไม่พบบุคลากรที่ค้นหา':'ยังไม่มีข้อมูลบุคลากร'}</p></div>`;renderPager(1,1,0);return;}
+  area.innerHTML=`<div class="cards-grid">${slice.map((t,i)=>teacherCard(t,i)).join('')}</div>`;
+  renderPager(page,pages,total);
+}
+
+function teacherCard(t,i){
+  const ini=t.fname?t.fname[0]:'?';
+  const isActive=!t.status||t.status==='ปฏิบัติหน้าที่';
+  return `<div class="teacher-card" style="animation-delay:${i*.04}s">
+    <div class="card-top"></div>
+    <div class="card-body">
+      <div class="card-avatar">
+        ${t.photo?`<img src="${t.photo}" alt=""/>`:`<span>${ini}</span>`}
+        <div class="status-dot ${isActive?'active':'inactive'}"></div>
+      </div>
+      <div class="card-name">${t.prefix||''}${t.fname} ${t.lname}</div>
+      <div class="card-position">${t.position||'—'}${t.rank?' • '+t.rank:''}</div>
+      ${t.dept?`<span class="card-dept">${t.dept}</span>`:''}
+      <div class="card-meta">
+        ${t.subject?`<span>📚 ${t.subject}</span>`:''}
+        ${t.homeroom?`<span>🏫 ครูประจำชั้น ${t.homeroom}</span>`:''}
+        ${t.phone?`<span>📱 ${t.phone}</span>`:''}
+      </div>
+      <div class="card-actions">
+        <button class="btn btn-outline" onclick="openDetail('${t._id}')">👁 ดู</button>
+        <button class="btn btn-gold" style="background:rgba(212,168,67,.15);color:var(--gold2);border:1px solid rgba(212,168,67,.25);box-shadow:none" data-auth='write' onclick="openEdit('${t._id}')">✏️</button>
+        <button class="btn btn-danger" style="padding:7px 10px" data-auth='write' onclick="confirmDel('${t._id}')">🗑</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ── LIST VIEW ──
+function renderList(){
+  const area=document.getElementById('content-area');
+  const total=filtered.length;
+  const pages=Math.max(1,Math.ceil(total/PAGE));
+  if(page>pages)page=pages;
+  const slice=filtered.slice((page-1)*PAGE,page*PAGE);
+  if(!slice.length){area.innerHTML=`<div class="list-wrap"><div class="empty-state"><div class="big">👤</div><p>${ALL.length?'ไม่พบบุคลากรที่ค้นหา':'ยังไม่มีข้อมูลบุคลากร'}</p></div></div>`;renderPager(1,1,0);return;}
+  const head=`<div class="list-wrap"><div class="list-head">
+    <div class="lh" style="text-align:center">ที่</div>
+    <div class="lh"></div>
+    <div class="lh">ชื่อ-นามสกุล</div>
+    <div class="lh">ตำแหน่ง</div>
+    <div class="lh">กลุ่มสาระ/ฝ่าย</div>
+    <div class="lh">สถานะ</div>
+    <div class="lh" style="text-align:right">จัดการ</div>
+  </div><div class="list-body">`;
+  const rows=slice.map((t,i)=>{
+    const ini=t.fname?t.fname[0]:'?';
+    const isActive=!t.status||t.status==='ปฏิบัติหน้าที่';
+    return `<div class="list-row" style="animation-delay:${i*.03}s">
+      <div class="ld" style="text-align:center;color:var(--hint);font-size:12px">${(page-1)*PAGE+i+1}</div>
+      <div class="ld">${t.photo?`<div class="list-avatar"><img src="${t.photo}" alt=""/></div>`:`<div class="list-avatar">${ini}</div>`}</div>
+      <div class="ld">
+        <div style="font-weight:700">${t.prefix||''}${t.fname} ${t.lname}</div>
+        <div style="font-size:11px;color:var(--hint)">${t.subject?`📚 ${t.subject}`:''} ${t.homeroom?`• ชั้น ${t.homeroom}`:''}</div>
+      </div>
+      <div class="ld"><span class="pos-tag">${t.position||'—'}</span>${t.rank?`<br><span style="font-size:10px;color:var(--muted)">${t.rank}</span>`:''}</div>
+      <div class="ld"><span class="dept-tag">${t.dept||'—'}</span></div>
+      <div class="ld"><span class="status-badge ${isActive?'on':'off'}">${t.status||'ปฏิบัติหน้าที่'}</span></div>
+      <div class="ld list-actions">
+        <button class="icon-btn view" onclick="openDetail('${t._id}')" title="ดูรายละเอียด">👁</button>
+        <button class="icon-btn edit" data-auth='write' onclick="openEdit('${t._id}')" title="แก้ไข">✏️</button>
+        <button class="icon-btn del" data-auth='write' onclick="confirmDel('${t._id}')" title="ลบ">🗑</button>
+      </div>
+    </div>`;
+  }).join('');
+  area.innerHTML=head+rows+'</div></div>';
+  renderPager(page,pages,total);
+}
+
+// ── PAGINATION ──
+function renderPager(cur,total,count){
+  const el=document.getElementById('pagination');
+  if(total<=1){el.style.display='none';return;}
+  el.style.display='flex';
+  let h=`<button class="page-btn" onclick="goPage(${cur-1})" ${cur<=1?'disabled':''}>‹</button>`;
+  const r=[];
+  for(let i=1;i<=total;i++){if(i===1||i===total||Math.abs(i-cur)<=1)r.push(i);else if(Math.abs(i-cur)===2)r.push('…');}
+  [...new Set(r)].forEach(p=>{h+=p==='…'?`<span class="page-info">…</span>`:`<button class="page-btn ${p===cur?'active':''}" onclick="goPage(${p})">${p}</button>`;});
+  h+=`<button class="page-btn" onclick="goPage(${cur+1})" ${cur>=total?'disabled':''}>›</button>`;
+  h+=`<span class="page-info">${count} คน</span>`;
+  el.innerHTML=h;
+}
+function goPage(p){page=p;renderContent();window.scrollTo({top:0,behavior:'smooth'});}
+
+// ── DETAIL VIEW ──
+function openDetail(id){
+  const t=ALL.find(x=>x._id===id);if(!t)return;
+  const ini=t.fname?t.fname[0]:'?';
+  const isActive=!t.status||t.status==='ปฏิบัติหน้าที่';
+  const fields=[
+    ['ชื่อ-นามสกุล',`${t.prefix||''}${t.fname||''} ${t.lname||''}`],
+    ['ตำแหน่ง',t.position||'—'],
+    ['วิทยฐานะ',t.rank||'—'],
+    ['กลุ่มสาระ/ฝ่าย',t.dept||'—'],
+    ['วิชาที่สอน',t.subject||'—'],
+    ['ครูประจำชั้น',t.homeroom||'—'],
+    ['เลขที่ตำแหน่ง',t.posno||'—'],
+    ['วันบรรจุ',t.startdate?formatThai(t.startdate):'—'],
+    ['วุฒิการศึกษา',t.edu||'—'],
+    ['สาขาวิชา',t.major||'—'],
+    ['สถาบัน',t.school||'—'],
+    ['วันเกิด',t.birthday?formatThai(t.birthday):'—'],
+    ['เบอร์โทร',t.phone||'—'],
+    ['อีเมล',t.email||'—'],
+    ['ที่อยู่',t.address||'—'],
+    ['สถานะ',t.status||'ปฏิบัติหน้าที่'],
+    ['หมายเหตุ',t.note||'—'],
+  ];
+  document.getElementById('detail-content').innerHTML=`
+    <div class="detail-header">
+      <div class="detail-avatar">${t.photo?`<img src="${t.photo}" alt=""/>`:`<span>${ini}</span>`}</div>
+      <div class="detail-info">
+        <div class="detail-name">${t.prefix||''}${t.fname||''} ${t.lname||''}</div>
+        <div class="detail-pos">${t.position||'—'}${t.rank?' • '+t.rank:''}</div>
+        <div class="detail-tags">
+          ${t.dept?`<span class="dept-tag">${t.dept}</span>`:''}
+          <span class="status-badge ${isActive?'on':'off'}">${t.status||'ปฏิบัติหน้าที่'}</span>
+        </div>
+      </div>
+    </div>
+    <div class="detail-grid">
+      ${fields.map(([k,v])=>`<div class="detail-item"><div class="detail-key">${k}</div><div class="detail-val">${v}</div></div>`).join('')}
+    </div>`;
+  document.getElementById('detail-edit-btn').onclick=()=>{closeModal('detail-modal');openEdit(id);};
+  openModal('detail-modal');
+}
+
+// ── ADD/EDIT ──
+function openAddModal(){
+  editId=null;photoData=null;
+  document.getElementById('modal-title').textContent='➕ เพิ่มบุคลากร';
+  clearForm();
+  setPhotoPrev(null);
+  openModal('form-modal');
+}
+function openEdit(id){
+  const t=ALL.find(x=>x._id===id);if(!t)return;
+  editId=id;photoData=t.photo||null;
+  document.getElementById('modal-title').textContent='✏️ แก้ไขข้อมูลบุคลากร';
+  document.getElementById('e-prefix').value=t.prefix||'นาย';
+  document.getElementById('e-gender').value=t.gender||'ชาย';
+  document.getElementById('e-fname').value=t.fname||'';
+  document.getElementById('e-lname').value=t.lname||'';
+  document.getElementById('e-nickname').value=t.nickname||'';
+  document.getElementById('e-birthday').value=t.birthday||'';
+  document.getElementById('e-idcard').value=t.idcard||'';
+  document.getElementById('e-phone').value=t.phone||'';
+  document.getElementById('e-address').value=t.address||'';
+  document.getElementById('e-position').value=t.position||'';
+  document.getElementById('e-rank').value=t.rank||'';
+  document.getElementById('e-dept').value=t.dept||'';
+  document.getElementById('e-subject').value=t.subject||'';
+  document.getElementById('e-posno').value=t.posno||'';
+  document.getElementById('e-startdate').value=t.startdate||'';
+  document.getElementById('e-email').value=t.email||'';
+  document.getElementById('e-homeroom').value=t.homeroom||'';
+  document.getElementById('e-edu').value=t.edu||'';
+  document.getElementById('e-major').value=t.major||'';
+  document.getElementById('e-school').value=t.school||'';
+  document.getElementById('e-status').value=t.status||'ปฏิบัติหน้าที่';
+  document.getElementById('e-note').value=t.note||'';
+  setPhotoPrev(t.photo||null);
+  openModal('form-modal');
+}
+function clearForm(){
+  ['e-fname','e-lname','e-nickname','e-birthday','e-idcard','e-phone','e-address',
+   'e-position','e-rank','e-dept','e-subject','e-posno','e-startdate','e-email','e-homeroom',
+   'e-edu','e-major','e-school','e-note'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('e-prefix').value='นาย';
+  document.getElementById('e-gender').value='ชาย';
+  document.getElementById('e-status').value='ปฏิบัติหน้าที่';
+}
+
+// ── PHOTO ──
+function onPhoto(e){
+  const file=e.target.files[0];e.target.value='';
+  if(!file)return;
+  if(!file.type.startsWith('image/')){toast('❌ ไฟล์รูปภาพเท่านั้น','err');return;}
+  if(file.size>3*1024*1024){toast('❌ ไฟล์ใหญ่เกิน 3MB','err');return;}
+  const r=new FileReader();
+  r.onload=ev=>{photoData=ev.target.result;setPhotoPrev(photoData);};
+  r.readAsDataURL(file);
+}
+function setPhotoPrev(src){
+  const el=document.getElementById('photo-prev');
+  el.innerHTML=src?`<img src="${src}" alt=""/>`:'👤';
+}
+
+// ── SAVE ──
+async function saveTeacher(){
+  if(!AuthGuard.requireLogin())return;
+  const fname=document.getElementById('e-fname').value.trim();
+  const lname=document.getElementById('e-lname').value.trim();
+  const pos=document.getElementById('e-position').value;
+  const dept=document.getElementById('e-dept').value;
+  if(!fname||!lname){toast('❌ กรอกชื่อและนามสกุล','err');return;}
+  if(!pos){toast('❌ เลือกตำแหน่ง','err');return;}
+  if(!dept){toast('❌ เลือกกลุ่มสาระ/ฝ่าย','err');return;}
+  const data={
+    prefix:document.getElementById('e-prefix').value,
+    gender:document.getElementById('e-gender').value,
+    fname,lname,
+    nickname:document.getElementById('e-nickname').value.trim(),
+    birthday:document.getElementById('e-birthday').value,
+    idcard:document.getElementById('e-idcard').value.trim(),
+    phone:document.getElementById('e-phone').value.trim(),
+    address:document.getElementById('e-address').value.trim(),
+    position:pos,
+    rank:document.getElementById('e-rank').value,
+    dept,
+    subject:document.getElementById('e-subject').value.trim(),
+    posno:document.getElementById('e-posno').value.trim(),
+    startdate:document.getElementById('e-startdate').value,
+    email:document.getElementById('e-email').value.trim(),
+    homeroom:document.getElementById('e-homeroom').value.trim(),
+    edu:document.getElementById('e-edu').value,
+    major:document.getElementById('e-major').value.trim(),
+    school:document.getElementById('e-school').value.trim(),
+    status:document.getElementById('e-status').value,
+    note:document.getElementById('e-note').value.trim(),
+    photo:photoData||null,
+    updatedAt:new Date().toLocaleDateString('th-TH',{year:'numeric',month:'short',day:'numeric'})
+  };
+  try{
+    if(editId){await REF.child(editId).update(data);toast('✅ แก้ไขข้อมูลสำเร็จ','ok');}
+    else{data.createdAt=data.updatedAt;await REF.push(data);toast('✅ เพิ่มบุคลากรสำเร็จ','ok');}
+    closeModal('form-modal');
+  }catch(e){toast('❌ บันทึกไม่สำเร็จ: '+e.message,'err');}
+}
+
+// ── DELETE ──
+function confirmDel(id){
+  const t=ALL.find(x=>x._id===id);if(!t)return;
+  document.getElementById('confirm-txt').innerHTML=
+    `ต้องการลบข้อมูลของ <b>${t.prefix||''}${t.fname} ${t.lname}</b><br><span style="color:#f87171;font-size:12px">ข้อมูลจะหายถาวร</span>`;
+  document.getElementById('confirm-del-btn').onclick=async()=>{
+    try{await REF.child(id).remove();toast('🗑 ลบข้อมูลเรียบร้อย','ok');closeModal('confirm-modal');}
+    catch(e){toast('❌ '+e.message,'err');}
+  };
+  openModal('confirm-modal');
+}
+
+// ── EXPORT CSV ──
+function exportCSV(){
+  if(!filtered.length){toast('⚠️ ไม่มีข้อมูล','err');return;}
+  const h=['ชื่อ','นามสกุล','คำนำหน้า','เพศ','วันเกิด','ตำแหน่ง','วิทยฐานะ','กลุ่มสาระ','วิชาที่สอน','ครูประจำชั้น','วันบรรจุ','วุฒิ','สาขา','สถาบัน','โทร','อีเมล','สถานะ'];
+  const rows=filtered.map(t=>[t.fname,t.lname,t.prefix||'',t.gender||'',t.birthday||'',t.position||'',t.rank||'',t.dept||'',t.subject||'',t.homeroom||'',t.startdate||'',t.edu||'',t.major||'',t.school||'',t.phone||'',t.email||'',t.status||'ปฏิบัติหน้าที่']);
+  const csv=[h,...rows].map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download=`บุคลากร_${new Date().toLocaleDateString('th-TH')}.csv`;a.click();
+  toast('📥 Export สำเร็จ','ok');
+}
+
+// ── HELPERS ──
+function formatThai(str){
+  if(!str)return'—';
+  const [y,m,d]=str.split('-');
+  const mo=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  return `${parseInt(d)} ${mo[parseInt(m)-1]} ${parseInt(y)+543}`;
+}
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+function toast(msg,type=''){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.className='toast'+(type?' '+type:'');
+  t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);
+}
+document.querySelectorAll('.modal-overlay').forEach(el=>{
+  el.addEventListener('click',e=>{if(e.target===el)el.classList.remove('open');});
+});
+document.getElementById('e-prefix').addEventListener('change',function(){
+  const m={'นาย':'ชาย','ดร.':'ชาย','อ.':'ชาย','นาง':'หญิง','นางสาว':'หญิง'};
+  if(m[this.value])document.getElementById('e-gender').value=m[this.value];
+});
+</script>
+</body>
+</html>

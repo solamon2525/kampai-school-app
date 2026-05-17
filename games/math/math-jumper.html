@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Math Jumper — บ้านคำไผ่</title>
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--bg:#0d1117;--surface:#1c2128;--border:#30363d;--text:#e6edf3;--muted:#8b949e;
+         --blue:#2f86f7;--green:#3fb950;--red:#e53935;--yellow:#ffd700}
+    body{font-family:'Kanit',sans-serif;background:var(--bg);color:var(--text);
+      min-height:100vh;display:flex;flex-direction:column}
+    .nav{background:rgba(13,17,23,.9);backdrop-filter:blur(10px);
+      border-bottom:1px solid var(--border);display:flex;align-items:center;
+      justify-content:space-between;padding:0 16px;height:50px;flex-shrink:0;z-index:10}
+    .back{text-decoration:none;color:var(--muted);font-size:13px;padding:4px 12px;
+      border:1px solid var(--border);border-radius:8px;transition:.2s}
+    .back:hover{color:var(--text);border-color:var(--red)}
+    .nav-title{font-weight:700;font-size:15px}
+    main{flex:1;display:flex;flex-direction:column;align-items:center;
+      justify-content:center;padding:20px;gap:18px}
+    .hud{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+    .hud-box{background:var(--surface);border:1px solid var(--border);border-radius:12px;
+      padding:8px 20px;text-align:center;min-width:85px}
+    .hud-val{font-size:1.6rem;font-weight:700}
+    .hud-val.y{color:var(--yellow)}.hud-val.g{color:var(--green)}.hud-val.b{color:#90caf9}
+    .hud-label{font-size:11px;color:var(--muted);display:block}
+    .char-area{width:100%;max-width:480px;height:130px;position:relative;
+      background:linear-gradient(180deg,#0a1628,#0d2144);border-radius:16px;
+      border:1px solid var(--border);overflow:hidden}
+    .ground{position:absolute;bottom:0;left:0;right:0;height:40px;
+      background:linear-gradient(180deg,#1a3a00,#0f2200);border-top:2px solid #2d5a0a}
+    .char{position:absolute;bottom:40px;left:60px;font-size:2.5rem;
+      transition:bottom .3s cubic-bezier(.2,1.5,.6,1)}
+    .char.jump{bottom:90px}
+    .question-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;
+      padding:24px 28px;text-align:center;width:100%;max-width:480px}
+    .q-text{font-size:2rem;font-weight:700;margin-bottom:18px}
+    .choices{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .choice{background:var(--bg);border:2px solid var(--border);border-radius:14px;
+      padding:13px;font-family:inherit;font-size:1.2rem;font-weight:600;
+      color:var(--text);cursor:pointer;transition:.2s}
+    .choice:hover{border-color:var(--blue);background:rgba(47,134,247,.1);transform:translateY(-2px)}
+    .choice.correct{border-color:var(--green);background:rgba(63,185,80,.15);color:var(--green)}
+    .choice.wrong{border-color:var(--red);background:rgba(229,57,53,.15);color:var(--red)}
+    .fb{height:26px;text-align:center;font-size:15px;font-weight:600}
+    .fb.ok{color:var(--green)}.fb.no{color:var(--red)}
+    .overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;
+      display:none;align-items:center;justify-content:center}
+    .overlay.on{display:flex}
+    .panel{background:var(--surface);border:1px solid var(--border);border-radius:20px;
+      padding:28px 34px;text-align:center;max-width:360px;width:90%}
+    .score-big{font-size:3rem;font-weight:700;color:var(--yellow);margin:12px 0}
+    .btn{background:var(--red);color:#fff;border:none;border-radius:12px;
+      padding:12px 24px;font-family:inherit;font-size:14px;font-weight:600;
+      cursor:pointer;transition:.2s;margin:4px}
+    .btn:hover{background:#b71c1c;transform:translateY(-2px)}
+    .btn-outline{background:transparent;border:2px solid var(--border);color:var(--text)}
+    .btn-outline:hover{background:var(--border)}
+    @media(max-width:480px){.choices{grid-template-columns:1fr}.q-text{font-size:1.5rem}}
+  </style>
+</head>
+<body>
+<nav class="nav">
+  <a class="back" href="../index.html">← กลับ</a>
+  <span class="nav-title">🦘 Math Jumper</span>
+  <span style="width:60px"></span>
+</nav>
+<main>
+  <div class="hud">
+    <div class="hud-box"><span class="hud-val y" id="score">0</span><span class="hud-label">คะแนน</span></div>
+    <div class="hud-box"><span class="hud-val g" id="timer">30</span><span class="hud-label">วินาที</span></div>
+    <div class="hud-box"><span class="hud-val b" id="streak">0</span><span class="hud-label">ตอบถูกต่อเนื่อง</span></div>
+  </div>
+  <div class="char-area">
+    <div class="ground"></div>
+    <div class="char" id="char">🦘</div>
+  </div>
+  <div class="fb" id="fb"></div>
+  <div class="question-card">
+    <div class="q-text" id="q-text"></div>
+    <div class="choices" id="choices"></div>
+  </div>
+</main>
+<div class="overlay" id="modal">
+  <div class="panel">
+    <h2>⏰ หมดเวลา!</h2>
+    <div class="score-big" id="final-score">0</div>
+    <p style="color:var(--muted);margin-bottom:16px">คะแนนสุดท้าย</p>
+    <button class="btn" onclick="restartGame()">🔄 เล่นใหม่</button>
+    <button class="btn btn-outline" onclick="location.href='../index.html'">🏠 กลับ</button>
+  </div>
+</div>
+<script>
+let score=0,timeLeft=30,streak=0,timerID=null,answered=false;
+function genQuestion(){
+  answered=false;
+  const lvl=Math.min(3,1+Math.floor(score/30));
+  let q,a,choices=new Set();
+  if(lvl===1){
+    const a1=2+Math.floor(Math.random()*8),a2=2+Math.floor(Math.random()*8);
+    const op=Math.random()<.5?'+':'-';
+    q=`${a1} ${op} ${a2}`;a=op==='+'?a1+a2:a1-a2;
+  }else if(lvl===2){
+    const a1=2+Math.floor(Math.random()*8),a2=2+Math.floor(Math.random()*5);
+    const op=Math.random()<.5?'×':'÷';
+    if(op==='×'){q=`${a1} × ${a2}`;a=a1*a2;}
+    else{q=`${a1*a2} ÷ ${a1}`;a=a2;}
+  }else{
+    const a1=5+Math.floor(Math.random()*10),a2=2+Math.floor(Math.random()*8),a3=2+Math.floor(Math.random()*5);
+    const op=Math.random()<.5?'+':'-';
+    q=`(${a1} ${op} ${a2}) × ${a3}`;a=(op==='+'?a1+a2:a1-a2)*a3;
+  }
+  choices.add(a);
+  while(choices.size<4){const o=Math.floor(Math.random()*20)-10;if(o!==0)choices.add(a+o);}
+  const arr=[...choices].sort(()=>Math.random()-.5);
+  document.getElementById("q-text").textContent=`${q} = ?`;
+  document.getElementById("choices").innerHTML=arr.map(c=>`<button class="choice" onclick="answer(${c},${a})">${c}</button>`).join("");
+}
+function answer(chosen,correct){
+  if(answered)return;answered=true;
+  const btns=document.querySelectorAll(".choice");
+  btns.forEach(b=>{b.disabled=true;if(+b.textContent===correct)b.classList.add("correct");});
+  const fb=document.getElementById("fb");
+  if(chosen===correct){
+    streak++;score+=5+streak;
+    fb.className="fb ok";fb.textContent=streak>1?`🎉 Combo ${streak}x +${5+streak}`:"✅ ถูก!";
+    const c=document.getElementById("char");c.classList.add("jump");setTimeout(()=>c.classList.remove("jump"),400);
+  }else{
+    streak=0;score=Math.max(0,score-2);
+    btns.forEach(b=>{if(+b.textContent===chosen)b.classList.add("wrong");});
+    fb.className="fb no";fb.textContent="❌ ผิด! คำตอบคือ "+correct;
+  }
+  updateHUD();setTimeout(genQuestion,1100);
+}
+function updateHUD(){
+  document.getElementById("score").textContent=score;
+  document.getElementById("timer").textContent=timeLeft;
+  document.getElementById("streak").textContent=streak;
+}
+function startTimer(){
+  clearInterval(timerID);
+  timerID=setInterval(()=>{
+    timeLeft--;document.getElementById("timer").textContent=timeLeft;
+    if(timeLeft<=0){clearInterval(timerID);document.getElementById("final-score").textContent=score;document.getElementById("modal").classList.add("on");}
+  },1000);
+}
+function restartGame(){
+  score=0;timeLeft=30;streak=0;
+  document.getElementById("modal").classList.remove("on");
+  document.getElementById("fb").textContent="";
+  updateHUD();genQuestion();startTimer();
+}
+genQuestion();startTimer();
+</script>
+</body>
+</html>
